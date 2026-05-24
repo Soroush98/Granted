@@ -1,0 +1,19 @@
+{
+  "name": "granted",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "start": "pnpm --filter web start",
+    "lint": "pnpm --filter web lint",
+    "typecheck": "pnpm --filter web typecheck",
+    "scrape": "pnpm --filter scraper dev",
+    "db:migrate": "supabase db push",
+    "db:reset": "supabase db reset"
+  },
+  "engines": {
+    "node": ">=20.18.0"
+  }
+}

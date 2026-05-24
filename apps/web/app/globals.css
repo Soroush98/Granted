@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --color-ink: #0b0d10;
+  --color-muted: #5b6470;
+  --color-accent: #c8102e;       /* Canadian-y red */
+  --color-accent-soft: #ffe1e4;
+  --color-warm-bg: #faf8f5;      /* warm off-white for body */
+}
+
+html, body {
+  background: var(--color-warm-bg);
+  color: var(--color-ink);
+}
+
+/* Soft radial wash so the page never feels flat. Behind everything,
+   pointer-events off — pure decoration. */
+body {
+  font-family: var(--font-sans);
+  position: relative;
+  min-height: 100vh;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(200, 16, 46, 0.06), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(11, 13, 16, 0.04), transparent 70%);
+}
+
+/* Tinted text selection — small detail, big polish */
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-ink);
+}
+
+/* Gradient text utility for hero accents */
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-ink) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Card with hover-lift micro-interaction */
+.card-lift {
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+.card-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px -8px rgba(11, 13, 16, 0.08);
+  border-color: rgba(11, 13, 16, 0.18);
+}
+
+/* Primary button — gradient, pressable feel */
+.btn-primary {
+  background: linear-gradient(180deg, #1a1d22 0%, #0b0d10 100%);
+  color: #fff;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1) inset, 0 6px 16px -8px rgba(11, 13, 16, 0.5);
+  transition: transform 100ms ease, box-shadow 150ms ease;
+}
+.btn-primary:hover {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12) inset, 0 10px 22px -8px rgba(11, 13, 16, 0.6);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+}
+
+/* Focus rings — accessible without being clunky */
+.focus-ring:focus,
+.focus-ring:focus-visible {
+  outline: 2px solid rgba(200, 16, 46, 0.45);
+  outline-offset: 2px;
+}

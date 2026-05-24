@@ -1,0 +1,19 @@
+project_id = "granted"
+
+[db]
+major_version = 16
+
+[db.pooler]
+enabled = true
+pool_mode = "transaction"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[studio]
+enabled = true
+port = 54323
