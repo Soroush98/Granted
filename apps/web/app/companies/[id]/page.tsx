@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { cacheLife, cacheTag } from "next/cache";
@@ -99,7 +100,20 @@ function parsePage(raw: string | undefined): number {
   return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0;
 }
 
-export default async function CompanyPage({ params, searchParams }: Props) {
+// Thin shell — renders the static "back to results" link and immediately
+// hands off to a Suspense-wrapped child. cacheComponents requires every
+// uncached data fetch to live under a Suspense boundary; without this, the
+// build-time prerender bails with "Uncached data was accessed outside of
+// <Suspense>".
+export default function CompanyPage({ params, searchParams }: Props) {
+  return (
+    <Suspense fallback={<CompanyShellSkeleton />}>
+      <CompanyContent params={params} searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function CompanyContent({ params, searchParams }: Props) {
   const { id } = await params;
   const sp = await searchParams;
   const sort = parseSort(sp.sort);
@@ -324,6 +338,26 @@ function Stat({ label, value }: { label: string; value: string }) {
     <div>
       <p className="text-xs uppercase tracking-wide text-[var(--color-muted)]">{label}</p>
       <p className="mt-1 text-lg font-semibold">{value}</p>
+    </div>
+  );
+}
+
+// Fallback shown while CompanyContent's data is being fetched. Mirrors the
+// real layout's vertical rhythm so the page doesn't snap on hydration.
+function CompanyShellSkeleton() {
+  return (
+    <div className="grid gap-8">
+      <header className="grid gap-3">
+        <div className="h-4 w-24 animate-pulse rounded bg-black/5" />
+        <div className="h-8 w-72 animate-pulse rounded-lg bg-black/5" />
+        <div className="h-4 w-40 animate-pulse rounded bg-black/5" />
+      </header>
+      <div className="h-24 animate-pulse rounded-2xl bg-black/5" />
+      <div className="grid gap-3">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="h-20 animate-pulse rounded-xl bg-black/5" />
+        ))}
+      </div>
     </div>
   );
 }
