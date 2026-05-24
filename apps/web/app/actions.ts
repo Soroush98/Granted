@@ -8,6 +8,12 @@ import { buildFilterParams, formToParams, readFilters } from "@/lib/filters";
 // (most fit under 5 MB; image-heavy reviews can push past 10 MB).
 const MAX_PDF_BYTES = 20 * 1024 * 1024;
 
+// Hard cap on the free-text goal. Long enough for a few descriptive sentences
+// or a paragraph from a job-spec, short enough to prevent token-cost abuse
+// (a malicious user otherwise pastes War and Peace and we ship it to Claude).
+// Resume / paper body is capped separately at 4,000 chars in normalizeDocumentText.
+const MAX_GOAL_CHARS = 2000;
+
 // Filter form fields the search form may include. We pass them through to the
 // /search URL so the page can apply them without a round-trip.
 function forwardedFilterParams(formData: FormData): URLSearchParams {
@@ -18,7 +24,10 @@ function forwardedFilterParams(formData: FormData): URLSearchParams {
 /** Form action: parse an uploaded resume PDF, combine with the user's goal,
  * and redirect to /search with the synthesized query in the URL. */
 export async function searchWithResume(formData: FormData): Promise<void> {
-  const goal = String(formData.get("q") ?? "").trim();
+  let goal = String(formData.get("q") ?? "").trim();
+  // Truncate rather than reject — the user shouldn't have to retry. They get
+  // 2,000 chars of semantic signal which is plenty for ranking purposes.
+  if (goal.length > MAX_GOAL_CHARS) goal = goal.slice(0, MAX_GOAL_CHARS);
   const file = formData.get("resume");
 
   let resumeText = "";

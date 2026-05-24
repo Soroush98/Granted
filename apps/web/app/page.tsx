@@ -49,6 +49,7 @@ export default function Home() {
             name="q"
             required
             minLength={20}
+            maxLength={2000}
             rows={5}
             // Prevent browser bfcache / form-state restoration from filling
             // in a stale query when the user back-navigates from results.

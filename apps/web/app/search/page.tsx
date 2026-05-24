@@ -32,9 +32,17 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
   );
 }
 
+// Hard ceiling on the full query (goal + optional BACKGROUND from a paper).
+// Goal alone is capped at 2,000 chars in actions.ts; resume/paper text is
+// trimmed to 4,000 in normalizeDocumentText. Total ≈ 6,100 in the worst
+// case (GOAL + BACKGROUND separators + label). Anything above that is
+// either a paste-bomb or an attempt to abuse Anthropic credits — truncate.
+const MAX_QUERY_CHARS = 8000;
+
 async function SearchPageContent({ searchParams }: SearchPageProps) {
   const params = await searchParams;
-  const query = (typeof params.q === "string" ? params.q : "").trim();
+  let query = (typeof params.q === "string" ? params.q : "").trim();
+  if (query.length > MAX_QUERY_CHARS) query = query.slice(0, MAX_QUERY_CHARS);
   const errorParam = typeof params.error === "string" ? params.error : undefined;
   const errorMsg = errorParam ? ERROR_MESSAGES[errorParam] : null;
   const { goal, background } = splitQueryParts(query);
@@ -117,6 +125,7 @@ async function SearchPageContent({ searchParams }: SearchPageProps) {
         <textarea
           name="q"
           required
+          maxLength={2000}
           rows={4}
           autoComplete="off"
           placeholder={
