@@ -108,19 +108,43 @@ async function SearchPageContent({ searchParams }: SearchPageProps) {
       )}
 
       <Form action="/search" className="mb-8 grid gap-3">
+        {/* Textarea is intentionally EMPTY on every render. We previously
+            pre-filled with the URL's goal, but that made "search A → refine
+            → accidentally submit AB" trivial (cursor at the end, type new
+            text, BAM — old query gets appended). The previous goal lives
+            in the placeholder and the chip below so the user can see what
+            they searched but never accidentally edits it. */}
         <textarea
           name="q"
           required
           rows={4}
-          defaultValue={query}
-          // autoComplete=off stops Chrome / Firefox from restoring a stale
-          // value when the user navigates back to this page. The bfcache
-          // (Safari especially) can still revive form state — combine with
-          // the "Start over" link below so the user always has an obvious
-          // reset.
           autoComplete="off"
+          placeholder={
+            goal
+              ? `Type a new query. (Previous: ${goal.length > 80 ? goal.slice(0, 77) + "…" : goal})`
+              : "Describe what you want to find. Examples on the homepage."
+          }
           className="w-full resize-y rounded-2xl border border-black/10 bg-white p-4 text-sm shadow-sm outline-none focus:border-black/30"
         />
+
+        {goal && (
+          <p className="text-xs text-[var(--color-muted)]">
+            Currently showing results for{" "}
+            <span className="rounded-md bg-black/5 px-1.5 py-0.5 font-mono text-[var(--color-ink)]">
+              {goal.length > 100 ? goal.slice(0, 97) + "…" : goal}
+            </span>
+            . Type above to run a new search.
+          </p>
+        )}
+
+        {background && (
+          <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            📄 A PDF was attached on the previous step (
+            <span className="font-medium">{background.length.toLocaleString()} chars</span>).
+            Submitting from here uses your goal text only &mdash; the document is dropped.{" "}
+            <Link href="/" className="underline">Re-upload</Link> if you want it kept.
+          </p>
+        )}
 
         <Suspense fallback={<FilterSkeleton />}>
           <AdvancedFiltersAsync facetsPromise={facetsPromise} filters={filters} />
