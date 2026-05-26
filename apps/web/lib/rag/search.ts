@@ -1,6 +1,6 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
-import { supabaseAnon } from "@/lib/db/supabase-server";
+import { supabaseService } from "@/lib/db/supabase-server";
 import { embedQuery } from "@/lib/ai/embeddings";
 import { chatJson } from "@/lib/ai/llm";
 import { prepareEmbedQuery } from "@/lib/rag/prepare-query";
@@ -46,7 +46,13 @@ export async function searchCompanies(
   cacheTag("search");
 
   const topK = opts.topK ?? 5;
-  const supabase = supabaseAnon();
+  // service_role here is deliberate. The anon role has statement_timeout=3s
+  // (Supabase default), which long medical/scientific FTS queries occasionally
+  // exceed during a cold HNSW+FTS scan, yielding a "Search is temporarily
+  // unavailable" UI on the very first uncached attempt. service_role has no
+  // statement timeout. The data is already public (the search RPC is its only
+  // exposure), and the rate-limit gate in results.tsx still bounds spend.
+  const supabase = supabaseService();
   const { embedText, ftsText } = prepareEmbedQuery(query, opts);
 
   let embedding: number[];
