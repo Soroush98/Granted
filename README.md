@@ -79,9 +79,9 @@ limitations at `/about`.
    `artificial intelligence`, etc.).
 3. **Auto-filter detection**: a place name (`Toronto`, `Quebec City`,
    `Atlantic Canada`) turns into a strict `province` filter, and an org-type
-   word (`companies`, `universities`, `research institutes`) turns into an
-   `org_type` filter. The user can override either one in the Advanced
-   Filters panel.
+   word (`companies`, `universities`, `research institutes`, `labs`) turns
+   into an `org_type` filter. The user can override either one in the
+   Advanced Filters panel.
 4. **Name lookup**: a separate `pg_trgm` query against
    `companies.display_name` runs in parallel. If the query looks like an org
    name (e.g. "Wedge Networks") and the top hit is at least 40% similar, it

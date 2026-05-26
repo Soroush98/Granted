@@ -129,10 +129,16 @@ export type OrgHint = {
 };
 
 // Each entry: a pattern that strongly implies the user wants results of that
-// org_type. Ordered by tightest-meaning first. "lab/labs" intentionally NOT
-// in research_institute — it's too ambiguous in a Canadian context
-// (university labs are the default mental model), so we only match the
-// unambiguous "research institute(s)" phrase.
+// org_type. Ordered by tightest-meaning first.
+//
+// "lab/labs" maps to research_institute. The original concern was that
+// "university labs" is the default Canadian mental model, so the word is
+// ambiguous. But without the filter, universities (UofA, UofT, McGill...)
+// dominate the candidate pool by sheer grant count and named institutes
+// (Amii, Vector, Mila, Perimeter, TRIUMF) never surface for queries like
+// "AI labs in Edmonton". With the filter on, the auto-filter banner shows
+// what was applied and the user can clear it from Advanced Filters if they
+// did mean university labs.
 const ORG_PATTERNS: Array<{ pattern: RegExp; org: OrgType; source: string }> = [
   {
     pattern: /\b(companies?|startups?|industry|industries|private[\s-]sector|corporates?|corporations?|firms?|businesses)\b/i,
@@ -148,6 +154,11 @@ const ORG_PATTERNS: Array<{ pattern: RegExp; org: OrgType; source: string }> = [
     pattern: /\bresearch[\s-]institutes?\b/i,
     org: "research_institute",
     source: "research institutes",
+  },
+  {
+    pattern: /\blabs?\b/i,
+    org: "research_institute",
+    source: "labs",
   },
   {
     pattern: /\b(nonprofits?|non[\s-]profits?|charit(?:y|ies))\b/i,
