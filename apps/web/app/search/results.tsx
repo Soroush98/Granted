@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { after } from "next/server";
 import { searchCompanies } from "@/lib/rag/search";
-import { supabaseAnon, supabaseService } from "@/lib/db/supabase-server";
+import { supabaseService } from "@/lib/db/supabase-server";
 import type { SearchFilters } from "@/lib/db/types";
 import {
   getClientIp,
@@ -20,7 +20,7 @@ export async function Results({ query, filters }: Props) {
   // RPC's window_hours default is NULL, meaning "everything ever logged").
   // Refuse before doing any of the expensive work (Voyage embed + RPC +
   // Claude rerank) if they're already at the cap.
-  const supabaseRead = supabaseAnon();
+  const supabaseRead = supabaseService();
   const { data: usedRaw } = await supabaseRead.rpc("recent_search_count", {
     ip_in: ip,
   });
