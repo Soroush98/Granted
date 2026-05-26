@@ -44,7 +44,21 @@ export async function Results({ query, filters }: Props) {
     );
   }
 
-  const matches = await searchCompanies(query, { ...filters, topK: 5 });
+  const outcome = await searchCompanies(query, { ...filters, topK: 5 });
+
+  if (!outcome.ok) {
+    // Search backend failed (RPC, embed, or DB). Render a friendly message
+    // instead of throwing so the Server Component doesn't bubble an error
+    // boundary into the edge cache. The real error is logged server-side.
+    return (
+      <p className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-900">
+        Search is temporarily unavailable. Try again in a moment, or{" "}
+        <Link href="/browse" className="underline">browse grants</Link> instead.
+      </p>
+    );
+  }
+
+  const matches = outcome.matches;
 
   // Fire-and-forget search logging. `after()` runs post-response so it doesn't
   // block streaming. We persist the IP here so the next request's count

@@ -16,31 +16,46 @@ export type Match = CompanyHit & {
   rationale?: string;
 };
 
+export type SearchOutcome =
+  | { ok: true; matches: Match[] }
+  | { ok: false };
+
 /**
  * Embed the user's query (goal + optional resume), run hybrid search across
  * grant_chunks, then have the local LLM rerank the top 10 → top topK with a
  * short rationale per match.
  *
- * Cached via `"use cache"` — identical queries are free within the window.
+ * Returns a tagged outcome instead of throwing. Throws from inside a
+ * `"use cache"` function used to surface as a Server Component render error,
+ * and Vercel's edge then cached that error HTML by URL. The result was that
+ * a transient RPC blip could poison specific search URLs for an hour. By
+ * returning `{ ok: false }` on every error path, the page always renders a
+ * normal "no matches" / friendly-failure UI — never an error boundary — so
+ * nothing error-shaped ever lands in the edge cache. The function-level
+ * `"use cache"` still memoizes happy-path results; failures are cached for
+ * the same window but they look like empty success to React, not a crash.
+ *
  * The ingestion pipeline invalidates the `search` tag after each run.
  */
 export async function searchCompanies(
   query: string,
   opts: SearchFilters & { topK?: number } = {},
-): Promise<Match[]> {
+): Promise<SearchOutcome> {
   "use cache";
   cacheLife("minutes");
   cacheTag("search");
 
   const topK = opts.topK ?? 5;
-
   const supabase = supabaseAnon();
-  // Embed a cleaned version of the query (filter words removed, abbreviations
-  // expanded); pass the cleaned goal to FTS too so keyword search isn't
-  // forced to AND every paper-body word against every grant chunk.
-  // See lib/rag/prepare-query.ts for the rationale.
   const { embedText, ftsText } = prepareEmbedQuery(query, opts);
-  const embedding = await embedQuery(embedText);
+
+  let embedding: number[];
+  try {
+    embedding = await embedQuery(embedText);
+  } catch (e) {
+    console.error("[search] embed failed:", e);
+    return { ok: false };
+  }
 
   const { data: hits, error } = await supabase.rpc("search_companies", {
     query_embedding: embedding,
@@ -54,16 +69,22 @@ export async function searchCompanies(
     min_amount: opts.minAmount ?? null,
     max_amount: opts.maxAmount ?? null,
   });
-  if (error) throw new Error(`search_companies RPC failed: ${error.message}`);
-  if (!hits || hits.length === 0) return [];
+  if (error) {
+    console.error("[search] search_companies RPC failed:", error.message);
+    return { ok: false };
+  }
+  if (!hits || hits.length === 0) return { ok: true, matches: [] };
 
   const companyIds = hits.map((h) => h.company_id);
   const { data: companies, error: cErr } = await supabase
     .from("companies")
     .select("*")
     .in("id", companyIds);
-  if (cErr) throw new Error(`companies fetch failed: ${cErr.message}`);
-  const byId = new Map(companies!.map((c) => [c.id, c as Company]));
+  if (cErr || !companies) {
+    console.error("[search] companies fetch failed:", cErr?.message ?? "no rows");
+    return { ok: false };
+  }
+  const byId = new Map(companies.map((c) => [c.id, c as Company]));
 
   const candidates: Match[] = hits
     .map((h) => {
@@ -72,7 +93,8 @@ export async function searchCompanies(
     })
     .filter((x): x is Match => x !== null);
 
-  return rerankLocally(query, candidates, topK);
+  const matches = await rerankLocally(query, candidates, topK);
+  return { ok: true, matches };
 }
 
 /** Claude-API rerank. Strict JSON output. Hardened against prompt injection
