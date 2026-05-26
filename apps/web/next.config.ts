@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  // Default is 1 MB, which silently rejects research-paper PDFs before
+  // searchWithResume runs. Matches the 20 MB app-level cap in app/actions.ts.
+  experimental: {
+    serverActions: { bodySizeLimit: "20mb" },
+  },
+
   // Scraper service may post webhooks to revalidate cache tags.
   // Lock the body parser size for that route in route handler itself.
 };
