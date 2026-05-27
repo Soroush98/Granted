@@ -59,6 +59,7 @@ export async function Results({ query, filters }: Props) {
   }
 
   const matches = outcome.matches;
+  const more = outcome.more;
 
   // Fire-and-forget search logging. `after()` runs post-response so it doesn't
   // block streaming. We persist the IP here so the next request's count
@@ -160,6 +161,52 @@ export async function Results({ query, filters }: Props) {
           );
         })}
       </ol>
+
+      {more.length > 0 && (
+        <section className="mt-10">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-[var(--color-muted)]">
+            More potentially relevant ({more.length})
+          </h3>
+          <p className="mt-1 text-xs text-[var(--color-muted)]">
+            Ranked by hybrid score, without per-match rationale. Useful for casting a wider net.
+          </p>
+          <ol className="mt-4 grid gap-2" start={matches.length + 1}>
+            {more.map((m, i) => {
+              const c = m.company;
+              const location = [c.city, c.province].filter(Boolean).join(", ");
+              return (
+                <li
+                  key={c.id}
+                  className="card-lift flex items-start gap-3 rounded-xl border border-black/10 bg-white/70 px-4 py-3 text-sm"
+                >
+                  <span className="mt-0.5 w-6 shrink-0 text-right text-xs text-[var(--color-muted)]">
+                    #{matches.length + i + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                      <Link href={`/companies/${c.id}`} className="font-medium hover:underline">
+                        {c.display_name}
+                      </Link>
+                      {c.org_type !== "company" && (
+                        <span className="rounded-full bg-black/5 px-1.5 py-0.5 text-[10px]">
+                          {c.org_type.replace("_", " ")}
+                        </span>
+                      )}
+                      {location && (
+                        <span className="text-xs text-[var(--color-muted)]">{location}</span>
+                      )}
+                    </div>
+                    <p className="mt-1 line-clamp-2 text-xs text-[var(--color-muted)]">
+                      {m.best_chunk.slice(0, 200)}
+                      {m.best_chunk.length > 200 ? "…" : ""}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      )}
     </>
   );
 }

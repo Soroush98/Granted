@@ -17,7 +17,7 @@ export type Match = CompanyHit & {
 };
 
 export type SearchOutcome =
-  | { ok: true; matches: Match[] }
+  | { ok: true; matches: Match[]; more: Match[] }
   | { ok: false };
 
 /**
@@ -66,7 +66,7 @@ export async function searchCompanies(
   const { data: hits, error } = await supabase.rpc("search_companies", {
     query_embedding: embedding,
     query_text: ftsText,
-    match_count: 10,
+    match_count: 25,
     org_filter: opts.orgFilter ?? null,
     province_filter: opts.province ?? null,
     program_codes: opts.programCodes ?? null,
@@ -79,7 +79,7 @@ export async function searchCompanies(
     console.error("[search] search_companies RPC failed:", error.message);
     return { ok: false };
   }
-  if (!hits || hits.length === 0) return { ok: true, matches: [] };
+  if (!hits || hits.length === 0) return { ok: true, matches: [], more: [] };
 
   const companyIds = hits.map((h) => h.company_id);
   const { data: companies, error: cErr } = await supabase
@@ -99,8 +99,15 @@ export async function searchCompanies(
     })
     .filter((x): x is Match => x !== null);
 
-  const matches = await rerankLocally(query, candidates, topK);
-  return { ok: true, matches };
+  // Only the strongest 10 go through Claude rerank — keeps latency / cost
+  // flat. The remaining candidates fall back to raw hybrid order and surface
+  // as the "more potentially relevant" tail (no rationale, just a long list).
+  const rerankPool = candidates.slice(0, 10);
+  const matches = await rerankLocally(query, rerankPool, topK);
+
+  const chosen = new Set(matches.map((m) => m.company.id));
+  const more = candidates.filter((c) => !chosen.has(c.company.id));
+  return { ok: true, matches, more };
 }
 
 /** Claude-API rerank. Strict JSON output. Hardened against prompt injection
