@@ -17,6 +17,22 @@ const ServerEnv = z.object({
   ANTHROPIC_MODEL: z.string().default("claude-opus-4-7"),
 
   REVALIDATE_SECRET: z.string().min(8).default("changeme"),
+
+  // "Am I Competitive?" section. `mock` (default) serves synthetic cohorts so
+  // the whole flow runs locally with zero spend; `apify` hits the paid actor.
+  TALENT_PROVIDER: z.enum(["mock", "apify"]).default("mock"),
+  // Optional so a mock-only deploy doesn't need them. ApifyProvider checks at
+  // call time and fails loudly if they're missing when TALENT_PROVIDER=apify.
+  APIFY_TOKEN: z.string().optional(),
+  // HarvestAPI's linkedin-profile-search returns full profiles from a single
+  // search run (company + title filters), so no separate profile-scrape actor.
+  // Requires a one-time permissions approval in the Apify console.
+  APIFY_SEARCH_ACTOR: z.string().default("harvestapi~linkedin-profile-search"),
+  // "Short" ($0.1 / page, ~25 profiles, no skills/experience) vs "Full"
+  // ($0.1 / page + $0.004 / profile, with skills/experience/about).
+  APIFY_PROFILE_MODE: z.enum(["Short", "Full", "Full + email search"]).default("Full"),
+  // Days a cached cohort stays valid before a re-fetch is allowed.
+  COHORT_TTL_DAYS: z.coerce.number().int().positive().default(30),
 });
 
 export const env = ServerEnv.parse({
@@ -31,4 +47,9 @@ export const env = ServerEnv.parse({
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
   ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL,
   REVALIDATE_SECRET: process.env.REVALIDATE_SECRET,
+  TALENT_PROVIDER: process.env.TALENT_PROVIDER,
+  APIFY_TOKEN: process.env.APIFY_TOKEN,
+  APIFY_SEARCH_ACTOR: process.env.APIFY_SEARCH_ACTOR,
+  APIFY_PROFILE_MODE: process.env.APIFY_PROFILE_MODE,
+  COHORT_TTL_DAYS: process.env.COHORT_TTL_DAYS,
 });

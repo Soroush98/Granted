@@ -43,3 +43,10 @@ export const UNKNOWN_IP = "_unknown";
  * the rerank step, and there is no signed-in account model to attribute
  * usage to. Raise this when there's a way to identify users. */
 export const RATE_LIMIT_MAX_SEARCHES = 10;
+
+/** Rate-limit policy for the "Am I Competitive?" section. Lower than search
+ * because a cohort cache-miss triggers a PAID provider fetch (~$0.10–0.20).
+ * Counted per-IP over all time against compete_log. Reset for testing:
+ *   delete from compete_log where ip = '<the IP>';
+ */
+export const RATE_LIMIT_MAX_COMPETE = 10;

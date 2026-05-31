@@ -47,6 +47,53 @@ type SearchLogRow = {
   created_at: string;
 };
 
+// --- "Am I Competitive?" section (migration 0006) -------------------------
+
+type TalentCohortRow = {
+  id: string;
+  company_name: string;
+  company_norm: string;
+  company_linkedin_url: string | null;
+  role_query: string;
+  normalized_role: string;
+  source: string;
+  apify_run_id: string | null;
+  status: "pending" | "ready" | "failed";
+  profile_count: number;
+  error: string | null;
+  fetched_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+};
+
+type TalentProfileRow = {
+  id: string;
+  cohort_id: string;
+  full_name: string;
+  headline: string | null;
+  linkedin_url: string | null;
+  location: string | null;
+  current_title: string | null;
+  current_company: string | null;
+  summary: string | null;
+  skills: string[];
+  experience: unknown;
+  education: unknown;
+  years_experience: number | null;
+  embedding: number[] | null;
+  raw: unknown;
+  created_at: string;
+};
+
+type CompeteLogRow = {
+  id: string;
+  company: string | null;
+  role: string | null;
+  verdict: string | null;
+  ip: string | null;
+  created_at: string;
+};
+
 export type Database = {
   public: {
     Views: Record<string, never>;
@@ -59,6 +106,9 @@ export type Database = {
       grant_partners:   Table<GrantPartner>;
       grant_chunks:     Table<GrantChunkRow>;
       search_log:       Table<SearchLogRow>;
+      talent_cohorts:   Table<TalentCohortRow>;
+      talent_profiles:  Table<TalentProfileRow>;
+      compete_log:      Table<CompeteLogRow>;
     };
     Functions: {
       search_companies: {

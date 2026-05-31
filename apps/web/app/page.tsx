@@ -82,6 +82,7 @@ export default function Home() {
 
       {/* Secondary actions — kept small but tactile */}
       <div className="mt-10 flex flex-wrap items-center justify-center gap-2 text-sm">
+        <SecondaryLink href="/compete">Am I competitive?</SecondaryLink>
         <SecondaryLink href="/browse">Browse all grants</SecondaryLink>
         <SecondaryLink href="/stats">See the numbers</SecondaryLink>
         <SecondaryLink href="/about">How this works</SecondaryLink>
