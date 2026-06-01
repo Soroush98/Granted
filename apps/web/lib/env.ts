@@ -33,6 +33,16 @@ const ServerEnv = z.object({
   APIFY_PROFILE_MODE: z.enum(["Short", "Full", "Full + email search"]).default("Full"),
   // Days a cached cohort stays valid before a re-fetch is allowed.
   COHORT_TTL_DAYS: z.coerce.number().int().positive().default(30),
+
+  // "Engineers" section. A GitHub token for the API calls that source a
+  // company's engineers (user search needs auth; unauthenticated public reads
+  // are throttled to 60/hr). Optional so a deploy that doesn't use the section
+  // still boots; GitHubClient checks at call time and fails loudly if missing.
+  // A classic PAT with no scopes (or read:org) is enough for public data.
+  GITHUB_TOKEN: z.string().optional(),
+  GITHUB_API_BASE: z.string().url().default("https://api.github.com"),
+  // Days a cached engineer directory stays valid before a re-fetch is allowed.
+  ENGINEERS_TTL_DAYS: z.coerce.number().int().positive().default(7),
 });
 
 export const env = ServerEnv.parse({
@@ -52,4 +62,7 @@ export const env = ServerEnv.parse({
   APIFY_SEARCH_ACTOR: process.env.APIFY_SEARCH_ACTOR,
   APIFY_PROFILE_MODE: process.env.APIFY_PROFILE_MODE,
   COHORT_TTL_DAYS: process.env.COHORT_TTL_DAYS,
+  GITHUB_TOKEN: process.env.GITHUB_TOKEN,
+  GITHUB_API_BASE: process.env.GITHUB_API_BASE,
+  ENGINEERS_TTL_DAYS: process.env.ENGINEERS_TTL_DAYS,
 });

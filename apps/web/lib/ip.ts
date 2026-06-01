@@ -50,3 +50,11 @@ export const RATE_LIMIT_MAX_SEARCHES = 10;
  *   delete from compete_log where ip = '<the IP>';
  */
 export const RATE_LIMIT_MAX_COMPETE = 10;
+
+/** Rate-limit policy for the "Engineers" section. Higher than compete because a
+ * directory cache-miss hits the GitHub API (free, just token-rate-limited)
+ * rather than a paid provider. Counted per-IP over all time against
+ * engineers_log. Reset for testing:
+ *   delete from engineers_log where ip = '<the IP>';
+ */
+export const RATE_LIMIT_MAX_ENGINEERS = 40;

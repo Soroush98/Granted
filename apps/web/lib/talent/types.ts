@@ -88,3 +88,6 @@ export type CompeteResult = {
 export type CompeteOutcome =
   | CompeteResult
   | { ok: false; error: string };
+
+// The former /explore "cohort + company network" types lived here; /explore is
+// now the GitHub-backed "Engineers" section (see lib/engineers/types.ts).

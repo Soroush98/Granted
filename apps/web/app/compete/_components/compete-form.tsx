@@ -100,6 +100,8 @@ function Results({ state }: { state: NonNullable<CompeteState> }) {
     );
   }
 
+  const exploreHref = `/explore?company=${encodeURIComponent(state.company)}`;
+
   return (
     <div className="grid gap-6">
       <VerdictCard result={state} />
@@ -116,6 +118,21 @@ function Results({ state }: { state: NonNullable<CompeteState> }) {
           </p>
         </div>
       )}
+
+      <a
+        href={exploreHref}
+        className="card-lift focus-ring flex items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white/70 p-5 text-left backdrop-blur"
+      >
+        <span>
+          <span className="block text-[15px] font-semibold text-[var(--color-ink)]">
+            See the engineers at {state.company}  →
+          </span>
+          <span className="block text-sm text-[var(--color-muted)]">
+            Browse who&rsquo;s building there, sourced from GitHub.
+          </span>
+        </span>
+        <span aria-hidden className="text-xl text-[var(--color-accent)]">↗</span>
+      </a>
 
       <p className="text-center text-xs text-[var(--color-muted)]">
         Compared against {state.cohort_size} real, public profiles
