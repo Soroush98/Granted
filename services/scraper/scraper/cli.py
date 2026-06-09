@@ -11,7 +11,7 @@ from rich.console import Console
 
 from . import db, voyage
 from .config import settings
-from .sources import abinnovates, cfi, cihr, era, frq, nserc, proactive, scaleai
+from .sources import abinnovates, arc, cfi, cihr, era, frq, nhmrc, nserc, proactive, scaleai
 
 app = typer.Typer(add_completion=False)
 console = Console()
@@ -170,6 +170,31 @@ def ingest_frq(
     """Ingest one FRQ fiscal-year CSV from donneesquebec.ca."""
     companies, grants = frq.ingest_csv(csv_path, program_code=program)
     console.log(f"[bold green]FRQ {program}:[/] {grants} grants, {companies} institutions")
+
+
+@app.command("ingest-arc")
+def ingest_arc(
+    since_year: int = typer.Option(2016, help="Keep grants whose funding commences in this year or later."),
+    limit: int | None = typer.Option(None, help="Stop after roughly this many grants (smoke testing)."),
+) -> None:
+    """Ingest Australian Research Council grants from the public Data Portal API
+    (https://dataportal.arc.gov.au). Adds Australian (non-medical) research PIs
+    to the find-a-PI flow; pairs with ingest-nhmrc for medical research."""
+    companies, grants = arc.ingest_api(since_year=since_year, limit=limit)
+    console.log(f"[bold green]ARC:[/] {grants} grants, {companies} unique institutions")
+
+
+@app.command("ingest-nhmrc")
+def ingest_nhmrc(
+    xlsx_path: Path = typer.Argument(..., exists=True, dir_okay=False, readable=True),
+    limit: int | None = typer.Option(None, help="Cap rows ingested (useful for smoke tests)."),
+) -> None:
+    """Ingest an NHMRC Research Funding dataset XLSX (Australian medical research,
+    with plain-language descriptions). Download it from
+    https://www.nhmrc.gov.au/funding/outcomes-and-data-research/research-funding-statistics-and-data
+    The parser auto-detects columns and logs the mapping on start."""
+    companies, grants = nhmrc.ingest_xlsx(xlsx_path, limit=limit)
+    console.log(f"[bold green]NHMRC:[/] {grants} grants, {companies} unique institutions")
 
 
 @app.command("ingest-cihr")

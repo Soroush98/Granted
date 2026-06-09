@@ -87,7 +87,30 @@ export async function extractSpikes(background: string): Promise<Spike[]> {
 //    CIHR (clinical / health-systems) and NSERC (biomedical imaging, devices,
 //    health engineering), so a CIHR-only filter would hide the strongest
 //    matches. Each match shows its funder so the seeker can judge the fit.
-export type FindOptions = { orgFilter?: OrgType | null; mode?: "pi" | null };
+export type Country = "CA" | "AU" | "both";
+export type FindOptions = { orgFilter?: OrgType | null; mode?: "pi" | null; country?: Country };
+
+// Funder → country. The corpus has no country column, so we key off the grant's
+// funding source: ARC/NHMRC are Australian, every other funder is Canadian.
+const AU_SOURCES = new Set(["ARC", "NHMRC"]);
+const AU_PROGRAM_CODES = ["ARC", "NHMRC"];
+
+function countryAllowed(source: string | null | undefined, country: Country): boolean {
+  if (country === "both") return true;
+  const isAU = !!source && AU_SOURCES.has(source);
+  return country === "AU" ? isAU : !isAU;
+}
+
+// Merge two ranked lists alternately (a, b, a, b, …) so both are represented
+// even when one country's corpus is far denser — used for the "both" view.
+function interleave<T>(a: T[], b: T[]): T[] {
+  const out: T[] = [];
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    if (i < a.length) out.push(a[i]!);
+    if (i < b.length) out.push(b[i]!);
+  }
+  return out;
+}
 
 /**
  * Full NJF pipeline: extract spikes, then run an independent grant search per
@@ -106,6 +129,19 @@ export async function findBySpikes(
   // In PI mode, default to no org filter so universities, research institutes,
   // and hospitals all qualify; companies are dropped post-filter below.
   const orgFilter = opts.orgFilter ?? null;
+  // Default to Canada so /jobs and /supervisors stay Canada-only; /research-pi
+  // passes the user's choice. The Canadian corpus is far denser, so for "both"
+  // we must search each country separately or Australia gets crowded out of the
+  // global top-N entirely.
+  const country: Country = opts.country ?? "CA";
+  const topK = piMode ? 10 : 6;
+
+  // Per-country search scopes. "AU" restricts retrieval to Australian funders;
+  // "CA" searches globally (then drops the rare AU hit in the filter below —
+  // robust to new Canadian sources without enumerating them); "both" runs one
+  // search per country and interleaves so each is represented.
+  const scopes: (string[] | null)[] =
+    country === "AU" ? [AU_PROGRAM_CODES] : country === "both" ? [null, AU_PROGRAM_CODES] : [null];
 
   // Serialize the per-spike searches. Running them concurrently fires multiple
   // heavy hybrid vector+FTS scans over grant_chunks at once, which contend for
@@ -113,16 +149,22 @@ export async function findBySpikes(
   // cached. One-at-a-time keeps each query within budget.
   const results: SpikeResult[] = [];
   for (const spike of spikes) {
-    const outcome = await searchCompanies(spike.query, { orgFilter, topK: piMode ? 10 : 6 });
-    // In PI mode we post-filter to PI-held lab grants, which discards some hits
-    // (trainee awards, companies) — so widen the pool with the un-reranked
-    // `more` tail to be sure enough PIs survive the filter.
-    const matches: NjfMatch[] = outcome.ok
-      ? piMode
-        ? [...(outcome.matches as NjfMatch[]), ...(outcome.more as NjfMatch[])]
-        : (outcome.matches as NjfMatch[])
-      : [];
-    results.push({ ...spike, matches, failed: !outcome.ok });
+    const groups: NjfMatch[][] = [];
+    let anyOk = false;
+    for (const programCodes of scopes) {
+      const outcome = await searchCompanies(spike.query, { orgFilter, programCodes, topK });
+      // In PI mode we post-filter to PI-held lab grants, which discards some
+      // hits (trainee awards, companies) — so widen the pool with the
+      // un-reranked `more` tail to be sure enough PIs survive the filter.
+      if (outcome.ok) {
+        anyOk = true;
+        groups.push(piMode ? [...(outcome.matches as NjfMatch[]), ...(outcome.more as NjfMatch[])] : (outcome.matches as NjfMatch[]));
+      } else {
+        groups.push([]);
+      }
+    }
+    const matches = country === "both" ? interleave(groups[0] ?? [], groups[1] ?? []) : groups.flat();
+    results.push({ ...spike, matches, failed: !anyOk });
   }
 
   // Enrich every match with the person who holds its grant (the supervisor, if
@@ -137,12 +179,11 @@ export async function findBySpikes(
     }
     // PI mode: keep only PI-held grants at non-company orgs — a lab lead who
     // could host an incoming researcher. Drops trainee awards and industry.
-    // Trim back to a tidy 6.
     if (piMode) {
-      r.matches = r.matches
-        .filter((m) => m.holder?.isPI && m.company.org_type !== "company")
-        .slice(0, 6);
+      r.matches = r.matches.filter((m) => m.holder?.isPI && m.company.org_type !== "company");
     }
+    // Country scope: keep only matches from the chosen country, then trim to 6.
+    r.matches = r.matches.filter((m) => countryAllowed(m.holder?.source, country)).slice(0, 6);
   }
   return results;
 }
@@ -156,6 +197,20 @@ export async function findBySpikes(
 const TRAINEE_PROGRAM = /scholarship|bourse|fellowship|postdoctoral|doctoral|master|undergraduate|student|stagiaire|1er cycle|graduate|training and career|career support|banting/i;
 
 const str = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
+
+// Drop a leading academic/honorific title so "Prof Jane Smith" → "Jane Smith",
+// keeping holder names consistent with the other sources (bare First Last).
+const TITLE_PREFIX = /^(?:emeritus\s+)?(?:prof(?:essor)?|a\/?prof|assoc(?:iate)?\s+prof(?:essor)?|dr|mr|mrs|ms|miss)\.?\s+/i;
+function stripAcademicTitle(name: string): string {
+  let prev = name.trim();
+  // Strip repeatedly to handle stacked titles ("Emeritus Prof", "A/Prof Dr").
+  for (let i = 0; i < 3; i++) {
+    const next = prev.replace(TITLE_PREFIX, "").trim();
+    if (next === prev) break;
+    prev = next;
+  }
+  return prev || name.trim();
+}
 
 // Normalize a grant's funding agency to a short code from whichever raw schema
 // it uses (NSERC award-search export, federal open-data, provincial). Returns
@@ -199,6 +254,36 @@ function buildHolder(raw: Record<string, unknown>): GrantHolder | null {
         source: "CIHR",
       };
     }
+  }
+
+  // NHMRC (Australian medical research). The scraper writes stable markers into
+  // raw (`_funder`/`_pi`/`_program`) since the source file's column names vary
+  // between dataset vintages. Only true trainee awards (scholarships /
+  // postgraduate stipends) are non-PI; NHMRC fellowships are held by the PI.
+  if (str(raw["_funder"]) === "NHMRC") {
+    const name = str(raw["_pi"]);
+    const program = str(raw["_program"]);
+    if (name) {
+      return {
+        name,
+        program,
+        isPI: !/scholarship|postgraduate|stipend/i.test(program),
+        source: "NHMRC",
+      };
+    }
+  }
+
+  // ARC (Australian Research Council) schema, ingested from the Data Portal API.
+  // The lead investigator is the PI; every ARC scheme is a PI-led research
+  // grant (no trainee scholarships — those are NHMRC's), so isPI is always true.
+  const arcLead = str(raw["lead-investigator"]);
+  if (arcLead && raw["scheme-name"] !== undefined) {
+    return {
+      name: stripAcademicTitle(arcLead),
+      program: str(raw["scheme-name"]),
+      isPI: true,
+      source: "ARC",
+    };
   }
 
   const source = fundingSourceOf(raw);

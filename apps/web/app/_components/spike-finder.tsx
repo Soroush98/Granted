@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import type { FindState, SpikeResult } from "@/lib/njf/find";
 
@@ -16,20 +16,37 @@ export type SpikeFinderCopy = {
   holderLabel?: string;
 };
 
+const COUNTRY_OPTIONS = [
+  ["CA", "Canada"],
+  ["AU", "Australia"],
+  ["both", "Both"],
+] as const;
+
 // "Pike, Gilbert" -> "Gilbert Pike"
 function displayName(name: string): string {
   const i = name.indexOf(",");
   return i === -1 ? name : `${name.slice(i + 1).trim()} ${name.slice(0, i).trim()}`.trim();
 }
 
+// The corpus has no country column, so infer it from the funder: ARC/NHMRC are
+// Australian, everything else (NSERC/CIHR/FRQS/…) is Canadian.
+const AU_FUNDERS = new Set(["ARC", "NHMRC"]);
+function countryOf(source?: string | null): string {
+  return source && AU_FUNDERS.has(source) ? "Australia" : "Canada";
+}
+
 export function SpikeFinder({
   action,
   copy,
+  countrySelect = false,
 }: {
   action: (prev: FindState, formData: FormData) => Promise<FindState>;
   copy: SpikeFinderCopy;
+  /** Show a Canada / Australia / Both selector (submitted as the `country` field). */
+  countrySelect?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(action, INITIAL);
+  const [country, setCountry] = useState<(typeof COUNTRY_OPTIONS)[number][0]>("CA");
 
   return (
     <div className="grid gap-8">
@@ -45,7 +62,32 @@ export function SpikeFinder({
           placeholder={copy.placeholder}
           className="w-full resize-y rounded-2xl border border-black/10 bg-white p-4 text-sm shadow-sm outline-none focus:border-black/30"
         />
-        <div className="flex items-center justify-end gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          {countrySelect && (
+            <fieldset className="mr-auto flex items-center gap-1.5 text-sm">
+              <span className="mr-1 text-[var(--color-muted)]">Where:</span>
+              {COUNTRY_OPTIONS.map(([value, label]) => (
+                <label
+                  key={value}
+                  className={`cursor-pointer rounded-full border px-3 py-1 transition-colors ${
+                    country === value
+                      ? "border-black/30 bg-black/5 font-medium text-[var(--color-ink)]"
+                      : "border-black/10 text-[var(--color-muted)] hover:bg-black/5"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="country"
+                    value={value}
+                    checked={country === value}
+                    onChange={() => setCountry(value)}
+                    className="sr-only"
+                  />
+                  {label}
+                </label>
+              ))}
+            </fieldset>
+          )}
           <button
             type="submit"
             disabled={pending}
@@ -119,7 +161,7 @@ function SpikeResults({
                         {m.company.display_name}
                       </Link>
                       <p className="text-xs text-[var(--color-muted)]">
-                        {[m.company.city, m.company.province].filter(Boolean).join(", ") || "Canada"}
+                        {[m.company.city, m.company.province].filter(Boolean).join(", ") || countryOf(m.holder?.source)}
                         {m.company.website && (
                           <>
                             {" · "}
