@@ -10,7 +10,7 @@ export async function findJobsAction(_prev: FindState, formData: FormData): Prom
     return { status: "error", message: "Tell us a bit about your background — your field, projects, or skills." };
   }
 
-  const spikes = await findBySpikes(background.slice(0, MAX_CHARS), "company");
+  const spikes = await findBySpikes(background.slice(0, MAX_CHARS), { orgFilter: "company" });
   if (spikes.length === 0) {
     return { status: "error", message: "Couldn't read distinctive strengths from that text. Add concrete projects, methods, and tools, then try again." };
   }

@@ -11,7 +11,7 @@ from rich.console import Console
 
 from . import db, voyage
 from .config import settings
-from .sources import abinnovates, cfi, era, frq, nserc, proactive, scaleai
+from .sources import abinnovates, cfi, cihr, era, frq, nserc, proactive, scaleai
 
 app = typer.Typer(add_completion=False)
 console = Console()
@@ -170,6 +170,19 @@ def ingest_frq(
     """Ingest one FRQ fiscal-year CSV from donneesquebec.ca."""
     companies, grants = frq.ingest_csv(csv_path, program_code=program)
     console.log(f"[bold green]FRQ {program}:[/] {grants} grants, {companies} institutions")
+
+
+@app.command("ingest-cihr")
+def ingest_cihr(
+    xlsx_path: Path = typer.Argument(..., exists=True, dir_okay=False, readable=True),
+    limit: int | None = typer.Option(None, help="Cap rows ingested (useful for smoke tests)."),
+) -> None:
+    """Ingest one CIHR Grants & Awards fiscal-year XLSX (with scientific
+    abstracts). Download per-year files from
+    https://open.canada.ca/data/en/dataset/49edb1d7-5cb4-4fa7-897c-515d1aad5da3
+    then run once per file. Re-running later years updates recurring grants."""
+    companies, grants = cihr.ingest_xlsx(xlsx_path, limit=limit)
+    console.log(f"[bold green]CIHR:[/] {grants} grants, {companies} unique institutions")
 
 
 @app.command("ingest-cfi")

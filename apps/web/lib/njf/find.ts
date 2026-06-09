@@ -13,8 +13,9 @@ export type Spike = { label: string; query: string };
 // The person who HOLDS the matched grant. For faculty research grants this is
 // the PI (the supervisor / hiring lab lead); for scholarships it's a student.
 // `isPI` is derived from the program name so we never mislabel a trainee as a
-// supervisor.
-export type GrantHolder = { name: string; program: string; isPI: boolean };
+// supervisor. `source` is the funding agency (e.g. "CIHR", "NSERC") — the
+// "find a PI" mode keys off this to keep only health-research PIs.
+export type GrantHolder = { name: string; program: string; isPI: boolean; source: string | null };
 export type NjfMatch = Match & { holder?: GrantHolder };
 // `failed` distinguishes a genuine zero-result from a search error (e.g. a DB
 // statement timeout) so the UI never disguises a failure as "no matches".
@@ -75,18 +76,36 @@ export async function extractSpikes(background: string): Promise<Spike[]> {
   }
 }
 
+// Options for the NJF pipeline.
+//  - `orgFilter` restricts the org type ("company" for job targets,
+//    "university" for supervisors/labs, null = any).
+//  - `mode: "pi"` switches on the "find a research PI" mode for an
+//    internationally trained researcher (e.g. an MD) looking for a Canadian lab
+//    to host them. It keeps only PI-held grants at non-company orgs (a lab lead
+//    who could take you on), across ALL research funders — deliberately NOT
+//    CIHR-only: in this corpus the medically relevant PIs are split between
+//    CIHR (clinical / health-systems) and NSERC (biomedical imaging, devices,
+//    health engineering), so a CIHR-only filter would hide the strongest
+//    matches. Each match shows its funder so the seeker can judge the fit.
+export type FindOptions = { orgFilter?: OrgType | null; mode?: "pi" | null };
+
 /**
  * Full NJF pipeline: extract spikes, then run an independent grant search per
- * spike (concurrently), filtered to a single org type. Each result group is the
+ * spike, optionally filtered to a single org type. Each result group is the
  * person's distinctive strength + the Canadian orgs funded to do exactly that —
  * `orgFilter: "company"` for job targets, `"university"` for supervisors/labs.
  */
 export async function findBySpikes(
   background: string,
-  orgFilter: OrgType = "company",
+  opts: FindOptions = {},
 ): Promise<SpikeResult[]> {
   const spikes = await extractSpikes(background);
   if (spikes.length === 0) return [];
+
+  const piMode = opts.mode === "pi";
+  // In PI mode, default to no org filter so universities, research institutes,
+  // and hospitals all qualify; companies are dropped post-filter below.
+  const orgFilter = opts.orgFilter ?? null;
 
   // Serialize the per-spike searches. Running them concurrently fires multiple
   // heavy hybrid vector+FTS scans over grant_chunks at once, which contend for
@@ -94,12 +113,16 @@ export async function findBySpikes(
   // cached. One-at-a-time keeps each query within budget.
   const results: SpikeResult[] = [];
   for (const spike of spikes) {
-    const outcome = await searchCompanies(spike.query, { orgFilter, topK: 6 });
-    results.push({
-      ...spike,
-      matches: outcome.ok ? (outcome.matches as NjfMatch[]) : [],
-      failed: !outcome.ok,
-    });
+    const outcome = await searchCompanies(spike.query, { orgFilter, topK: piMode ? 10 : 6 });
+    // In PI mode we post-filter to PI-held lab grants, which discards some hits
+    // (trainee awards, companies) — so widen the pool with the un-reranked
+    // `more` tail to be sure enough PIs survive the filter.
+    const matches: NjfMatch[] = outcome.ok
+      ? piMode
+        ? [...(outcome.matches as NjfMatch[]), ...(outcome.more as NjfMatch[])]
+        : (outcome.matches as NjfMatch[])
+      : [];
+    results.push({ ...spike, matches, failed: !outcome.ok });
   }
 
   // Enrich every match with the person who holds its grant (the supervisor, if
@@ -112,14 +135,88 @@ export async function findBySpikes(
     for (const m of r.matches) {
       if (m.best_grant_id) m.holder = holders.get(m.best_grant_id);
     }
+    // PI mode: keep only PI-held grants at non-company orgs — a lab lead who
+    // could host an incoming researcher. Drops trainee awards and industry.
+    // Trim back to a tidy 6.
+    if (piMode) {
+      r.matches = r.matches
+        .filter((m) => m.holder?.isPI && m.company.org_type !== "company")
+        .slice(0, 6);
+    }
   }
   return results;
 }
 
 // Program names that mean the recipient is a TRAINEE (student/postdoc), so the
 // named person is NOT the supervisor. Everything else (Discovery Grants,
-// project/operating grants, IRAP, etc.) is treated as a PI-held grant.
-const TRAINEE_PROGRAM = /scholarship|bourse|fellowship|postdoctoral|doctoral|master|undergraduate|student|stagiaire|1er cycle|graduate/i;
+// project/operating grants, IRAP, etc.) is treated as a PI-held grant. The
+// "training and career" / "banting" terms catch CIHR's fellowship programs,
+// whose `prog_name_en` is "Training and Career Support" — none of the other
+// keywords would match that phrase.
+const TRAINEE_PROGRAM = /scholarship|bourse|fellowship|postdoctoral|doctoral|master|undergraduate|student|stagiaire|1er cycle|graduate|training and career|career support|banting/i;
+
+const str = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
+
+// Normalize a grant's funding agency to a short code from whichever raw schema
+// it uses (NSERC award-search export, federal open-data, provincial). Returns
+// null when the funder can't be identified.
+function fundingSourceOf(raw: Record<string, unknown>): string | null {
+  const hay = [
+    str(raw["owner_org_title"]),
+    str(raw["owner_org"]),
+    str(raw["source"]),
+    str(raw["prog_name_en"]),
+    str(raw["program"]),
+  ].join(" ");
+  if (/health research|recherche en sant|\bcihr\b|\birsc\b/i.test(hay)) return "CIHR";
+  if (/\bfrqs\b|fonds de recherche.*sant/i.test(hay)) return "FRQS";
+  if (/natural sciences|\bnserc\b|\bcrsng\b/i.test(hay)) return "NSERC";
+  if (/social sciences|\bsshrc\b|\bcrsh\b/i.test(hay)) return "SSHRC";
+  if (/national research council|conseil national de recherches/i.test(hay)) return "NRC";
+  return null;
+}
+
+// Extract the grant holder (PI or trainee) from a grant's raw JSON, handling
+// both the NSERC award-search schema (`Name-Nom` / `ProgramNameEN`) and the
+// federal open-data schema (`recipient_legal_name` / `prog_name_en`, e.g. CIHR,
+// where a person-held grant — `recipient_type: "P"` — names the PI directly).
+function buildHolder(raw: Record<string, unknown>): GrantHolder | null {
+  // CIHR Grants & Awards schema (ingested with scientific abstracts). The PI is
+  // FirstName + FamilyName; `ProgramTypeEN` is "Grant Program" for PI-held
+  // grants vs "Award Program" for trainee awards (doctoral / Banting / etc.).
+  const cihrType = str(raw["ProgramTypeEN_TypeProgrammeAN"]);
+  if (cihrType) {
+    const family = str(raw["FamilyName_NomFamille"]);
+    const first = str(raw["FirstName_Prenom"]);
+    // Store "Family, First" so the UI's displayName() renders "First Family",
+    // matching the other sources' "Last, First" convention.
+    const name = family ? [family, first].filter(Boolean).join(", ") : first;
+    if (name) {
+      return {
+        name,
+        program: str(raw["ProgramNameEN_NomProgrammeAN"]),
+        isPI: cihrType === "Grant Program",
+        source: "CIHR",
+      };
+    }
+  }
+
+  const source = fundingSourceOf(raw);
+
+  const nameNom = str(raw["Name-Nom"]);
+  if (nameNom) {
+    const program = str(raw["ProgramNameEN"]);
+    return { name: nameNom, program, isPI: !TRAINEE_PROGRAM.test(program), source: source ?? "NSERC" };
+  }
+
+  const recipient = str(raw["recipient_legal_name"]);
+  if (recipient && str(raw["recipient_type"]) === "P") {
+    const program = str(raw["prog_name_en"]);
+    return { name: recipient, program, isPI: !TRAINEE_PROGRAM.test(program), source };
+  }
+
+  return null;
+}
 
 async function fetchGrantHolders(grantIds: string[]): Promise<Map<string, GrantHolder>> {
   const map = new Map<string, GrantHolder>();
@@ -131,10 +228,9 @@ async function fetchGrantHolders(grantIds: string[]): Promise<Map<string, GrantH
 
   for (const row of data) {
     const raw = (row.raw ?? null) as Record<string, unknown> | null;
-    const name = typeof raw?.["Name-Nom"] === "string" ? (raw["Name-Nom"] as string).trim() : "";
-    if (!name) continue;
-    const program = typeof raw?.["ProgramNameEN"] === "string" ? (raw["ProgramNameEN"] as string).trim() : "";
-    map.set(row.id, { name, program, isPI: !TRAINEE_PROGRAM.test(program) });
+    if (!raw) continue;
+    const holder = buildHolder(raw);
+    if (holder) map.set(row.id, holder);
   }
   return map;
 }

@@ -66,6 +66,25 @@ def get_program_id(code: str) -> str:
 
 
 @with_retry
+def ensure_program_id(code: str, *, name: str, agency: str) -> str:
+    """Look up a funding_programs.id by code, creating the row if it's missing.
+
+    Most program codes are seeded by migration, but a source can own a brand-new
+    one (e.g. CIHR, added after the original seed). Idempotent upsert on `code`
+    so re-runs don't duplicate or clobber an existing row's id."""
+    existing = client().table("funding_programs").select("id").eq("code", code).execute()
+    if existing.data:
+        return existing.data[0]["id"]
+    res = (
+        client()
+        .table("funding_programs")
+        .upsert({"code": code, "name": name, "agency": agency}, on_conflict="code")
+        .execute()
+    )
+    return res.data[0]["id"]
+
+
+@with_retry
 def upsert_company(row: dict[str, Any]) -> str:
     """Insert (or fetch existing by normalized_name+org_type) and return the company id.
 

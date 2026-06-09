@@ -30,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="flex items-center gap-1 text-sm text-[var(--color-muted)]">
               <NavLink href="/jobs">Find a Job</NavLink>
               <NavLink href="/supervisors">Find a Supervisor</NavLink>
+              <NavLink href="/research-pi">Find a PI</NavLink>
               <NavLink href="/search">Search</NavLink>
               <NavLink href="/browse">Browse</NavLink>
               <NavLink href="/stats">Stats</NavLink>

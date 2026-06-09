@@ -148,6 +148,11 @@ function SpikeResults({
                     m.holder.isPI ? (
                       <p className="mt-2 text-sm">
                         <span className="font-semibold text-[var(--color-ink)]">{holderLabel}: {displayName(m.holder.name)}</span>
+                        {m.holder.source && (
+                          <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-800">
+                            {m.holder.source}-funded
+                          </span>
+                        )}
                         {m.holder.program && (
                           <span className="text-[var(--color-muted)]"> · {m.holder.program}</span>
                         )}
