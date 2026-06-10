@@ -8,6 +8,7 @@ import {
   SEARCH_BURST_WINDOW_SECS,
   SEARCH_DAILY_MAX,
   SEARCH_GLOBAL_DAILY_MAX,
+  SEARCH_WEB_DAILY_MAX,
   DAY_SECS,
 } from "@/lib/ip";
 
@@ -66,6 +67,26 @@ export async function consumeSearchQuota(): Promise<QuotaResult> {
 
   const used = daily?.used ?? 0;
   return { ok: true, ip, dailyUsed: used, dailyRemaining: Math.max(0, SEARCH_DAILY_MAX - used) };
+}
+
+/** Consume one slot from the per-IP WEB-search daily bucket (separate from and
+ * on top of the normal search quota, because web search is far costlier). Call
+ * this only after consumeSearchQuota() has already allowed the request, passing
+ * its `ip`. Returns false when the daily web cap is hit — callers should skip
+ * the web pass but still return grant results. Fails OPEN on RPC error. */
+export async function consumeWebQuota(ip: string): Promise<boolean> {
+  const supabase = supabaseService();
+  const { data, error } = await supabase.rpc("consume_quota", {
+    bucket_in: `web:${ip}`,
+    max_in: SEARCH_WEB_DAILY_MAX,
+    window_secs: DAY_SECS,
+  });
+  if (error) {
+    console.error("[rate_limit] web consume_quota failed:", error);
+    return true; // fail open
+  }
+  const row = (Array.isArray(data) ? data[0] : data) as { allowed: boolean } | null;
+  return row?.allowed ?? true;
 }
 
 /** User-facing refusal copy for a denied quota result. */

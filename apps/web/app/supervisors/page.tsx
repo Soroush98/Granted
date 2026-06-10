@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { SpikeFinder } from "@/app/_components/spike-finder";
-import { findSupervisorsAction } from "./actions";
 
 export const metadata: Metadata = {
   title: "Find a research supervisor — Granted",
@@ -22,7 +21,7 @@ export default function SupervisorsPage() {
         </p>
       </header>
       <SpikeFinder
-        action={findSupervisorsAction}
+        kind="supervisors"
         copy={{
           placeholder: "e.g. neuroradiology, brain tumour MRI segmentation, functional connectivity… (or paste a fuller background)",
           ctaIdle: "Find supervisors",

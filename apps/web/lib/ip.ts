@@ -55,3 +55,9 @@ export const SEARCH_BURST_WINDOW_SECS = 600; // 10 minutes
 export const SEARCH_DAILY_MAX = 10;
 export const SEARCH_GLOBAL_DAILY_MAX = 2000;
 export const DAY_SECS = 86_400;
+
+/** Web search (Claude web_search tool) is ~10-50× the cost of a grant search
+ * ($0.01/search + tokens), so it gets its OWN tight per-IP daily cap on top of
+ * the normal search quota. A web run consumes one normal search slot AND one of
+ * these. */
+export const SEARCH_WEB_DAILY_MAX = 3;

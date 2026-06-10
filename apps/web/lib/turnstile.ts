@@ -10,6 +10,9 @@ import { env } from "@/lib/env";
  * is rejected.
  */
 export async function verifyTurnstile(token: string | null): Promise<boolean> {
+  // Skip in local dev — the widget doesn't render there (a real site key
+  // rejects localhost), so there's no token to verify. Matches TurnstileWidget.
+  if (process.env.NODE_ENV !== "production") return true;
   if (!env.TURNSTILE_SECRET_KEY) return true; // not configured → don't block
   if (!token) return false;
   try {

@@ -3,6 +3,7 @@ import { chatJson } from "@/lib/ai/llm";
 import { searchCompanies, type Match } from "@/lib/rag/search";
 import { supabaseService } from "@/lib/db/supabase-server";
 import type { OrgType } from "@/lib/db/types";
+import type { WebCompany } from "@/lib/ai/websearch";
 
 // A "spike" is one distinctive specialization pulled out of a person's
 // background — NOT a broad field. The whole point of NJF is that searching the
@@ -21,12 +22,17 @@ export type NjfMatch = Match & { holder?: GrantHolder };
 // statement timeout) so the UI never disguises a failure as "no matches".
 export type SpikeResult = Spike & { matches: NjfMatch[]; failed?: boolean };
 
+// Optional live-web companies (from Claude's web_search tool), shown alongside
+// the grant matches when the "also search the web" toggle is on. `note` carries
+// a user-facing reason when the web pass was skipped (e.g. daily web cap hit).
+export type WebResults = { companies: WebCompany[]; note?: string };
+
 // Shared result state for the company (/jobs) and university (/supervisors)
 // finders — both run the same spike pipeline, differing only by org filter.
 export type FindState =
   | { status: "idle" }
   | { status: "error"; message: string }
-  | { status: "ok"; background: string; spikes: SpikeResult[] };
+  | { status: "ok"; background: string; spikes: SpikeResult[]; web?: WebResults };
 
 const SPIKE_SCHEMA = {
   type: "object",
@@ -88,7 +94,16 @@ export async function extractSpikes(background: string): Promise<Spike[]> {
 //    health engineering), so a CIHR-only filter would hide the strongest
 //    matches. Each match shows its funder so the seeker can judge the fit.
 export type Country = "CA" | "AU" | "both";
-export type FindOptions = { orgFilter?: OrgType | null; mode?: "pi" | null; country?: Country };
+// Real pipeline milestone, surfaced to a streaming caller so the UI can show
+// genuine progress (not a scripted timer). Fired the moment spike extraction
+// actually completes, carrying the extracted strength labels.
+export type FindPhase = { key: "spikes"; labels: string[] };
+export type FindOptions = {
+  orgFilter?: OrgType | null;
+  mode?: "pi" | null;
+  country?: Country;
+  onPhase?: (p: FindPhase) => void;
+};
 
 // Funder → country. The corpus has no country column, so we key off the grant's
 // funding source: ARC/NHMRC are Australian, every other funder is Canadian.
@@ -124,6 +139,8 @@ export async function findBySpikes(
 ): Promise<SpikeResult[]> {
   const spikes = await extractSpikes(background);
   if (spikes.length === 0) return [];
+  // Extraction done — let a streaming caller advance the UI to "searching".
+  opts.onPhase?.({ key: "spikes", labels: spikes.map((s) => s.label) });
 
   const piMode = opts.mode === "pi";
   // In PI mode, default to no org filter so universities, research institutes,

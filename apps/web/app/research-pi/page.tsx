@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { SpikeFinder } from "@/app/_components/spike-finder";
-import { findResearchPiAction } from "./actions";
 
 export const metadata: Metadata = {
   title: "Find a funded research PI in Canada or Australia — Granted",
@@ -23,7 +22,7 @@ export default function ResearchPiPage() {
         </p>
       </header>
       <SpikeFinder
-        action={findResearchPiAction}
+        kind="research-pi"
         countrySelect
         copy={{
           placeholder: "e.g. interventional cardiology, heart-failure imaging, post-MI remodelling… (or paste your CV)",

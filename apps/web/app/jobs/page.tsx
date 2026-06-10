@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { SpikeFinder } from "@/app/_components/spike-finder";
-import { findJobsAction } from "./actions";
 
 export const metadata: Metadata = {
   title: "Find companies doing your exact work — Granted",
@@ -21,7 +20,8 @@ export default function JobsPage() {
         </p>
       </header>
       <SpikeFinder
-        action={findJobsAction}
+        kind="jobs"
+        webSearchOption
         copy={{
           placeholder: "Paste your resume text, or a few sentences about your background, projects, and tools…",
           ctaIdle: "Find companies",
