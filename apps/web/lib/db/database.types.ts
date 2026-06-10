@@ -47,130 +47,6 @@ type SearchLogRow = {
   created_at: string;
 };
 
-// --- "Am I Competitive?" section (migration 0006) -------------------------
-
-type TalentCohortRow = {
-  id: string;
-  company_name: string;
-  company_norm: string;
-  company_linkedin_url: string | null;
-  role_query: string;
-  normalized_role: string;
-  source: string;
-  apify_run_id: string | null;
-  status: "pending" | "ready" | "failed";
-  profile_count: number;
-  error: string | null;
-  fetched_at: string | null;
-  expires_at: string | null;
-  created_at: string;
-};
-
-type TalentProfileRow = {
-  id: string;
-  cohort_id: string;
-  full_name: string;
-  headline: string | null;
-  linkedin_url: string | null;
-  location: string | null;
-  current_title: string | null;
-  current_company: string | null;
-  summary: string | null;
-  skills: string[];
-  experience: unknown;
-  education: unknown;
-  years_experience: number | null;
-  embedding: number[] | null;
-  raw: unknown;
-  created_at: string;
-};
-
-type CompeteLogRow = {
-  id: string;
-  company: string | null;
-  role: string | null;
-  verdict: string | null;
-  ip: string | null;
-  created_at: string;
-};
-
-// --- "Engineers" section (migration 0007) ---------------------------------
-
-type EngineerDirectoryRow = {
-  id: string;
-  company_id: string | null;
-  company_name: string;
-  company_norm: string;
-  source: "org" | "search";
-  github_org: string | null;
-  status: "pending" | "ready" | "failed";
-  engineer_count: number;
-  error: string | null;
-  fetched_at: string | null;
-  expires_at: string | null;
-  created_at: string;
-};
-
-type EngineerRow = {
-  id: string;
-  directory_id: string;
-  github_id: number;
-  login: string;
-  name: string | null;
-  avatar_url: string | null;
-  html_url: string | null;
-  bio: string | null;
-  company: string | null;
-  location: string | null;
-  blog: string | null;
-  followers: number;
-  public_repos: number;
-  top_languages: string[];
-  hireable: boolean | null;
-  raw: unknown;
-  created_at: string;
-};
-
-type EngineersLogRow = {
-  id: string;
-  company: string | null;
-  source: string | null;
-  ip: string | null;
-  created_at: string;
-};
-
-// --- Canadian GitHub people pool (migration 0009) -------------------------
-
-type GhPersonRow = {
-  github_id: number;
-  login: string;
-  name: string | null;
-  avatar_url: string | null;
-  html_url: string | null;
-  bio: string | null;
-  company: string | null;
-  company_norm: string | null;
-  mapped_company_id: string | null;
-  location: string | null;
-  blog: string | null;
-  followers: number;
-  public_repos: number;
-  top_languages: string[];
-  hireable: boolean | null;
-  source_shard: string | null;
-  fetched_at: string;
-};
-
-type GhPeopleShardRow = {
-  shard: string;
-  city: string | null;
-  language: string | null;
-  page: number | null;
-  total_count: number | null;
-  found: number | null;
-  done_at: string;
-};
-
 export type Database = {
   public: {
     Views: Record<string, never>;
@@ -183,14 +59,6 @@ export type Database = {
       grant_partners:   Table<GrantPartner>;
       grant_chunks:     Table<GrantChunkRow>;
       search_log:       Table<SearchLogRow>;
-      talent_cohorts:   Table<TalentCohortRow>;
-      talent_profiles:  Table<TalentProfileRow>;
-      compete_log:      Table<CompeteLogRow>;
-      engineer_directories: Table<EngineerDirectoryRow>;
-      engineers:        Table<EngineerRow>;
-      engineers_log:    Table<EngineersLogRow>;
-      gh_people:        Table<GhPersonRow>;
-      gh_people_shards: Table<GhPeopleShardRow>;
     };
     Functions: {
       search_companies: {
@@ -254,16 +122,6 @@ export type Database = {
       recent_search_count: {
         Args: { ip_in: string; window_hours?: number };
         Returns: number;
-      };
-      next_engineer_crawl_batch: {
-        Args: { max_companies?: number; batch_size?: number };
-        Returns: Array<{
-          id: string;
-          display_name: string;
-          province: string | null;
-          city: string | null;
-          website: string | null;
-        }>;
       };
     };
   };
