@@ -1,14 +1,15 @@
 import { findBySpikes, type Country, type FindState, type WebResults } from "@/lib/njf/find";
-import { consumeSearchQuota, consumeWebQuota, logSearch, quotaMessage } from "@/lib/njf/usage";
+import { logSearch } from "@/lib/njf/usage";
+import { gateSearch } from "@/lib/njf/access";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { webSearchCompanies } from "@/lib/ai/websearch";
 
 // Streaming finder endpoint shared by /jobs, /supervisors, /research-pi. Emits
 // newline-delimited JSON: {t:"phase",...} as each real pipeline stage starts,
-// then exactly one {t:"result"} or {t:"error"}. The grant search + optional web
-// pass can run ~30s+, so the route gets the long maxDuration (was on the page's
-// server action before streaming).
-export const maxDuration = 60;
+// then exactly one {t:"result"} or {t:"error"}. Grant search (~30s) plus the
+// optional web pass (50s internal timeout) can approach ~80s worst case, so we
+// allow comfortable headroom. Requires Vercel Pro+ (Hobby caps at 60s).
+export const maxDuration = 120;
 
 type Kind = "jobs" | "supervisors" | "research-pi";
 
@@ -81,8 +82,9 @@ export async function POST(req: Request) {
           /* client disconnected */
         }
       };
-      const fail = (message: string) => {
-        emit({ t: "error", message });
+      // `code` lets the client open the right modal (sign up / upgrade / etc.).
+      const fail = (message: string, code?: string) => {
+        emit({ t: "error", message, code });
         controller.close();
       };
 
@@ -90,8 +92,8 @@ export async function POST(req: Request) {
       if (background.length < 10) return fail(cfg.shortMsg);
       if (!(await verifyTurnstile(token))) return fail(TURNSTILE_FAIL);
 
-      const limit = await consumeSearchQuota();
-      if (!limit.ok) return fail(quotaMessage(limit));
+      const gate = await gateSearch({ wantWeb });
+      if (!gate.ok) return fail(gate.message, gate.code);
 
       const query = background.slice(0, MAX_CHARS);
       emit({ t: "phase", key: "extract", label: "Finding your distinctive strengths" });
@@ -118,23 +120,26 @@ export async function POST(req: Request) {
         query,
         orgFilter: cfg.logFilter(country),
         resultCount: spikes.reduce((n, s) => n + s.matches.length, 0),
-        ip: limit.ip,
+        ip: gate.identity.ip,
+        userId: gate.identity.userId,
       });
 
+      // Web is pass-only and was already authorized + charged by gateSearch
+      // (wantWeb only succeeds for an active pass).
       let web: WebResults | undefined;
-      if (wantWeb) {
-        if (await consumeWebQuota(limit.ip)) {
-          emit({ t: "phase", key: "web", label: "Searching the web for funded companies" });
-          try {
-            const companies = await webSearchCompanies(query, { country: country === "AU" ? "AU" : "CA" });
-            emit({ t: "phase", key: "signals", label: "Checking funding signals" });
-            web = { companies };
-          } catch (e) {
-            console.error("[websearch] failed:", e);
-            web = { companies: [], note: "Web search is temporarily unavailable — showing grant matches only." };
-          }
-        } else {
-          web = { companies: [], note: "Daily web-search limit reached — showing grant matches only." };
+      if (wantWeb && gate.identity.tier === "pass") {
+        emit({ t: "phase", key: "web", label: "Searching the web for funded companies" });
+        try {
+          const companies = await webSearchCompanies(query, {
+            country: country === "AU" ? "AU" : "CA",
+            // Surface each web_search query live under the active step.
+            onSearch: (q) => emit({ t: "detail", text: `“${q}”` }),
+          });
+          emit({ t: "phase", key: "signals", label: "Checking funding signals" });
+          web = { companies };
+        } catch (e) {
+          console.error("[websearch] failed:", e);
+          web = { companies: [], note: "Web search is temporarily unavailable — showing grant matches only." };
         }
       }
 

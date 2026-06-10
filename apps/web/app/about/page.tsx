@@ -14,32 +14,22 @@ export default function About() {
       <h2 className="mt-8 text-lg font-semibold">How it works</h2>
       <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed">
         <li>
-          Python ingesters pull each source into Postgres: each grant gets a recipient
-          organization, an amount, a date (when published), and one or two text chunks (title
-          + description) that are searchable.
+          We index each public funding source: every grant with its recipient organization, an
+          amount, a date, and a searchable description of the work.
         </li>
         <li>
-          Each chunk is embedded with{" "}
-          <span className="font-medium">Voyage AI voyage-3.5</span> (1024-dim) and stored in
-          pgvector with an HNSW index. A Postgres tsvector handles full-text search on the
-          same chunks.
+          When you search, we match your goal &mdash; or your resume or a research paper &mdash;
+          against that work <span className="font-medium">by meaning</span>, not just keywords, to
+          surface organizations doing what you care about.
         </li>
         <li>
-          When you search, the query is embedded with the same model, then a hybrid SQL
-          function returns the top-10 candidate organizations (70% vector similarity, 30%
-          full-text rank).
+          The strongest candidates are re-ranked for relevance, and each match comes with a
+          one-sentence reason it surfaced, so you can judge the fit at a glance.
         </li>
         <li>
-          <span className="font-medium">Claude Haiku 4.5</span> reranks those 10 against your
-          query and writes a one-sentence rationale for each surviving match, with structured
-          JSON output for stable parsing.
-        </li>
-        <li>
-          If your query mentions a Canadian place (&ldquo;Toronto&rdquo;, &ldquo;Quebec&rdquo;)
-          or an org type (&ldquo;companies&rdquo;, &ldquo;universities&rdquo;,
-          &ldquo;research institutes&rdquo;), those constraints become hard filters before
-          retrieval. If the query looks like an organization name, a separate trigram lookup
-          surfaces the most likely match in a banner above the ranked results.
+          Mention a place (&ldquo;Toronto&rdquo;, &ldquo;Quebec&rdquo;) or an org type
+          (&ldquo;companies&rdquo;, &ldquo;universities&rdquo;) and it becomes a filter; type an
+          organization&rsquo;s name and we surface the likely match directly.
         </li>
       </ol>
 
@@ -69,7 +59,7 @@ export default function About() {
         Totals (after entity-resolution cleanup): <span className="font-medium">48,952 grants</span>,{" "}
         <span className="font-medium">14,759 organizations</span>,{" "}
         <span className="font-medium">93,002 indexed text chunks</span>.
-        Browse the raw data at <Link href="/browse" className="underline">/browse</Link> or aggregate
+        Browse the raw data at <Link href="/search" className="underline">/search</Link> or aggregate
         totals at <Link href="/stats" className="underline">/stats</Link>.
       </p>
 
@@ -138,11 +128,11 @@ export default function About() {
 
       <h2 className="mt-8 text-lg font-semibold">Search policy</h2>
       <p className="mt-2 text-sm leading-relaxed">
-        Each IP is limited to <span className="font-medium">10 searches, total</span> &mdash; not
-        per day. The limit is per-lifetime because every search calls the Claude API for the rerank
-        step and there is no signed-in account model to attribute usage to. Once an IP hits the
-        cap, further searches from that address are blocked. Browsing grants and viewing stats are
-        unlimited.
+        A few AI searches are free to try without an account. A free account gives you{" "}
+        <span className="font-medium">10 searches</span>, and the{" "}
+        <Link href="/pass" className="underline">30-Day Job Hunt Pass</Link> unlocks{" "}
+        <span className="font-medium">500 searches</span> plus live web search for funded companies.
+        Browsing grants and viewing stats is always free and unlimited.
       </p>
 
       <h2 className="mt-8 text-lg font-semibold">Provenance and verification</h2>

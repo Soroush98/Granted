@@ -9,15 +9,16 @@ export const metadata: Metadata = {
 
 export default function SupervisorsPage() {
   return (
-    <section>
-      <header className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Find a research supervisor</h1>
-        <p className="mt-2 max-w-2xl text-sm text-[var(--color-muted)]">
-          Describe the research you want to do — a topic like{" "}
-          <span className="font-medium text-[var(--color-ink)]">&ldquo;neuroradiology, brain MRI segmentation&rdquo;</span>,
-          or paste a fuller background. We find Canadian university labs{" "}
-          <span className="font-medium text-[var(--color-ink)]">funded</span> to work in that exact area, with the
-          grant that proves it — so you can approach a supervisor with a real reason.
+    <section className="mx-auto max-w-3xl">
+      <header className="mb-8 text-center">
+        <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+          Find a <span className="text-gradient">research supervisor</span>
+        </h1>
+        <p className="mx-auto mt-3 max-w-2xl text-pretty text-[15px] leading-relaxed text-[var(--color-muted)]">
+          Describe the research you want to do, or paste a fuller background. We find Canadian
+          university labs <span className="font-medium text-[var(--color-ink)]">funded</span>{" "}
+          to work in that exact area, with the grant that proves it — so you can approach a
+          supervisor with a real reason.
         </p>
       </header>
       <SpikeFinder
@@ -28,6 +29,11 @@ export default function SupervisorsPage() {
           ctaBusy: "Finding labs…",
           searched: "Canadian university labs",
           holderLabel: "Supervisor",
+          examples: [
+            "Neuroradiology — brain tumour MRI segmentation, deep learning",
+            "Sustainable concrete: supplementary cementitious materials, CO2 curing",
+            "Wireless networks: reinforcement learning for resource allocation in 6G",
+          ],
         }}
       />
     </section>

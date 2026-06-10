@@ -9,16 +9,17 @@ export const metadata: Metadata = {
 
 export default function ResearchPiPage() {
   return (
-    <section>
-      <header className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Find a funded research PI in Canada or Australia</h1>
-        <p className="mt-2 max-w-2xl text-sm text-[var(--color-muted)]">
-          Relocating for research — finishing an MD, a PhD, or a postdoc abroad? Describe your
-          clinical or research focus and we&rsquo;ll find principal investigators in{" "}
-          <span className="font-medium text-[var(--color-ink)]">Canada and Australia</span> with{" "}
-          <span className="font-medium text-[var(--color-ink)]">active research funding (CIHR, NSERC, FRQS, ARC…)</span>{" "}
-          in that exact area. A funded lab is one that can take you on — and each match names the PI
-          and shows the grant, so you can reach out with a concrete reason.
+    <section className="mx-auto max-w-3xl">
+      <header className="mb-8 text-center">
+        <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+          Find a <span className="text-gradient">funded research PI</span>
+        </h1>
+        <p className="mx-auto mt-3 max-w-2xl text-pretty text-[15px] leading-relaxed text-[var(--color-muted)]">
+          Relocating for research? Describe your clinical or research focus and we&rsquo;ll find
+          principal investigators in{" "}
+          <span className="font-medium text-[var(--color-ink)]">Canada and Australia</span> with
+          active research funding (CIHR, NSERC, FRQS, ARC…) in that exact area. Each match names
+          the PI and shows the grant — your concrete reason to reach out.
         </p>
       </header>
       <SpikeFinder
@@ -30,6 +31,11 @@ export default function ResearchPiPage() {
           ctaBusy: "Finding funded labs…",
           searched: "research labs & PIs",
           holderLabel: "Principal investigator",
+          examples: [
+            "Interventional cardiology — heart-failure imaging, post-MI remodelling",
+            "Pediatric oncology: immunotherapy response biomarkers",
+            "Public health: infectious disease modelling and surveillance",
+          ],
         }}
       />
     </section>

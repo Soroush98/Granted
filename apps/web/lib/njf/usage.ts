@@ -120,6 +120,7 @@ export function logSearch(entry: {
   orgFilter: string | null;
   resultCount: number;
   ip: string;
+  userId?: string | null;
 }): void {
   after(async () => {
     try {
@@ -129,6 +130,7 @@ export function logSearch(entry: {
         org_filter: entry.orgFilter,
         result_count: entry.resultCount,
         ip: entry.ip,
+        user_id: entry.userId ?? null,
       });
       if (error) console.error("[search_log] insert failed:", error);
     } catch (e) {

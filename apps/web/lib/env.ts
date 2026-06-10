@@ -24,6 +24,22 @@ const ServerEnv = z.object({
   // widget can read it directly via process.env.
   TURNSTILE_SECRET_KEY: z.string().optional(),
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
+
+  // Stripe (Job Hunt Pass). Optional so the app boots before they're set;
+  // the checkout/webhook routes guard on their presence.
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_PRICE_ID: z.string().optional(),
+  // Display-only price label for the /pass page (e.g. "$29"). The REAL price
+  // lives on the Stripe Price object — keep the two in sync.
+  NEXT_PUBLIC_PASS_PRICE: z.string().optional(),
+
+  // Resend (transactional email). RESEND_FROM is the verified sender.
+  RESEND_API_KEY: z.string().optional(),
+  RESEND_FROM: z.string().default("Granted <onboarding@resend.dev>"),
+
+  // Absolute origin for Stripe redirect + email links. Defaults to local dev.
+  NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
 });
 
 export const env = ServerEnv.parse({
@@ -40,4 +56,11 @@ export const env = ServerEnv.parse({
   REVALIDATE_SECRET: process.env.REVALIDATE_SECRET,
   TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY,
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+  STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+  STRIPE_PRICE_ID: process.env.STRIPE_PRICE_ID,
+  NEXT_PUBLIC_PASS_PRICE: process.env.NEXT_PUBLIC_PASS_PRICE,
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  RESEND_FROM: process.env.RESEND_FROM,
+  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
 });

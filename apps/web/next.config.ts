@@ -24,6 +24,12 @@ const nextConfig: NextConfig = {
 
   // Scraper service may post webhooks to revalidate cache tags.
   // Lock the body parser size for that route in route handler itself.
+
+  // /browse merged into /search (its no-query state is the browsable grant
+  // ledger). Routing-layer 308 preserves query params (filters/sort/page).
+  async redirects() {
+    return [{ source: "/browse", destination: "/search", permanent: true }];
+  },
 };
 
 export default nextConfig;

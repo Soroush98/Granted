@@ -59,7 +59,7 @@ const RESULT_SHAPE =
  */
 export async function webSearchCompanies(
   query: string,
-  opts: { country?: Country } = {},
+  opts: { country?: Country; onSearch?: (q: string) => void } = {},
 ): Promise<WebCompany[]> {
   const country = opts.country ?? "CA";
   const { adj, loc } = LOCATIONS[country];
@@ -94,22 +94,44 @@ export async function webSearchCompanies(
     },
   ] as unknown as Anthropic.MessageCreateParams["tools"];
 
+  const onSearch = opts.onSearch;
   let message: Anthropic.Message | null = null;
   for (let i = 0; i <= MAX_RESUMES; i++) {
-    message = await client.messages.create(
-      {
-        model: SEARCH_MODEL,
-        max_tokens: 4096,
-        system,
-        messages,
-        tools,
-      },
-      // Hard ceiling so a stuck request fails fast instead of holding the
-      // serverless function open. No retry: a 50s timeout + a retry would
-      // exceed the route's 60s maxDuration and get killed mid-flight; the
-      // caller falls back to grant-only results on failure anyway.
+    // Stream so we can surface each web_search query live (the server tool
+    // emits its query as a server_tool_use block with streamed JSON input).
+    // Hard 50s timeout, no retry: a retry would exceed the route's 60s
+    // maxDuration; the caller falls back to grant-only results on failure.
+    const stream = client.messages.stream(
+      { model: SEARCH_MODEL, max_tokens: 4096, system, messages, tools },
       { timeout: 50_000, maxRetries: 0 },
     );
+
+    if (onSearch) {
+      const partial = new Map<number, string>(); // index → accumulating input JSON
+      stream.on("streamEvent", (event) => {
+        if (
+          event.type === "content_block_start" &&
+          event.content_block.type === "server_tool_use" &&
+          event.content_block.name === "web_search"
+        ) {
+          partial.set(event.index, "");
+        } else if (event.type === "content_block_delta" && event.delta.type === "input_json_delta") {
+          const cur = partial.get(event.index);
+          if (cur !== undefined) partial.set(event.index, cur + event.delta.partial_json);
+        } else if (event.type === "content_block_stop" && partial.has(event.index)) {
+          const buf = partial.get(event.index)!;
+          partial.delete(event.index);
+          try {
+            const q = (JSON.parse(buf) as { query?: unknown }).query;
+            if (typeof q === "string" && q.trim()) onSearch(q.trim());
+          } catch {
+            /* incomplete/non-JSON input — skip */
+          }
+        }
+      });
+    }
+
+    message = await stream.finalMessage();
     // Server-side tool loop hit its per-response iteration cap — resume by
     // echoing the assistant turn back (no extra "continue" message needed).
     if (message.stop_reason !== "pause_turn") break;

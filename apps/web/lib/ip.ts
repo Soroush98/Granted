@@ -56,8 +56,20 @@ export const SEARCH_DAILY_MAX = 10;
 export const SEARCH_GLOBAL_DAILY_MAX = 2000;
 export const DAY_SECS = 86_400;
 
-/** Web search (Claude web_search tool) is ~10-50× the cost of a grant search
- * ($0.01/search + tokens), so it gets its OWN tight per-IP daily cap on top of
- * the normal search quota. A web run consumes one normal search slot AND one of
- * these. */
+/** Web search (Claude web_search tool) is ~10-50× the cost of a grant search.
+ * It is now a PASS-ONLY feature (free/anon users are upsold), so it draws extra
+ * pass credits rather than its own IP cap. Kept for reference. */
 export const SEARCH_WEB_DAILY_MAX = 3;
+
+/** Per-identity search allowances (see lib/njf/access.ts). Hybrid free tier:
+ *   - anonymous (per IP): a small taste before the sign-up wall.
+ *   - free account:       the full free allowance before the pass wall.
+ * Both use a 30-day rolling window so they're "N free", not "N per day". */
+export const ANON_FREE_MAX = 3;
+export const FREE_ACCOUNT_MAX = 10;
+export const FREE_WINDOW_SECS = 30 * DAY_SECS; // 30 days
+
+/** Pass credit costs: a grant search spends 1, a web search spends WEB_COST
+ * (weighted, since web is far costlier). Both draw from the 500-credit pass. */
+export const GRANT_COST = 1;
+export const WEB_COST = 5;

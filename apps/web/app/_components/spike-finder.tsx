@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { SpikeResult, WebResults } from "@/lib/njf/find";
 import { TurnstileWidget } from "@/app/_components/turnstile-widget";
+import { PaywallModal } from "@/app/_components/paywall-modal";
 
 type Kind = "jobs" | "supervisors" | "research-pi";
 type Phase = { key: string; label: string; detail?: string };
@@ -17,6 +18,8 @@ export type SpikeFinderCopy = {
   searched: string;
   /** when set, show the grant holder on each card with this label (e.g. "Supervisor"). */
   holderLabel?: string;
+  /** clickable example prompts shown under the textarea (fill it on click). */
+  examples?: string[];
 };
 
 const COUNTRY_OPTIONS = [
@@ -60,6 +63,9 @@ export function SpikeFinder({
   const [webChecked, setWebChecked] = useState(false);
   // Turnstile tokens are single-use — bump after each submission to mint a fresh one.
   const [resetKey, setResetKey] = useState(0);
+  const [paywall, setPaywall] = useState<{ code: string; message: string } | null>(null);
+  // Controlled so the example chips can fill it.
+  const [bgText, setBgText] = useState("");
 
   const pending = status === "pending";
 
@@ -95,7 +101,9 @@ export function SpikeFinder({
             key?: string;
             label?: string;
             detail?: string;
+            text?: string;
             message?: string;
+            code?: string;
             state?: OkState;
           };
           try {
@@ -108,13 +116,31 @@ export function SpikeFinder({
             const label = ev.label;
             const detail = ev.detail;
             setPhases((p) => [...p, { key, label, detail }]);
+          } else if (ev.t === "detail" && ev.text) {
+            // Live update the active step's detail (e.g. the current web query).
+            const text = ev.text;
+            setPhases((p) => {
+              if (p.length === 0) return p;
+              const next = p.slice();
+              const last = next[next.length - 1]!;
+              next[next.length - 1] = { ...last, detail: text };
+              return next;
+            });
           } else if (ev.t === "result" && ev.state) {
             setResult(ev.state);
             setStatus("ok");
             settled = true;
           } else if (ev.t === "error") {
-            setErrorMsg(ev.message ?? "Something went wrong. Try again.");
-            setStatus("error");
+            const msg = ev.message ?? "Something went wrong. Try again.";
+            // Access-related blocks open the right modal (sign up / upgrade /
+            // verify) instead of a dead-end red box.
+            if (ev.code && ["signup", "upgrade", "pass_expired", "verify_email"].includes(ev.code)) {
+              setPaywall({ code: ev.code, message: msg });
+              setStatus("idle");
+            } else {
+              setErrorMsg(msg);
+              setStatus("error");
+            }
             settled = true;
           }
         }
@@ -133,18 +159,34 @@ export function SpikeFinder({
 
   return (
     <div className="grid gap-8">
-      <form onSubmit={onSubmit} className="grid gap-3">
+      <form onSubmit={onSubmit} className="paper tape-card grid gap-3 p-5 sm:p-6">
         <textarea
           name="bg"
           required
           minLength={10}
           maxLength={6000}
-          rows={8}
+          rows={6}
           autoComplete="off"
-          defaultValue={result?.background}
+          value={bgText}
+          onChange={(e) => setBgText(e.target.value)}
           placeholder={copy.placeholder}
-          className="w-full resize-y rounded-2xl border border-black/10 bg-white p-4 text-sm shadow-sm outline-none focus:border-black/30"
+          className="ruled focus-ring w-full resize-y rounded-md border border-[var(--color-ink)]/15 bg-white px-4 py-1 text-base outline-none transition-colors focus:border-[var(--color-accent)]/50"
         />
+        {copy.examples && copy.examples.length > 0 && !bgText && (
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+            <span className="hand text-xl text-[var(--color-muted)]">try one of these →</span>
+            {copy.examples.map((ex) => (
+              <button
+                key={ex}
+                type="button"
+                onClick={() => setBgText(ex)}
+                className="rounded border border-dashed border-[var(--color-ink)]/30 bg-white px-2.5 py-1 text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)]/60 hover:text-[var(--color-ink)]"
+              >
+                {ex.length > 64 ? ex.slice(0, 61) + "…" : ex}
+              </button>
+            ))}
+          </div>
+        )}
         {/* Bot defense. Auto-injects cf-turnstile-response into this form;
             renders nothing in dev / until a site key is configured. Reset after
             each submission so the next search gets a fresh single-use token. */}
@@ -221,6 +263,13 @@ export function SpikeFinder({
       )}
 
       {status === "ok" && result?.web && <WebCompanies web={result.web} />}
+
+      <PaywallModal
+        open={!!paywall}
+        code={paywall?.code ?? null}
+        message={paywall?.message ?? ""}
+        onClose={() => setPaywall(null)}
+      />
     </div>
   );
 }
@@ -231,7 +280,7 @@ export function SpikeFinder({
 // scripted timer it replaced.
 function StreamProgress({ phases }: { phases: Phase[] }) {
   return (
-    <ul className="grid gap-2.5 rounded-2xl border border-black/10 bg-white p-4">
+    <ul className="paper grid gap-2.5 p-4">
       {phases.map((p, idx) => {
         const active = idx === phases.length - 1;
         return (
@@ -248,7 +297,7 @@ function StreamProgress({ phases }: { phases: Phase[] }) {
               </span>
             </div>
             {active && p.detail && (
-              <p className="ml-6 mt-0.5 text-xs text-[var(--color-muted)]">{p.detail}</p>
+              <p className="hand ml-6 mt-0.5 text-lg leading-tight text-[var(--color-muted)]">{p.detail}</p>
             )}
           </li>
         );
@@ -260,11 +309,9 @@ function StreamProgress({ phases }: { phases: Phase[] }) {
 function WebCompanies({ web }: { web: WebResults }) {
   return (
     <section>
-      <div className="mb-1 flex items-baseline gap-2">
-        <h2 className="text-lg font-semibold tracking-tight">From around the web</h2>
-        <span className="rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-800">
-          live web search
-        </span>
+      <div className="mb-1 flex items-baseline gap-2.5">
+        <h2 className="text-lg font-bold tracking-tight">From around the web</h2>
+        <span className="hand text-xl text-[var(--color-muted)]">← live web search</span>
       </div>
       <p className="mb-4 text-xs text-[var(--color-muted)]">
         Companies found via live web search, prioritizing a recent funding or traction signal in your
@@ -281,17 +328,20 @@ function WebCompanies({ web }: { web: WebResults }) {
       ) : (
         <ul className="grid gap-3">
           {web.companies.map((c) => (
-            <li key={c.name} className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
+            <li key={c.name} className="paper card-lift p-4">
               <div className="flex items-start justify-between gap-3">
-                <p className="font-semibold text-[var(--color-ink)]">{c.name}</p>
+                <span className="flex flex-wrap items-center gap-2">
+                  <p className="font-bold text-[var(--color-ink)]">{c.name}</p>
+                  {c.signal && <span className="stamp">signal</span>}
+                </span>
                 {c.location && (
                   <span className="shrink-0 text-xs text-[var(--color-muted)]">{c.location}</span>
                 )}
               </div>
               {c.whatTheyDo && <p className="mt-1 text-sm text-[var(--color-ink)]">{c.whatTheyDo}</p>}
               {c.signal ? (
-                <p className="mt-2 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-sm text-emerald-900">
-                  <span className="font-medium">Signal:</span> {c.signal}
+                <p className="mt-2 text-sm">
+                  <span className="highlight">{c.signal}</span>
                 </p>
               ) : (
                 <p className="mt-2 text-xs text-[var(--color-muted)]">
@@ -334,11 +384,18 @@ function SpikeResults({
         that work. Each card shows the actual grant — your reason to reach out.
       </p>
 
-      {spikes.map((s) => (
+      {spikes.map((s, si) => (
         <section key={s.label}>
-          <h2 className="text-lg font-semibold tracking-tight">{s.label}</h2>
-          <p className="mb-4 mt-1 text-xs text-[var(--color-muted)]">
-            matched on <span className="font-mono">{s.query}</span>
+          <div className="flex items-baseline gap-2.5">
+            <span className="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.14em] text-[var(--color-muted)]">
+              № {String(si + 1).padStart(2, "0")}
+            </span>
+            <h2 className="text-lg font-bold tracking-tight">
+              <span className="highlight">{s.label}</span>
+            </h2>
+          </div>
+          <p className="mb-4 mt-1 font-[family-name:var(--font-mono)] text-xs text-[var(--color-muted)]">
+            matched on: {s.query}
           </p>
 
           {s.failed ? (
@@ -350,14 +407,17 @@ function SpikeResults({
           ) : s.matches.length === 0 ? (
             <p className="text-sm text-[var(--color-muted)]">No funded work matched this strength.</p>
           ) : (
-            <ul className="grid gap-3">
+            <ul className="grid gap-3.5">
               {s.matches.map((m) => (
-                <li key={m.company.id} className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
+                <li key={m.company.id} className="paper card-lift p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <Link href={`/companies/${m.company.id}`} className="font-semibold hover:underline">
-                        {m.company.display_name}
-                      </Link>
+                      <span className="flex flex-wrap items-center gap-2">
+                        <Link href={`/companies/${m.company.id}`} className="font-bold hover:underline">
+                          {m.company.display_name}
+                        </Link>
+                        <span className="stamp">funded</span>
+                      </span>
                       <p className="text-xs text-[var(--color-muted)]">
                         {[m.company.city, m.company.province].filter(Boolean).join(", ") || countryOf(m.holder?.source)}
                         {m.company.website && (
@@ -376,8 +436,8 @@ function SpikeResults({
                       </p>
                     </div>
                     {typeof m.rerank_score === "number" && (
-                      <span className="shrink-0 rounded-full bg-black/5 px-2 py-0.5 text-xs text-[var(--color-ink)]">
-                        {Math.round(m.rerank_score * 100)}% fit
+                      <span className="shrink-0 font-[family-name:var(--font-mono)] text-xs text-[var(--color-muted)]">
+                        fit {Math.round(m.rerank_score * 100)}%
                       </span>
                     )}
                   </div>
@@ -405,7 +465,7 @@ function SpikeResults({
                     )
                   )}
 
-                  <p className="mt-2 rounded-xl bg-black/5 p-2 text-xs leading-relaxed text-[var(--color-ink)]">
+                  <p className="mt-2.5 border-l-2 border-[var(--color-accent)]/40 pl-3 text-xs leading-relaxed text-[var(--color-muted)]">
                     “{m.best_chunk.slice(0, 240).replace(/\s+/g, " ").trim()}”
                   </p>
                 </li>

@@ -1,80 +1,215 @@
 @import "tailwindcss";
 
+/* ───────────────────────────────────────────────────────────────────────────
+   FIELD NOTES design system.
+   A researcher's notebook: graph-paper page, paper cards held by tape,
+   highlighter marks, red-pen annotations (Caveat), typewriter labels (mono),
+   and "FUNDED" rubber stamps. Fonts are loaded in app/layout.tsx via
+   next/font and exposed as --font-karla / --font-plex-mono / --font-caveat.
+   ─────────────────────────────────────────────────────────────────────────── */
+
 @theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --color-ink: #0b0d10;
-  --color-muted: #5b6470;
-  --color-accent: #c8102e;       /* Canadian-y red */
-  --color-accent-soft: #ffe1e4;
-  --color-warm-bg: #faf8f5;      /* warm off-white for body */
+  --font-sans: var(--font-karla), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  --color-ink: #23271d;          /* warm black-green pen ink */
+  --color-muted: #6b7163;        /* pencil gray-green */
+  --color-accent: #c2402a;       /* red pen */
+  --color-accent-soft: #f8e3de;
+  --color-paper: #fffdf7;        /* card paper */
+  --color-warm-bg: #faf7ee;      /* page paper */
+  --color-highlight: #ffee94;    /* highlighter yellow */
 }
 
-html, body {
+html,
+body {
   background: var(--color-warm-bg);
   color: var(--color-ink);
 }
 
-/* Soft radial wash so the page never feels flat. Behind everything,
-   pointer-events off — pure decoration. */
+/* Graph-paper page: fine grid, with a heavier line every 4 cells. */
 body {
   font-family: var(--font-sans);
-  position: relative;
   min-height: 100vh;
-}
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(200, 16, 46, 0.06), transparent 70%),
-    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(11, 13, 16, 0.04), transparent 70%);
+  background-color: var(--color-warm-bg);
+  background-image:
+    linear-gradient(rgba(96, 116, 146, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96, 116, 146, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(96, 116, 146, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96, 116, 146, 0.09) 1px, transparent 1px);
+  background-size:
+    24px 24px,
+    24px 24px,
+    96px 96px,
+    96px 96px;
 }
 
-/* Tinted text selection — small detail, big polish */
+/* Highlighter text selection */
 ::selection {
-  background: var(--color-accent-soft);
+  background: var(--color-highlight);
   color: var(--color-ink);
 }
 
-/* Gradient text utility for hero accents */
-.text-gradient {
-  background: linear-gradient(135deg, var(--color-ink) 0%, var(--color-accent) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+/* ── Typography helpers ──────────────────────────────────────────────────── */
+
+/* Handwriting (Caveat) for margin annotations */
+.hand {
+  font-family: var(--font-caveat), cursive;
 }
 
-/* Card with hover-lift micro-interaction */
+/* Typewriter kicker labels: FIELD NOTES · 48,952 GRANTS */
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* Red-pen emphasis with a hand-drawn squiggle underline.
+   (Class name kept from the old theme so existing pages re-skin for free.) */
+.text-gradient {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  color: var(--color-accent);
+  padding-bottom: 0.12em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='6' viewBox='0 0 44 6'%3E%3Cpath d='M1 4 Q 6 1, 12 4 T 23 4 T 34 4 T 44 3' fill='none' stroke='%23c2402a' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: 0 100%;
+  background-size: auto 6px;
+}
+
+/* Highlighter mark behind a word */
+.highlight {
+  background: linear-gradient(
+    104deg,
+    transparent 0.5%,
+    var(--color-highlight) 3%,
+    var(--color-highlight) 96%,
+    transparent 99%
+  );
+  padding: 0 0.18em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* ── Paper & notebook objects ────────────────────────────────────────────── */
+
+/* A sheet of paper laid on the desk */
+.paper {
+  background: var(--color-paper);
+  border: 1px solid rgba(35, 39, 29, 0.14);
+  border-radius: 6px;
+  box-shadow:
+    0 1px 2px rgba(35, 39, 29, 0.06),
+    0 12px 28px -18px rgba(35, 39, 29, 0.28);
+}
+
+/* Translucent tape strip holding a card down */
+.tape-card {
+  position: relative;
+}
+.tape-card::before {
+  content: "";
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  width: 92px;
+  height: 24px;
+  transform: translateX(-50%) rotate(-2deg);
+  background: rgba(255, 240, 178, 0.55);
+  border-left: 1px dashed rgba(35, 39, 29, 0.12);
+  border-right: 1px dashed rgba(35, 39, 29, 0.12);
+  box-shadow: 0 1px 2px rgba(35, 39, 29, 0.1);
+  pointer-events: none;
+}
+.tape-card.tape-left::before {
+  left: 18%;
+  transform: translateX(-50%) rotate(-5deg);
+}
+.tape-card.tape-right::before {
+  left: 82%;
+  transform: translateX(-50%) rotate(4deg);
+}
+
+/* Ruled writing area (notebook lines that scroll with the text) */
+.ruled {
+  line-height: 28px;
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 27px,
+    rgba(96, 116, 146, 0.22) 27px,
+    rgba(96, 116, 146, 0.22) 28px
+  );
+  background-attachment: local;
+}
+
+/* Sticky note */
+.sticky-note {
+  background: #fff3a6;
+  border: 1px solid rgba(35, 39, 29, 0.08);
+  box-shadow:
+    0 1px 2px rgba(35, 39, 29, 0.08),
+    0 14px 24px -16px rgba(35, 39, 29, 0.35);
+  transform: rotate(-1deg);
+}
+
+/* Rubber stamp: FUNDED / RECOMMENDED */
+.stamp {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  padding: 1px 7px;
+  transform: rotate(-3deg);
+  opacity: 0.85;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='24'%3E%3Crect width='80' height='24' fill='white'/%3E%3Ccircle cx='12' cy='5' r='1.4' fill='black'/%3E%3Ccircle cx='47' cy='18' r='1.7' fill='black'/%3E%3Ccircle cx='70' cy='8' r='1.2' fill='black'/%3E%3Ccircle cx='30' cy='12' r='1' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-size: 80px 24px;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='24'%3E%3Crect width='80' height='24' fill='white'/%3E%3Ccircle cx='12' cy='5' r='1.4' fill='black'/%3E%3Ccircle cx='47' cy='18' r='1.7' fill='black'/%3E%3Ccircle cx='70' cy='8' r='1.2' fill='black'/%3E%3Ccircle cx='30' cy='12' r='1' fill='black'/%3E%3C/svg%3E");
+  mask-size: 80px 24px;
+}
+
+/* ── Interaction ─────────────────────────────────────────────────────────── */
+
+/* Cards tilt slightly when picked up */
 .card-lift {
-  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 .card-lift:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px -8px rgba(11, 13, 16, 0.08);
-  border-color: rgba(11, 13, 16, 0.18);
+  transform: translateY(-2px) rotate(-0.4deg);
+  box-shadow:
+    0 2px 3px rgba(35, 39, 29, 0.08),
+    0 18px 34px -16px rgba(35, 39, 29, 0.3);
+  border-color: rgba(35, 39, 29, 0.3);
 }
 
-/* Primary button — gradient, pressable feel */
+/* Primary button: an ink sticker with a hard offset shadow */
 .btn-primary {
-  background: linear-gradient(180deg, #1a1d22 0%, #0b0d10 100%);
-  color: #fff;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1) inset, 0 6px 16px -8px rgba(11, 13, 16, 0.5);
-  transition: transform 100ms ease, box-shadow 150ms ease;
+  background: var(--color-ink);
+  color: #fffdf5;
+  border: 1px solid var(--color-ink);
+  border-radius: 8px;
+  box-shadow: 3px 3px 0 rgba(35, 39, 29, 0.22);
+  transition: transform 100ms ease, box-shadow 100ms ease;
 }
 .btn-primary:hover {
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12) inset, 0 10px 22px -8px rgba(11, 13, 16, 0.6);
-  transform: translateY(-1px);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 rgba(35, 39, 29, 0.26);
 }
 .btn-primary:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 rgba(35, 39, 29, 0.2);
 }
 
-/* Focus rings — accessible without being clunky */
+/* Focus rings */
 .focus-ring:focus,
 .focus-ring:focus-visible {
-  outline: 2px solid rgba(200, 16, 46, 0.45);
+  outline: 2px solid rgba(194, 64, 42, 0.5);
   outline-offset: 2px;
 }

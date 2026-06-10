@@ -1,31 +1,45 @@
 import Link from "next/link";
-import { after } from "next/server";
 import { searchCompanies } from "@/lib/rag/search";
-import { supabaseService } from "@/lib/db/supabase-server";
 import type { SearchFilters } from "@/lib/db/types";
-import { consumeSearchQuota, quotaMessage } from "@/lib/njf/usage";
+import { logSearch } from "@/lib/njf/usage";
+import { gateSearch } from "@/lib/njf/access";
 
 type Props = { query: string; filters: SearchFilters };
 
 export async function Results({ query, filters }: Props) {
-  // Atomic, windowed quota (burst + per-IP daily + global circuit breaker),
-  // consumed before any expensive work (Voyage embed + RPC + Claude rerank).
-  // Shared bucket with the spike finders. No Turnstile here — /search is a GET
-  // form producing shareable URLs, where a single-use token can't ride along.
-  const quota = await consumeSearchQuota();
-  if (!quota.ok) {
+  // Per-identity gate (anon taste → free account → pass), consumed before any
+  // expensive work. /search never uses web, so wantWeb is false. No Turnstile
+  // here — /search is a GET form producing shareable URLs.
+  const gate = await gateSearch({ wantWeb: false });
+  if (!gate.ok) {
+    // The CTA depends on WHY they were blocked.
+    const cta =
+      gate.code === "signup"
+        ? { href: "/signup", label: "Sign up free" }
+        : gate.code === "upgrade" || gate.code === "pass_expired"
+          ? { href: "/pass", label: "Get the Job Hunt Pass" }
+          : gate.code === "verify_email"
+            ? { href: "/login", label: "Log in" }
+            : null;
     return (
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900">
         <p className="font-semibold">Search limit reached.</p>
-        <p className="mt-2 text-amber-800">{quotaMessage(quota)}</p>
+        <p className="mt-2 text-amber-800">{gate.message}</p>
         <p className="mt-3 text-amber-800">
-          You can still <Link href="/browse" className="underline">browse grants</Link> and{" "}
-          <Link href="/stats" className="underline">view stats</Link> without a search.
+          {cta && (
+            <>
+              <Link href={cta.href} className="font-semibold underline">{cta.label}</Link>
+              {" · "}
+            </>
+          )}
+          or <Link href="/search" className="underline">browse grants</Link> and{" "}
+          <Link href="/stats" className="underline">view stats</Link> for free.
         </p>
       </div>
     );
   }
-  const ip = quota.ip;
+  const ip = gate.identity.ip;
+  const userId = gate.identity.userId;
 
   const outcome = await searchCompanies(query, { ...filters, topK: 5 });
 
@@ -36,7 +50,7 @@ export async function Results({ query, filters }: Props) {
     return (
       <p className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-900">
         Search is temporarily unavailable. Try again in a moment, or{" "}
-        <Link href="/browse" className="underline">browse grants</Link> instead.
+        <Link href="/search" className="underline">browse grants</Link> instead.
       </p>
     );
   }
@@ -44,23 +58,13 @@ export async function Results({ query, filters }: Props) {
   const matches = outcome.matches;
   const more = outcome.more;
 
-  // Fire-and-forget search logging. `after()` runs post-response so it doesn't
-  // block streaming. We persist the IP here so the next request's count
-  // reflects this one.
-  after(async () => {
-    try {
-      const supabase = supabaseService();
-      const { error } = await supabase.from("search_log").insert({
-        query,
-        org_filter: filters.orgFilter ?? null,
-        result_count: matches.length,
-        ip,
-      });
-      if (error) console.error("[search_log] insert failed:", error);
-    } catch (e) {
-      // logging is best-effort, but log the failure so it isn't invisible.
-      console.error("[search_log] insert threw:", e);
-    }
+  // Fire-and-forget analytics log (post-response).
+  logSearch({
+    query,
+    orgFilter: filters.orgFilter ?? null,
+    resultCount: matches.length,
+    ip,
+    userId,
   });
 
   if (matches.length === 0) {
@@ -72,18 +76,15 @@ export async function Results({ query, filters }: Props) {
     );
   }
 
-  // Surface remaining quota inline so users learn the limit exists before
-  // they hit it. Hidden when there's plenty of headroom.
-  const remaining = quota.dailyRemaining;
-  const showQuotaHint = remaining <= 3;
+  // Pass holders see their remaining credits; free/anon get no per-search hint
+  // here (their allowance + paywall live in the header / on the wall).
+  const credits = gate.identity.tier === "pass" ? gate.creditsRemaining : null;
 
   return (
     <>
-      {showQuotaHint && (
+      {credits !== null && credits <= 20 && (
         <p className="mb-3 text-xs text-[var(--color-muted)]">
-          {remaining === 0
-            ? `This was your last search for today from your network — the daily limit resets within 24 hours.`
-            : `${remaining} search${remaining === 1 ? "" : "es"} left today from your network.`}
+          {credits} pass credit{credits === 1 ? "" : "s"} left.
         </p>
       )}
       <ol className="grid gap-4">

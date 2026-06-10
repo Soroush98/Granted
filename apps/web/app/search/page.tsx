@@ -5,8 +5,9 @@ import { Results } from "./results";
 import { CompanyMatches } from "./company-matches";
 import { PdfPreview } from "./_components/pdf-preview";
 import { AdvancedFilters } from "@/app/_components/advanced-filters";
+import { BrowseList } from "@/app/_components/browse-list";
 import { extractNameQuery, listFacets, lookupCompaniesByName } from "@/lib/rag/browse";
-import { hasAnyFilter, readFilters, type Params } from "@/lib/filters";
+import { hasAnyFilter, readFilters, readPage, readSort, type Params } from "@/lib/filters";
 import { detectLocationFilter, detectOrgTypeFilter } from "@/lib/locations";
 import { splitQueryParts } from "@/lib/resume";
 
@@ -48,6 +49,8 @@ async function SearchPageContent({ searchParams }: SearchPageProps) {
   const { goal, background } = splitQueryParts(query);
 
   const filters = readFilters(params);
+  const sort = readSort(params);
+  const page = readPage(params);
 
   // Auto-apply structured filters when the user's GOAL (not the whole query)
   // mentions a Canadian province or an org-type word. Scanning the full query
@@ -71,7 +74,19 @@ async function SearchPageContent({ searchParams }: SearchPageProps) {
   const facetsPromise = listFacets();
 
   return (
-    <>
+    <div className="mx-auto max-w-3xl">
+      {!query && (
+        <header className="mb-8 text-center">
+          <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+            Search &amp; <span className="text-gradient">browse</span>
+          </h1>
+          <p className="mx-auto mt-3 max-w-2xl text-pretty text-[15px] leading-relaxed text-[var(--color-muted)]">
+            Describe what you&rsquo;re looking for in plain language — or just filter and browse
+            the full ledger of 48,952 grants below. Browsing is always free.
+          </p>
+        </header>
+      )}
+
       {errorMsg && (
         <p className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
           {errorMsg}
@@ -115,25 +130,25 @@ async function SearchPageContent({ searchParams }: SearchPageProps) {
         </details>
       )}
 
-      <Form action="/search" className="mb-8 grid gap-3">
+      <Form action="/search" className="paper tape-card mb-8 grid gap-3 p-5 sm:p-6">
         {/* Textarea is intentionally EMPTY on every render. We previously
             pre-filled with the URL's goal, but that made "search A → refine
             → accidentally submit AB" trivial (cursor at the end, type new
             text, BAM — old query gets appended). The previous goal lives
             in the placeholder and the chip below so the user can see what
             they searched but never accidentally edits it. */}
+        {/* Not `required`: an empty query + filters = browse mode. */}
         <textarea
           name="q"
-          required
           maxLength={2000}
           rows={4}
           autoComplete="off"
           placeholder={
             goal
               ? `Type a new query. (Previous: ${goal.length > 80 ? goal.slice(0, 77) + "…" : goal})`
-              : "Describe what you want to find. Examples on the homepage."
+              : "e.g. companies doing computer-vision quality inspection in Ontario, or labs researching battery recycling…"
           }
-          className="w-full resize-y rounded-2xl border border-black/10 bg-white p-4 text-sm shadow-sm outline-none focus:border-black/30"
+          className="ruled focus-ring w-full resize-y rounded-md border border-[var(--color-ink)]/15 bg-white px-4 py-1 text-base outline-none transition-colors focus:border-[var(--color-accent)]/50"
         />
 
         {goal && (
@@ -159,20 +174,36 @@ async function SearchPageContent({ searchParams }: SearchPageProps) {
           <AdvancedFiltersAsync facetsPromise={facetsPromise} filters={filters} />
         </Suspense>
 
-        <div className="flex items-center justify-end gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          {!query && (
+            <label className="mr-auto flex items-center gap-2 text-sm">
+              <span className="kicker">sort</span>
+              <select
+                name="sort"
+                defaultValue={sort}
+                className="rounded-md border border-[var(--color-ink)]/15 bg-white px-2.5 py-1.5 text-sm"
+              >
+                <option value="recent">Most recent</option>
+                <option value="amount_desc">Largest amount</option>
+                <option value="amount">Smallest amount</option>
+              </select>
+            </label>
+          )}
           {query && (
             <Link
-              href="/"
+              href="/search"
               className="text-sm text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:underline"
             >
-              Start over
+              Back to browse
             </Link>
           )}
           <button
             type="submit"
-            className="btn-primary focus-ring rounded-full px-5 py-2 text-sm font-semibold"
+            className="btn-primary focus-ring px-5 py-2 text-sm font-semibold"
           >
-            Search
+            {/* One button, two modes: with a query it searches, without it
+                applies filters/sort to the ledger below. */}
+            Search / Apply
           </button>
         </div>
       </Form>
@@ -211,17 +242,38 @@ async function SearchPageContent({ searchParams }: SearchPageProps) {
         </Suspense>
       )}
 
-      {query.length < 20 ? (
+      {/* No nagging before the user has typed anything — the warning only
+          appears for a real-but-too-short query. */}
+      {query.length > 0 && query.length < 20 && (
         <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          For semantic matching, add a bit more detail about your background (at least 20 characters).
-          {" "}<Link href="/" className="underline">Back to start</Link>.
+          For semantic matching, add a bit more detail about what you&rsquo;re looking for (at
+          least 20 characters).
         </p>
-      ) : (
+      )}
+      {query.length >= 20 && (
         <Suspense fallback={<ResultsSkeleton />}>
           <Results query={query} filters={filters} />
         </Suspense>
       )}
-    </>
+
+      {/* No query → the browsable grant ledger (the old /browse page). Free,
+          unlimited, never touches the AI quota. */}
+      {!query && (
+        <Suspense fallback={<BrowseSkeleton />}>
+          <BrowseList filters={filters} sort={sort} page={page} />
+        </Suspense>
+      )}
+    </div>
+  );
+}
+
+function BrowseSkeleton() {
+  return (
+    <div className="grid gap-3">
+      {[0, 1, 2, 3, 4].map((i) => (
+        <div key={i} className="h-20 animate-pulse rounded-md bg-black/5" />
+      ))}
+    </div>
   );
 }
 

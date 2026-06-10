@@ -3,116 +3,140 @@ import Link from "next/link";
 import { searchWithResume } from "./actions";
 import { ResumeInput } from "./_components/resume-input";
 
-// Next.js 16: this page is fully static (PPR shell). The dynamic part lives
-// at /search and is streamed in via <Suspense> there.
+// Landing page, FIELD NOTES style: a researcher's notebook spread that routes
+// to the three finders (taped index cards), with the free-form PDF search as
+// the "or search everything" sheet below.
 export default function Home() {
   return (
-    <section className="mx-auto max-w-2xl py-8 sm:py-12">
-      {/* Pill above the headline — small but adds a "polished landing page" feel */}
-      <div className="mx-auto flex w-fit items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-1 text-xs text-[var(--color-muted)] shadow-sm backdrop-blur">
-        <span className="relative inline-flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-accent)] opacity-60" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--color-accent)]" />
-        </span>
-        48,952 grants indexed across 9 Canadian funding sources
-      </div>
-
-      <h1 className="mt-6 text-center text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
-        Find Canadian organizations{" "}
-        <span className="text-gradient">actually doing</span>{" "}
-        the work you care about.
-      </h1>
-
-      <p className="mx-auto mt-5 max-w-xl text-center text-pretty text-[15px] leading-relaxed text-[var(--color-muted)]">
-        Upload your resume, a research paper, or a project brief, and describe what you want to find.
-        Granted matches against organizations whose{" "}
-        <span className="font-medium text-[var(--color-ink)]">federally-funded R&amp;D</span>{" "}
-        overlaps with your background — companies for job-hunters, labs for researchers, both for partnerships.
+    <section className="mx-auto max-w-3xl py-6 sm:py-8">
+      {/* Hero */}
+      <p className="kicker text-center">
+        field notes · 48,952 grants · 9 canadian funding sources
       </p>
 
-      <Form
-        action={searchWithResume}
-        className="mt-10 grid gap-4 rounded-3xl border border-black/10 bg-white/70 p-5 shadow-[0_8px_32px_-12px_rgba(11,13,16,0.12)] backdrop-blur sm:p-6"
-      >
+      <h1 className="mt-5 text-center text-balance text-4xl font-bold tracking-tight sm:text-5xl">
+        Who&rsquo;s <span className="highlight">funded</span> to do{" "}
+        <span className="text-gradient">your exact work</span>?
+      </h1>
+
+      <p className="hand mx-auto mt-4 max-w-xl text-center text-2xl leading-snug text-[var(--color-muted)]">
+        every match cites a real grant — your concrete reason to reach out ↓
+      </p>
+
+      {/* The three finders: index cards taped to the page */}
+      <div className="mt-12 grid gap-5 sm:grid-cols-3">
+        <FinderCard
+          href="/jobs"
+          tape="tape-left"
+          no="01"
+          title="Find a Job"
+          note="companies funded to do your work — even ones not posting jobs"
+          cta="find companies"
+        />
+        <FinderCard
+          href="/supervisors"
+          tape=""
+          no="02"
+          title="Find a Supervisor"
+          note="university labs funded in your research area"
+          cta="find labs"
+        />
+        <FinderCard
+          href="/research-pi"
+          tape="tape-right"
+          no="03"
+          title="Find a PI"
+          note="funded investigators in Canada & Australia who can host you"
+          cta="find PIs"
+        />
+      </div>
+
+      {/* Divider */}
+      <div className="mt-14 mb-4 flex items-center gap-3">
+        <div className="h-px flex-1 border-t border-dashed border-[var(--color-ink)]/30" />
+        <p className="hand text-2xl text-[var(--color-muted)]">or search everything…</p>
+        <div className="h-px flex-1 border-t border-dashed border-[var(--color-ink)]/30" />
+      </div>
+
+      {/* Free-form search: a paper sheet with ruled lines (PDF upload is unique
+          to this page). */}
+      <Form action={searchWithResume} className="paper tape-card grid gap-4 p-5 sm:p-6">
         <label className="grid gap-1.5">
-          <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
-            Resume, research paper, or project PDF (optional)
-          </span>
+          <span className="kicker">resume, research paper, or project pdf (optional)</span>
           <ResumeInput />
         </label>
 
         <label className="grid gap-1.5">
-          <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
-            What are you looking for?
-          </span>
+          <span className="kicker">what are you looking for?</span>
           <textarea
             name="q"
             required
             minLength={20}
             maxLength={2000}
-            rows={5}
-            // Prevent browser bfcache / form-state restoration from filling
-            // in a stale query when the user back-navigates from results.
+            rows={4}
             autoComplete="off"
             placeholder={
-              "Examples:\n" +
-              "• ML systems engineer focused on LLM inference efficiency — companies hiring in this area.\n" +
-              "• Find Canadian labs whose research is close to my paper on SDN traffic sampling.\n" +
-              "• Industry partners doing applied work in battery recycling, Ontario or BC.\n" +
+              "e.g. ML systems engineer focused on LLM inference efficiency — companies hiring in this area.\n" +
               "Mention 'companies only' or 'university labs' to narrow."
             }
-            className="focus-ring w-full resize-y rounded-2xl border border-black/10 bg-white p-4 text-base shadow-sm outline-none transition-colors focus:border-[var(--color-accent)]/40"
+            className="ruled focus-ring w-full resize-y rounded-md border border-[var(--color-ink)]/15 bg-white px-4 py-1 text-base outline-none transition-colors focus:border-[var(--color-accent)]/50"
           />
         </label>
 
         <button
           type="submit"
-          className="btn-primary focus-ring mx-auto mt-1 rounded-full px-7 py-3 text-sm font-semibold"
+          className="btn-primary focus-ring mx-auto mt-1 px-7 py-3 text-sm font-semibold"
         >
-          Find my matches  →
+          Find my matches&nbsp;&nbsp;→
         </button>
       </Form>
 
-      {/* Stat strip — pulls the eye after the form, reinforces "this thing has real data" */}
-      <ul className="mt-10 grid grid-cols-3 gap-3 text-center">
-        <Stat label="Grants" value="48.9K" sub="indexed" />
-        <Stat label="Organizations" value="14.7K" sub="deduped" />
-        <Stat label="Sources" value="9" sub="federal + provincial" />
-      </ul>
+      {/* The ledger line */}
+      <p className="mt-10 text-center font-[family-name:var(--font-mono)] text-[13px] text-[var(--color-muted)]">
+        48,952 grants&nbsp;&nbsp;·&nbsp;&nbsp;14,759 organizations&nbsp;&nbsp;·&nbsp;&nbsp;93,002
+        indexed chunks&nbsp;&nbsp;·&nbsp;&nbsp;
+        <Link href="/stats" className="underline hover:text-[var(--color-ink)]">
+          see the numbers
+        </Link>
+      </p>
 
-      {/* Secondary actions — kept small but tactile */}
-      <div className="mt-10 flex flex-wrap items-center justify-center gap-2 text-sm">
-        <SecondaryLink href="/browse">Browse all grants</SecondaryLink>
-        <SecondaryLink href="/stats">See the numbers</SecondaryLink>
-        <SecondaryLink href="/about">How this works</SecondaryLink>
+      {/* Pass teaser: a sticky note */}
+      <div className="sticky-note mx-auto mt-12 max-w-md rounded-sm p-5 text-center">
+        <p className="hand text-3xl leading-none">hunting seriously?</p>
+        <p className="mt-2 text-sm leading-relaxed text-[var(--color-ink)]/80">
+          The 30-Day Job Hunt Pass — 500 searches + live web search for freshly-funded companies.
+          One-time. No auto-renew.
+        </p>
+        <Link
+          href="/pass"
+          className="btn-primary focus-ring mt-3 inline-block px-5 py-2 text-sm font-semibold"
+        >
+          See pricing
+        </Link>
       </div>
 
-      <p className="mt-8 text-center text-xs text-[var(--color-muted)]">
+      <p className="mt-10 text-center text-xs text-[var(--color-muted)]">
         Public data only. No SR&amp;ED (it&rsquo;s legally confidential). Treat totals as a lower bound.
       </p>
     </section>
   );
 }
 
-function Stat({ label, value, sub }: { label: string; value: string; sub: string }) {
+function FinderCard({
+  href, tape, no, title, note, cta,
+}: { href: string; tape: string; no: string; title: string; note: string; cta: string }) {
   return (
-    <li className="rounded-2xl border border-black/10 bg-white/60 px-3 py-4 backdrop-blur">
-      <p className="font-mono text-2xl font-semibold tracking-tight text-[var(--color-ink)]">
-        {value}
+    <Link href={href} className={`paper tape-card ${tape} card-lift group flex flex-col p-5`}>
+      <span className="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.14em] text-[var(--color-muted)]">
+        № {no}
+      </span>
+      <h2 className="mt-2 text-lg font-bold tracking-tight">{title}</h2>
+      <p className="hand mt-1.5 flex-1 text-[22px] leading-tight text-[var(--color-muted)]">
+        {note}
       </p>
-      <p className="mt-1 text-xs font-medium text-[var(--color-ink)]">{label}</p>
-      <p className="text-[11px] text-[var(--color-muted)]">{sub}</p>
-    </li>
-  );
-}
-
-function SecondaryLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="rounded-full border border-black/10 bg-white/60 px-4 py-1.5 text-[var(--color-ink)] transition hover:border-[var(--color-ink)]/30 hover:bg-white"
-    >
-      {children}
+      <span className="mt-4 font-[family-name:var(--font-mono)] text-[13px] font-medium text-[var(--color-accent)] transition-transform group-hover:translate-x-0.5">
+        {cta} →
+      </span>
     </Link>
   );
 }

@@ -44,6 +44,7 @@ type SearchLogRow = {
   org_filter: string | null;
   result_count: number | null;
   ip: string | null;
+  user_id: string | null;
   created_at: string;
 };
 
@@ -51,6 +52,21 @@ type RateLimitRow = {
   bucket: string;
   window_start: string;
   count: number;
+};
+
+type PassRow = {
+  user_id: string;
+  status: string;
+  expires_at: string;
+  credits_remaining: number;
+  stripe_session_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type StripeEventRow = {
+  id: string;
+  created_at: string;
 };
 
 export type Database = {
@@ -66,6 +82,8 @@ export type Database = {
       grant_chunks:     Table<GrantChunkRow>;
       search_log:       Table<SearchLogRow>;
       rate_limit:       Table<RateLimitRow>;
+      passes:           Table<PassRow>;
+      stripe_events:    Table<StripeEventRow>;
     };
     Functions: {
       search_companies: {
@@ -133,6 +151,10 @@ export type Database = {
       consume_quota: {
         Args: { bucket_in: string; max_in: number; window_secs: number };
         Returns: { allowed: boolean; used: number; reset_at: string }[];
+      };
+      consume_pass_credit: {
+        Args: { user_id_in: string; cost_in: number };
+        Returns: { allowed: boolean; remaining: number }[];
       };
     };
   };
