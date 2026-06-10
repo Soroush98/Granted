@@ -47,6 +47,12 @@ type SearchLogRow = {
   created_at: string;
 };
 
+type RateLimitRow = {
+  bucket: string;
+  window_start: string;
+  count: number;
+};
+
 export type Database = {
   public: {
     Views: Record<string, never>;
@@ -59,6 +65,7 @@ export type Database = {
       grant_partners:   Table<GrantPartner>;
       grant_chunks:     Table<GrantChunkRow>;
       search_log:       Table<SearchLogRow>;
+      rate_limit:       Table<RateLimitRow>;
     };
     Functions: {
       search_companies: {
@@ -122,6 +129,10 @@ export type Database = {
       recent_search_count: {
         Args: { ip_in: string; window_hours?: number };
         Returns: number;
+      };
+      consume_quota: {
+        Args: { bucket_in: string; max_in: number; window_secs: number };
+        Returns: { allowed: boolean; used: number; reset_at: string }[];
       };
     };
   };

@@ -3,39 +3,21 @@ import { after } from "next/server";
 import { searchCompanies } from "@/lib/rag/search";
 import { supabaseService } from "@/lib/db/supabase-server";
 import type { SearchFilters } from "@/lib/db/types";
-import {
-  getClientIp,
-  RATE_LIMIT_MAX_SEARCHES,
-  UNKNOWN_IP,
-} from "@/lib/ip";
+import { consumeSearchQuota, quotaMessage } from "@/lib/njf/usage";
 
 type Props = { query: string; filters: SearchFilters };
 
 export async function Results({ query, filters }: Props) {
-  // Resolve the client IP up front. Falls back to a shared "unknown" bucket
-  // when no forwarding header is present (local dev, direct connections).
-  const ip = (await getClientIp()) ?? UNKNOWN_IP;
-
-  // Rate-limit gate: count this IP's lifetime searches (no window — the
-  // RPC's window_hours default is NULL, meaning "everything ever logged").
-  // Refuse before doing any of the expensive work (Voyage embed + RPC +
-  // Claude rerank) if they're already at the cap.
-  const supabaseRead = supabaseService();
-  const { data: usedRaw } = await supabaseRead.rpc("recent_search_count", {
-    ip_in: ip,
-  });
-  const used = typeof usedRaw === "number" ? usedRaw : Number(usedRaw ?? 0);
-
-  if (used >= RATE_LIMIT_MAX_SEARCHES) {
+  // Atomic, windowed quota (burst + per-IP daily + global circuit breaker),
+  // consumed before any expensive work (Voyage embed + RPC + Claude rerank).
+  // Shared bucket with the spike finders. No Turnstile here — /search is a GET
+  // form producing shareable URLs, where a single-use token can't ride along.
+  const quota = await consumeSearchQuota();
+  if (!quota.ok) {
     return (
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900">
-        <p className="font-semibold">
-          Search limit reached ({RATE_LIMIT_MAX_SEARCHES} searches per IP, total).
-        </p>
-        <p className="mt-2 text-amber-800">
-          You&rsquo;ve used all {used} of your searches from this IP. The limit is
-          per-lifetime, not per day &mdash; further searches from this address are blocked.
-        </p>
+        <p className="font-semibold">Search limit reached.</p>
+        <p className="mt-2 text-amber-800">{quotaMessage(quota)}</p>
         <p className="mt-3 text-amber-800">
           You can still <Link href="/browse" className="underline">browse grants</Link> and{" "}
           <Link href="/stats" className="underline">view stats</Link> without a search.
@@ -43,6 +25,7 @@ export async function Results({ query, filters }: Props) {
       </div>
     );
   }
+  const ip = quota.ip;
 
   const outcome = await searchCompanies(query, { ...filters, topK: 5 });
 
@@ -91,7 +74,7 @@ export async function Results({ query, filters }: Props) {
 
   // Surface remaining quota inline so users learn the limit exists before
   // they hit it. Hidden when there's plenty of headroom.
-  const remaining = RATE_LIMIT_MAX_SEARCHES - used - 1;
+  const remaining = quota.dailyRemaining;
   const showQuotaHint = remaining <= 3;
 
   return (
@@ -99,8 +82,8 @@ export async function Results({ query, filters }: Props) {
       {showQuotaHint && (
         <p className="mb-3 text-xs text-[var(--color-muted)]">
           {remaining === 0
-            ? `This was your last search from this IP — further searches will be blocked.`
-            : `${remaining} search${remaining === 1 ? "" : "es"} left from this IP (lifetime limit).`}
+            ? `This was your last search for today from your network — the daily limit resets within 24 hours.`
+            : `${remaining} search${remaining === 1 ? "" : "es"} left today from your network.`}
         </p>
       )}
       <ol className="grid gap-4">

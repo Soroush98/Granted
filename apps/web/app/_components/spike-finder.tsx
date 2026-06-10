@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import type { FindState, SpikeResult } from "@/lib/njf/find";
+import { TurnstileWidget } from "@/app/_components/turnstile-widget";
 
 const INITIAL: FindState = { status: "idle" };
 
@@ -62,6 +63,9 @@ export function SpikeFinder({
           placeholder={copy.placeholder}
           className="w-full resize-y rounded-2xl border border-black/10 bg-white p-4 text-sm shadow-sm outline-none focus:border-black/30"
         />
+        {/* Bot defense. Auto-injects cf-turnstile-response into this form;
+            renders nothing until a site key is configured. */}
+        <TurnstileWidget />
         <div className="flex flex-wrap items-center justify-end gap-3">
           {countrySelect && (
             <fieldset className="mr-auto flex items-center gap-1.5 text-sm">

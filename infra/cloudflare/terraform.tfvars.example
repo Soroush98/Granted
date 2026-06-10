@@ -1,0 +1,10 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored — never
+# commit real credentials.
+cloudflare_api_token = "your-token-with-zone-waf-edit"
+cloudflare_zone_id   = "your-zone-id"
+
+# Optional overrides:
+# threat_score_threshold = 10
+# use_threat_score       = true
+# protected_paths        = ["/search", "/jobs", "/supervisors", "/research-pi"]
+# datacenter_asns        = [16509, 14618, 15169, 8075, 14061, 16276, 24940]

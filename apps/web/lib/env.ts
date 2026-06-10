@@ -17,6 +17,13 @@ const ServerEnv = z.object({
   ANTHROPIC_MODEL: z.string().default("claude-opus-4-7"),
 
   REVALIDATE_SECRET: z.string().min(8).default("changeme"),
+
+  // Cloudflare Turnstile (bot defense on the finder forms). BOTH optional:
+  // when the secret is absent, verifyTurnstile() fails OPEN so local dev and
+  // pre-setup deploys keep working. The site key is NEXT_PUBLIC_ so the client
+  // widget can read it directly via process.env.
+  TURNSTILE_SECRET_KEY: z.string().optional(),
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
 });
 
 export const env = ServerEnv.parse({
@@ -31,4 +38,6 @@ export const env = ServerEnv.parse({
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
   ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL,
   REVALIDATE_SECRET: process.env.REVALIDATE_SECRET,
+  TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY,
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
 });
