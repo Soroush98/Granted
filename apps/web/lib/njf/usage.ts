@@ -44,14 +44,18 @@ export function logSearch(entry: {
   after(async () => {
     try {
       const supabase = supabaseService();
-      await supabase.from("search_log").insert({
+      const { error } = await supabase.from("search_log").insert({
         query: entry.query,
         org_filter: entry.orgFilter,
         result_count: entry.resultCount,
         ip: entry.ip,
       });
-    } catch {
-      // logging is best-effort
+      // Supabase returns errors in the response, not as throws — surface them
+      // so a silently-failing insert is visible in the server logs.
+      if (error) console.error("[search_log] insert failed:", error);
+    } catch (e) {
+      // logging is best-effort, but log the failure so it isn't invisible.
+      console.error("[search_log] insert threw:", e);
     }
   });
 }

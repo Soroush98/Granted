@@ -67,14 +67,16 @@ export async function Results({ query, filters }: Props) {
   after(async () => {
     try {
       const supabase = supabaseService();
-      await supabase.from("search_log").insert({
+      const { error } = await supabase.from("search_log").insert({
         query,
         org_filter: filters.orgFilter ?? null,
         result_count: matches.length,
         ip,
       });
-    } catch {
-      // logging is best-effort
+      if (error) console.error("[search_log] insert failed:", error);
+    } catch (e) {
+      // logging is best-effort, but log the failure so it isn't invisible.
+      console.error("[search_log] insert threw:", e);
     }
   });
 
