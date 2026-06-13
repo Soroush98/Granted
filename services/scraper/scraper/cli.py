@@ -11,7 +11,7 @@ from rich.console import Console
 
 from . import db, voyage
 from .config import settings
-from .sources import abinnovates, arc, cfi, cihr, era, frq, nhmrc, nserc, proactive, scaleai
+from .sources import abinnovates, arc, cfi, cihr, era, frq, nhmrc, nih, nserc, nsf, proactive, scaleai, ukri
 
 app = typer.Typer(add_completion=False)
 console = Console()
@@ -195,6 +195,46 @@ def ingest_nhmrc(
     The parser auto-detects columns and logs the mapping on start."""
     companies, grants = nhmrc.ingest_xlsx(xlsx_path, limit=limit)
     console.log(f"[bold green]NHMRC:[/] {grants} grants, {companies} unique institutions")
+
+
+@app.command("ingest-nsf")
+def ingest_nsf(
+    since: str = typer.Option("2024-06-01", help="ISO date; keep awards dated on/after this."),
+    until: str | None = typer.Option(None, help="ISO date; defaults to today."),
+    limit: int | None = typer.Option(None, help="Stop after roughly this many grants (smoke testing)."),
+) -> None:
+    """Ingest US NSF awards from the public Awards API (api.nsf.gov). Brings US
+    science/engineering labs (and SBIR companies) into the finder flows; pairs
+    with ingest-nih for US medical research."""
+    companies, grants = nsf.ingest_api(since=since, until=until, limit=limit)
+    console.log(f"[bold green]NSF:[/] {grants} grants, {companies} unique institutions")
+
+
+@app.command("ingest-nih")
+def ingest_nih(
+    since: str = typer.Option("2024-06-01", help="ISO date; keep awards noticed on/after this."),
+    until: str | None = typer.Option(None, help="ISO date; defaults to today."),
+    limit: int | None = typer.Option(None, help="Stop after roughly this many grants (smoke testing)."),
+) -> None:
+    """Ingest US NIH projects (with scientific abstracts) from the RePORTER v2
+    API. US medical research — the CIHR/NHMRC counterpart. Continuations are
+    keyed on the core project number so re-runs update, not duplicate."""
+    companies, grants = nih.ingest_api(since=since, until=until, limit=limit)
+    console.log(f"[bold green]NIH:[/] {grants} grants, {companies} unique institutions")
+
+
+@app.command("ingest-ukri")
+def ingest_ukri(
+    since: str = typer.Option("2024-06-01", help="ISO date; keep projects whose funding starts on/after this."),
+    limit: int | None = typer.Option(None, help="Stop after roughly this many grants (smoke testing)."),
+    start_page: int = typer.Option(1, help="Resume the scan from this GtR page (after a crash)."),
+) -> None:
+    """Ingest UK grants from UKRI's Gateway to Research API — all seven research
+    councils (university PIs) plus Innovate UK (companies) in one source. Scans
+    the full project list (~175k records) and keeps the date window, so expect
+    a long run."""
+    companies, grants = ukri.ingest_api(since=since, limit=limit, start_page=start_page)
+    console.log(f"[bold green]UKRI:[/] {grants} grants, {companies} unique organisations")
 
 
 @app.command("ingest-cihr")

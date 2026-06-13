@@ -11,7 +11,7 @@ export default function Home() {
     <section className="mx-auto max-w-3xl py-6 sm:py-8">
       {/* Hero */}
       <p className="kicker text-center">
-        field notes · 48,952 grants · 9 canadian funding sources
+        field notes · grant-funded orgs · canada · us · uk · australia
       </p>
 
       <h1 className="mt-5 text-center text-balance text-4xl font-bold tracking-tight sm:text-5xl">
@@ -46,7 +46,7 @@ export default function Home() {
           tape="tape-right"
           no="03"
           title="Find a PI"
-          note="funded investigators in Canada & Australia who can host you"
+          note="funded investigators in Canada, the US, the UK & Australia who can host you"
           cta="find PIs"
         />
       </div>

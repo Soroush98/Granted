@@ -1,12 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { SpikeResult, WebResults } from "@/lib/njf/find";
 import { TurnstileWidget } from "@/app/_components/turnstile-widget";
 import { PaywallModal } from "@/app/_components/paywall-modal";
 
 type Kind = "jobs" | "supervisors" | "research-pi";
+
+/** sessionStorage key used to hand a background text to a finder across
+ * navigation (cross-finder links, /notes re-runs). */
+export const PREFILL_KEY = "granted:prefill";
+
+// Cross-finder suggestions: from each finder, where else the same background
+// is worth running.
+const CROSS_FINDERS: Record<Kind, { href: string; label: string }[]> = {
+  jobs: [
+    { href: "/supervisors", label: "funded university labs" },
+    { href: "/research-pi", label: "funded research PIs" },
+  ],
+  supervisors: [
+    { href: "/jobs", label: "funded companies" },
+    { href: "/research-pi", label: "funded research PIs" },
+  ],
+  "research-pi": [
+    { href: "/supervisors", label: "funded university labs" },
+    { href: "/jobs", label: "funded companies" },
+  ],
+};
 type Phase = { key: string; label: string; detail?: string };
 type OkState = { status: "ok"; background: string; spikes: SpikeResult[]; web?: WebResults };
 
@@ -24,8 +45,10 @@ export type SpikeFinderCopy = {
 
 const COUNTRY_OPTIONS = [
   ["CA", "Canada"],
+  ["US", "United States"],
+  ["UK", "United Kingdom"],
   ["AU", "Australia"],
-  ["both", "Both"],
+  ["all", "Anywhere"],
 ] as const;
 
 // "Pike, Gilbert" -> "Gilbert Pike"
@@ -34,11 +57,17 @@ function displayName(name: string): string {
   return i === -1 ? name : `${name.slice(i + 1).trim()} ${name.slice(0, i).trim()}`.trim();
 }
 
-// The corpus has no country column, so infer it from the funder: ARC/NHMRC are
-// Australian, everything else (NSERC/CIHR/FRQS/…) is Canadian.
-const AU_FUNDERS = new Set(["ARC", "NHMRC"]);
+// The corpus has no country column, so infer it from the funder: each foreign
+// funder maps to its country, everything else (NSERC/CIHR/FRQS/…) is Canadian.
+const FUNDER_COUNTRY: Record<string, string> = {
+  ARC: "Australia",
+  NHMRC: "Australia",
+  NSF: "United States",
+  NIH: "United States",
+  UKRI: "United Kingdom",
+};
 function countryOf(source?: string | null): string {
-  return source && AU_FUNDERS.has(source) ? "Australia" : "Canada";
+  return (source && FUNDER_COUNTRY[source]) || "Canada";
 }
 
 export function SpikeFinder({
@@ -50,7 +79,7 @@ export function SpikeFinder({
   /** Which streaming finder to drive (POSTs to /finders/search). */
   kind: Kind;
   copy: SpikeFinderCopy;
-  /** Show a Canada / Australia / Both selector (submitted as the `country` field). */
+  /** Show a country selector (CA/US/UK/AU/Anywhere, submitted as `country`). */
   countrySelect?: boolean;
   /** Show an "also search the web" checkbox (submitted as the `web` field). */
   webSearchOption?: boolean;
@@ -66,6 +95,25 @@ export function SpikeFinder({
   const [paywall, setPaywall] = useState<{ code: string; message: string } | null>(null);
   // Controlled so the example chips can fill it.
   const [bgText, setBgText] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Prefill handoff: "re-run" from /notes and the cross-finder links stash the
+  // background in sessionStorage before navigating here.
+  useEffect(() => {
+    const t = sessionStorage.getItem(PREFILL_KEY);
+    if (t) {
+      setBgText(t);
+      sessionStorage.removeItem(PREFILL_KEY);
+    }
+  }, []);
+
+  // Fill the composer from a suggestion chip and bring it into view, ready to
+  // submit. Deliberately NOT auto-submitting: the user confirms with the button
+  // (and in production that also lets Turnstile mint a fresh token first).
+  function fillAndFocus(text: string) {
+    setBgText(text);
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   const pending = status === "pending";
 
@@ -159,7 +207,7 @@ export function SpikeFinder({
 
   return (
     <div className="grid gap-8">
-      <form onSubmit={onSubmit} className="paper tape-card grid gap-3 p-5 sm:p-6">
+      <form ref={formRef} onSubmit={onSubmit} className="paper tape-card grid gap-3 p-5 sm:p-6">
         <textarea
           name="bg"
           required
@@ -262,7 +310,21 @@ export function SpikeFinder({
         />
       )}
 
-      {status === "ok" && result?.web && <WebCompanies web={result.web} />}
+      {status === "ok" && result?.web &&
+        (result.web.kind === "labs" ? (
+          <WebLabs web={result.web} />
+        ) : (
+          <WebCompanies web={result.web} />
+        ))}
+
+      {status === "ok" && result && (
+        <DigDeeper
+          spikes={result.spikes}
+          kind={kind}
+          background={result.background}
+          onFill={fillAndFocus}
+        />
+      )}
 
       <PaywallModal
         open={!!paywall}
@@ -306,7 +368,7 @@ function StreamProgress({ phases }: { phases: Phase[] }) {
   );
 }
 
-function WebCompanies({ web }: { web: WebResults }) {
+function WebCompanies({ web }: { web: Extract<WebResults, { kind: "companies" }> }) {
   return (
     <section>
       <div className="mb-1 flex items-baseline gap-2.5">
@@ -355,6 +417,68 @@ function WebCompanies({ web }: { web: WebResults }) {
                 className="mt-2 inline-block text-xs text-sky-700 underline hover:text-sky-900"
               >
                 {c.sourceTitle || "source"}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+// Research-lab / PI variant of the web panel (used by /research-pi). Same shape
+// as WebCompanies but surfaces the institution and a recruiting/recency signal
+// instead of a company traction signal.
+function WebLabs({ web }: { web: Extract<WebResults, { kind: "labs" }> }) {
+  return (
+    <section>
+      <div className="mb-1 flex items-baseline gap-2.5">
+        <h2 className="text-lg font-bold tracking-tight">From around the web</h2>
+        <span className="hand text-xl text-[var(--color-muted)]">← live web search</span>
+      </div>
+      <p className="mb-4 text-xs text-[var(--color-muted)]">
+        Labs and principal investigators found via live web search, prioritizing ones that look like
+        they&rsquo;re recruiting or were recently funded in your area — your reason to reach out.
+        Broader reach than the grant database, but these signals aren&rsquo;t verified the way grants
+        are; check the source before relying on them.
+      </p>
+
+      {web.note ? (
+        <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          {web.note}
+        </p>
+      ) : web.labs.length === 0 ? (
+        <p className="text-sm text-[var(--color-muted)]">No web matches found for this search.</p>
+      ) : (
+        <ul className="grid gap-3">
+          {web.labs.map((l) => (
+            <li key={l.name} className="paper card-lift p-4">
+              <div className="flex items-start justify-between gap-3">
+                <span className="flex flex-wrap items-center gap-2">
+                  <p className="font-bold text-[var(--color-ink)]">{l.name}</p>
+                  {l.signal && <span className="stamp">recruiting?</span>}
+                </span>
+                {l.institution && (
+                  <span className="shrink-0 text-xs text-[var(--color-muted)]">{l.institution}</span>
+                )}
+              </div>
+              {l.focus && <p className="mt-1 text-sm text-[var(--color-ink)]">{l.focus}</p>}
+              {l.signal ? (
+                <p className="mt-2 text-sm">
+                  <span className="highlight">{l.signal}</span>
+                </p>
+              ) : (
+                <p className="mt-2 text-xs text-[var(--color-muted)]">
+                  No recruiting or funding signal found — topic match only.
+                </p>
+              )}
+              <a
+                href={l.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-block text-xs text-sky-700 underline hover:text-sky-900"
+              >
+                {l.sourceTitle || "source"}
               </a>
             </li>
           ))}
@@ -419,7 +543,7 @@ function SpikeResults({
                         <span className="stamp">funded</span>
                       </span>
                       <p className="text-xs text-[var(--color-muted)]">
-                        {[m.company.city, m.company.province].filter(Boolean).join(", ") || countryOf(m.holder?.source)}
+                        {[m.company.city, m.company.province].filter(Boolean).join(", ") || countryOf(m.funder ?? m.holder?.source)}
                         {m.company.website && (
                           <>
                             {" · "}
@@ -475,6 +599,79 @@ function SpikeResults({
         </section>
       ))}
     </div>
+  );
+}
+
+// Post-results nudges: one search should naturally become three or four.
+//  - per-spike "dig into" chips re-search a single strength, narrow and sharp;
+//  - zero-match spikes get a "broaden" rescue (the label is wider than the query);
+//  - cross-finder links run the same background through the other products.
+function DigDeeper({
+  spikes,
+  kind,
+  background,
+  onFill,
+}: {
+  spikes: SpikeResult[];
+  kind: Kind;
+  background: string;
+  onFill: (text: string) => void;
+}) {
+  const hits = spikes.filter((s) => !s.failed && s.matches.length > 0);
+  const misses = spikes.filter((s) => !s.failed && s.matches.length === 0);
+
+  return (
+    <aside className="paper tape-card tape-left p-5">
+      <p className="hand text-2xl leading-none text-[var(--color-ink)]">
+        keep digging — one search is never the whole picture
+      </p>
+
+      {hits.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+          <span className="kicker">narrow in on one strength</span>
+          {hits.map((s) => (
+            <button
+              key={s.label}
+              type="button"
+              onClick={() => onFill(s.query)}
+              className="rounded border border-dashed border-[var(--color-ink)]/30 bg-white px-2.5 py-1 text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)]/60 hover:text-[var(--color-ink)]"
+            >
+              dig into: {s.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {misses.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+          <span className="kicker">no matches? go broader</span>
+          {misses.map((s) => (
+            <button
+              key={s.label}
+              type="button"
+              onClick={() => onFill(s.label)}
+              className="rounded border border-dashed border-[var(--color-accent)]/40 bg-white px-2.5 py-1 text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-ink)]"
+            >
+              broaden: {s.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+        <span className="kicker">same background, different doors</span>
+        {CROSS_FINDERS[kind].map((cf) => (
+          <Link
+            key={cf.href}
+            href={cf.href}
+            onClick={() => sessionStorage.setItem(PREFILL_KEY, background)}
+            className="rounded border border-dashed border-[var(--color-ink)]/30 bg-white px-2.5 py-1 text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)]/60 hover:text-[var(--color-ink)]"
+          >
+            try it on {cf.label} →
+          </Link>
+        ))}
+      </div>
+    </aside>
   );
 }
 

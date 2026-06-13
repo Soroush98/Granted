@@ -3,7 +3,7 @@ import { chatJson } from "@/lib/ai/llm";
 import { searchCompanies, type Match } from "@/lib/rag/search";
 import { supabaseService } from "@/lib/db/supabase-server";
 import type { OrgType } from "@/lib/db/types";
-import type { WebCompany } from "@/lib/ai/websearch";
+import type { WebCompany, WebLab } from "@/lib/ai/websearch";
 
 // A "spike" is one distinctive specialization pulled out of a person's
 // background — NOT a broad field. The whole point of NJF is that searching the
@@ -17,15 +17,21 @@ export type Spike = { label: string; query: string };
 // supervisor. `source` is the funding agency (e.g. "CIHR", "NSERC") — the
 // "find a PI" mode keys off this to keep only health-research PIs.
 export type GrantHolder = { name: string; program: string; isPI: boolean; source: string | null };
-export type NjfMatch = Match & { holder?: GrantHolder };
+// `funder` is the grant's funding agency even when no holder could be
+// extracted (e.g. an Innovate UK project with no named PI) — the country
+// filter and the UI's location fallback key off it.
+export type NjfMatch = Match & { holder?: GrantHolder; funder?: string | null };
 // `failed` distinguishes a genuine zero-result from a search error (e.g. a DB
 // statement timeout) so the UI never disguises a failure as "no matches".
 export type SpikeResult = Spike & { matches: NjfMatch[]; failed?: boolean };
 
-// Optional live-web companies (from Claude's web_search tool), shown alongside
-// the grant matches when the "also search the web" toggle is on. `note` carries
-// a user-facing reason when the web pass was skipped (e.g. daily web cap hit).
-export type WebResults = { companies: WebCompany[]; note?: string };
+// Optional live-web results (from Claude's web_search tool), shown alongside the
+// grant matches when the "also search the web" toggle is on. Two shapes: company
+// matches (/jobs) and research-lab/PI matches (/research-pi). `note` carries a
+// user-facing reason when the web pass was skipped (e.g. daily web cap hit).
+export type WebResults =
+  | { kind: "companies"; companies: WebCompany[]; note?: string }
+  | { kind: "labs"; labs: WebLab[]; note?: string };
 
 // Shared result state for the company (/jobs) and university (/supervisors)
 // finders — both run the same spike pipeline, differing only by org filter.
@@ -93,7 +99,7 @@ export async function extractSpikes(background: string): Promise<Spike[]> {
 //    CIHR (clinical / health-systems) and NSERC (biomedical imaging, devices,
 //    health engineering), so a CIHR-only filter would hide the strongest
 //    matches. Each match shows its funder so the seeker can judge the fit.
-export type Country = "CA" | "AU" | "both";
+export type Country = "CA" | "AU" | "US" | "UK" | "all";
 // Real pipeline milestone, surfaced to a streaming caller so the UI can show
 // genuine progress (not a scripted timer). Fired the moment spike extraction
 // actually completes, carrying the extracted strength labels.
@@ -105,24 +111,31 @@ export type FindOptions = {
   onPhase?: (p: FindPhase) => void;
 };
 
-// Funder → country. The corpus has no country column, so we key off the grant's
-// funding source: ARC/NHMRC are Australian, every other funder is Canadian.
-const AU_SOURCES = new Set(["ARC", "NHMRC"]);
-const AU_PROGRAM_CODES = ["ARC", "NHMRC"];
+// Funder → country. The corpus has no country column, so we key off the
+// grant's funding source: each non-Canadian country's sources are dedicated
+// program codes, and every unlisted funder is Canadian.
+const COUNTRY_PROGRAMS: Record<Exclude<Country, "CA" | "all">, string[]> = {
+  AU: ["ARC", "NHMRC"],
+  US: ["NSF", "NIH"],
+  UK: ["UKRI"],
+};
+const SOURCE_COUNTRY = new Map<string, Country>(
+  (Object.entries(COUNTRY_PROGRAMS) as [Country, string[]][]).flatMap(([c, codes]) =>
+    codes.map((code): [string, Country] => [code, c]),
+  ),
+);
 
-function countryAllowed(source: string | null | undefined, country: Country): boolean {
-  if (country === "both") return true;
-  const isAU = !!source && AU_SOURCES.has(source);
-  return country === "AU" ? isAU : !isAU;
+function sourceCountry(source: string | null | undefined): Country {
+  return (source && SOURCE_COUNTRY.get(source)) || "CA";
 }
 
-// Merge two ranked lists alternately (a, b, a, b, …) so both are represented
-// even when one country's corpus is far denser — used for the "both" view.
-function interleave<T>(a: T[], b: T[]): T[] {
+// Merge N ranked lists alternately (a, b, c, a, b, c, …) so every country is
+// represented even when one corpus is far denser — used for the "all" view.
+function interleave<T>(lists: T[][]): T[] {
   const out: T[] = [];
-  for (let i = 0; i < Math.max(a.length, b.length); i++) {
-    if (i < a.length) out.push(a[i]!);
-    if (i < b.length) out.push(b[i]!);
+  const longest = Math.max(...lists.map((l) => l.length), 0);
+  for (let i = 0; i < longest; i++) {
+    for (const l of lists) if (i < l.length) out.push(l[i]!);
   }
   return out;
 }
@@ -146,61 +159,94 @@ export async function findBySpikes(
   // In PI mode, default to no org filter so universities, research institutes,
   // and hospitals all qualify; companies are dropped post-filter below.
   const orgFilter = opts.orgFilter ?? null;
-  // Default to Canada so /jobs and /supervisors stay Canada-only; /research-pi
-  // passes the user's choice. The Canadian corpus is far denser, so for "both"
-  // we must search each country separately or Australia gets crowded out of the
+  // Default to Canada so /jobs stays Canada-only; /supervisors and /research-pi
+  // pass the user's choice. The Canadian corpus is far denser, so for "all" we
+  // must search each country separately or the others get crowded out of the
   // global top-N entirely.
   const country: Country = opts.country ?? "CA";
   const topK = piMode ? 10 : 6;
 
-  // Per-country search scopes. "AU" restricts retrieval to Australian funders;
-  // "CA" searches globally (then drops the rare AU hit in the filter below —
-  // robust to new Canadian sources without enumerating them); "both" runs one
-  // search per country and interleaves so each is represented.
-  const scopes: (string[] | null)[] =
-    country === "AU" ? [AU_PROGRAM_CODES] : country === "both" ? [null, AU_PROGRAM_CODES] : [null];
+  // Per-country search scopes. A specific foreign country restricts retrieval
+  // to its funders' program codes; "CA" searches globally with `codes: null`
+  // (then drops the foreign hits in the filter below — robust to new Canadian
+  // sources without enumerating them); "all" runs one search per country and
+  // interleaves so each is represented.
+  type Scope = { codes: string[] | null; country: Exclude<Country, "all"> };
+  const scopes: Scope[] =
+    country === "all"
+      ? [
+          { codes: null, country: "CA" },
+          ...(Object.entries(COUNTRY_PROGRAMS) as [Exclude<Country, "CA" | "all">, string[]][]).map(
+            ([c, codes]): Scope => ({ codes, country: c }),
+          ),
+        ]
+      : country === "CA"
+        ? [{ codes: null, country: "CA" }]
+        : [{ codes: COUNTRY_PROGRAMS[country], country }];
 
   // Serialize the per-spike searches. Running them concurrently fires multiple
   // heavy hybrid vector+FTS scans over grant_chunks at once, which contend for
   // the DB and trip `statement_timeout` — surfaced as {ok:false} and then
   // cached. One-at-a-time keeps each query within budget.
-  const results: SpikeResult[] = [];
+  const scoped: { spike: Spike; groups: { scope: Scope; matches: NjfMatch[] }[]; failed: boolean }[] = [];
   for (const spike of spikes) {
-    const groups: NjfMatch[][] = [];
+    const groups: { scope: Scope; matches: NjfMatch[] }[] = [];
     let anyOk = false;
-    for (const programCodes of scopes) {
-      const outcome = await searchCompanies(spike.query, { orgFilter, programCodes, topK });
+    for (const scope of scopes) {
+      const outcome = await searchCompanies(spike.query, { orgFilter, programCodes: scope.codes, topK });
       // In PI mode we post-filter to PI-held lab grants, which discards some
       // hits (trainee awards, companies) — so widen the pool with the
       // un-reranked `more` tail to be sure enough PIs survive the filter.
       if (outcome.ok) {
         anyOk = true;
-        groups.push(piMode ? [...(outcome.matches as NjfMatch[]), ...(outcome.more as NjfMatch[])] : (outcome.matches as NjfMatch[]));
+        groups.push({
+          scope,
+          matches: piMode
+            ? [...(outcome.matches as NjfMatch[]), ...(outcome.more as NjfMatch[])]
+            : (outcome.matches as NjfMatch[]),
+        });
       } else {
-        groups.push([]);
+        groups.push({ scope, matches: [] });
       }
     }
-    const matches = country === "both" ? interleave(groups[0] ?? [], groups[1] ?? []) : groups.flat();
-    results.push({ ...spike, matches, failed: !anyOk });
+    scoped.push({ spike, groups, failed: !anyOk });
   }
 
-  // Enrich every match with the person who holds its grant (the supervisor, if
+  // Enrich every match with its grant's funder and holder (the supervisor, if
   // it's a faculty grant). One batched lookup across all matches.
   const grantIds = [
-    ...new Set(results.flatMap((r) => r.matches.map((m) => m.best_grant_id).filter((id): id is string => !!id))),
+    ...new Set(
+      scoped.flatMap((r) =>
+        r.groups.flatMap((g) => g.matches.map((m) => m.best_grant_id).filter((id): id is string => !!id)),
+      ),
+    ),
   ];
-  const holders = await fetchGrantHolders(grantIds);
-  for (const r of results) {
-    for (const m of r.matches) {
-      if (m.best_grant_id) m.holder = holders.get(m.best_grant_id);
+  const metaById = await fetchGrantMeta(grantIds);
+
+  const results: SpikeResult[] = [];
+  for (const r of scoped) {
+    const filtered: NjfMatch[][] = [];
+    for (const g of r.groups) {
+      let matches = g.matches;
+      for (const m of matches) {
+        const meta = m.best_grant_id ? metaById.get(m.best_grant_id) : undefined;
+        m.holder = meta?.holder;
+        m.funder = meta?.funder ?? null;
+      }
+      // PI mode: keep only PI-held grants at non-company orgs — a lab lead who
+      // could host an incoming researcher. Drops trainee awards and industry.
+      if (piMode) {
+        matches = matches.filter((m) => m.holder?.isPI && m.company.org_type !== "company");
+      }
+      // The global scope retrieves across the whole corpus, so drop foreign
+      // hits there; program-scoped searches are already country-exact.
+      if (g.scope.codes === null) {
+        matches = matches.filter((m) => sourceCountry(m.funder) === "CA");
+      }
+      filtered.push(matches);
     }
-    // PI mode: keep only PI-held grants at non-company orgs — a lab lead who
-    // could host an incoming researcher. Drops trainee awards and industry.
-    if (piMode) {
-      r.matches = r.matches.filter((m) => m.holder?.isPI && m.company.org_type !== "company");
-    }
-    // Country scope: keep only matches from the chosen country, then trim to 6.
-    r.matches = r.matches.filter((m) => countryAllowed(m.holder?.source, country)).slice(0, 6);
+    const matches = (country === "all" ? interleave(filtered) : filtered.flat()).slice(0, 6);
+    results.push({ ...r.spike, matches, failed: r.failed });
   }
   return results;
 }
@@ -290,6 +336,24 @@ function buildHolder(raw: Record<string, unknown>): GrantHolder | null {
     }
   }
 
+  // NSF / NIH (US) and UKRI (UK) — their scrapers write the same stable
+  // markers, plus `_trainee` set at ingest where the source knows (NIH F/T
+  // activity codes, NSF fellowship programs). UKRI Innovate UK projects can
+  // have no named PI; they still get a funder via fetchGrantMeta below.
+  const marked = str(raw["_funder"]);
+  if (marked === "NSF" || marked === "NIH" || marked === "UKRI") {
+    const name = str(raw["_pi"]);
+    const program = str(raw["_program"]);
+    if (name) {
+      return {
+        name,
+        program,
+        isPI: raw["_trainee"] !== true && !TRAINEE_PROGRAM.test(program),
+        source: marked,
+      };
+    }
+  }
+
   // ARC (Australian Research Council) schema, ingested from the Data Portal API.
   // The lead investigator is the PI; every ARC scheme is a PI-led research
   // grant (no trainee scholarships — those are NHMRC's), so isPI is always true.
@@ -320,8 +384,10 @@ function buildHolder(raw: Record<string, unknown>): GrantHolder | null {
   return null;
 }
 
-async function fetchGrantHolders(grantIds: string[]): Promise<Map<string, GrantHolder>> {
-  const map = new Map<string, GrantHolder>();
+type GrantMeta = { holder?: GrantHolder; funder: string | null };
+
+async function fetchGrantMeta(grantIds: string[]): Promise<Map<string, GrantMeta>> {
+  const map = new Map<string, GrantMeta>();
   if (grantIds.length === 0) return map;
 
   const supabase = supabaseService();
@@ -331,8 +397,16 @@ async function fetchGrantHolders(grantIds: string[]): Promise<Map<string, GrantH
   for (const row of data) {
     const raw = (row.raw ?? null) as Record<string, unknown> | null;
     if (!raw) continue;
-    const holder = buildHolder(raw);
-    if (holder) map.set(row.id, holder);
+    const holder = buildHolder(raw) ?? undefined;
+    // The funder is knowable even when no holder is (e.g. a UKRI Innovate UK
+    // project with no named PI): the `_funder` marker, the ARC schema shape,
+    // or the Canadian raw-schema sniff.
+    const funder =
+      str(raw["_funder"]) ||
+      holder?.source ||
+      (raw["scheme-name"] !== undefined ? "ARC" : null) ||
+      fundingSourceOf(raw);
+    map.set(row.id, { holder, funder });
   }
   return map;
 }

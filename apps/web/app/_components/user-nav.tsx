@@ -39,6 +39,12 @@ export async function UserNav() {
 
   return (
     <div className="flex items-center gap-3 text-sm">
+      <Link
+        href="/notes"
+        className="font-[family-name:var(--font-mono)] text-[13px] text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:underline"
+      >
+        my notes
+      </Link>
       {active ? (
         <Link
           href="/pass"

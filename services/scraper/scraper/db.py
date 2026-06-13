@@ -24,14 +24,16 @@ def _is_transient(exc: Exception) -> bool:
 
     Supabase's edge proxy sends GOAWAY after ~20k streams on a single HTTP/2
     connection, which surfaces as RemoteProtocolError on the next request.
-    Local socket exhaustion (Errno 35) and statement timeouts (57014) under
-    transient load are also retryable."""
+    Local socket exhaustion (Errno 35), statement timeouts (57014) under
+    transient load, and deadlocks (40P01) between concurrently running
+    ingesters upserting the same rows are also retryable."""
     msg = str(exc)
     return (
         "RemoteProtocolError" in type(exc).__name__
         or "ConnectionTerminated" in msg
         or "Errno 35" in msg
         or "57014" in msg
+        or "40P01" in msg
         or "ReadError" in type(exc).__name__
         or "TimeoutException" in type(exc).__name__
     )
@@ -135,10 +137,14 @@ def bulk_upsert_companies(rows: list[dict[str, Any]]) -> dict[tuple[str, str], s
     deduped: dict[tuple[str, str], dict[str, Any]] = {}
     for r in rows:
         deduped[(r["normalized_name"], r["org_type"])] = r
+    # Sorted batches take row locks in a consistent order, so two ingesters
+    # upserting overlapping orgs (NSF + NIH share US universities) tend to
+    # queue instead of deadlocking.
+    ordered = [deduped[k] for k in sorted(deduped)]
     res = (
         client()
         .table("companies")
-        .upsert(list(deduped.values()), on_conflict="normalized_name,org_type")
+        .upsert(ordered, on_conflict="normalized_name,org_type")
         .execute()
     )
     return {(r["normalized_name"], r["org_type"]): r["id"] for r in res.data}
@@ -155,10 +161,12 @@ def bulk_upsert_grants(rows: list[dict[str, Any]]) -> dict[tuple[str, str], str]
     deduped: dict[tuple[str, str], dict[str, Any]] = {}
     for r in keyed:
         deduped[(r["program_id"], r["award_id"])] = r
+    # Consistent lock order across concurrent ingesters — see bulk_upsert_companies.
+    ordered = [deduped[k] for k in sorted(deduped)]
     res = (
         client()
         .table("grants")
-        .upsert(list(deduped.values()), on_conflict="program_id,award_id")
+        .upsert(ordered, on_conflict="program_id,award_id")
         .execute()
     )
     return {(r["program_id"], r["award_id"]): r["id"] for r in res.data}

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { SpikeFinder } from "@/app/_components/spike-finder";
 
 export const metadata: Metadata = {
-  title: "Find a funded research PI in Canada or Australia — Granted",
+  title: "Find a funded research PI in Canada, the US, the UK or Australia — Granted",
   description:
-    "Internationally trained researchers and physicians: describe your clinical or research focus and find principal investigators in Canada and Australia with active research funding (CIHR, NSERC, FRQS, ARC…) — the labs positioned to host you.",
+    "Internationally trained researchers and physicians: describe your clinical or research focus and find principal investigators in Canada, the United States, the United Kingdom and Australia with active research funding (CIHR, NSERC, NIH, NSF, UKRI, ARC…) — the labs positioned to host you.",
 };
 
 export default function ResearchPiPage() {
@@ -17,14 +17,17 @@ export default function ResearchPiPage() {
         <p className="mx-auto mt-3 max-w-2xl text-pretty text-[15px] leading-relaxed text-[var(--color-muted)]">
           Relocating for research? Describe your clinical or research focus and we&rsquo;ll find
           principal investigators in{" "}
-          <span className="font-medium text-[var(--color-ink)]">Canada and Australia</span> with
-          active research funding (CIHR, NSERC, FRQS, ARC…) in that exact area. Each match names
-          the PI and shows the grant — your concrete reason to reach out.
+          <span className="font-medium text-[var(--color-ink)]">
+            Canada, the US, the UK and Australia
+          </span>{" "}
+          with active research funding (CIHR, NSERC, NIH, NSF, UKRI, ARC…) in that exact area.
+          Each match names the PI and shows the grant — your concrete reason to reach out.
         </p>
       </header>
       <SpikeFinder
         kind="research-pi"
         countrySelect
+        webSearchOption
         copy={{
           placeholder: "e.g. interventional cardiology, heart-failure imaging, post-MI remodelling… (or paste your CV)",
           ctaIdle: "Find PIs",

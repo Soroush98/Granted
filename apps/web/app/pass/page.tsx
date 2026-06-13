@@ -42,6 +42,9 @@ export default function PassPage({
           No subscription, no auto-renew, nothing to cancel. Buy a pass when you&rsquo;re hunting;
           stop paying when you&rsquo;re hired.
         </p>
+        <p className="hand mx-auto mt-3 text-2xl text-[var(--color-muted)]">
+          a thorough hunt runs 30–50 searches — one per strength, per angle, per region
+        </p>
       </header>
 
       <div className="grid items-start gap-5 sm:grid-cols-2">

@@ -2,7 +2,7 @@ import { findBySpikes, type Country, type FindState, type WebResults } from "@/l
 import { logSearch } from "@/lib/njf/usage";
 import { gateSearch } from "@/lib/njf/access";
 import { verifyTurnstile } from "@/lib/turnstile";
-import { webSearchCompanies } from "@/lib/ai/websearch";
+import { webSearchCompanies, webSearchLabs } from "@/lib/ai/websearch";
 
 // Streaming finder endpoint shared by /jobs, /supervisors, /research-pi. Emits
 // newline-delimited JSON: {t:"phase",...} as each real pipeline stage starts,
@@ -23,10 +23,13 @@ const CFG: Record<
     zeroMsg: string;
     logFilter: (c: Country) => string;
     allowWeb: boolean;
+    /** Which live-web search to run when web is enabled: company finder (/jobs)
+     * or research-lab/PI finder (/research-pi). */
+    webMode: "companies" | "labs";
   }
 > = {
   jobs: {
-    noun: "Canadian companies",
+    noun: "companies",
     orgFilter: "company",
     mode: null,
     shortMsg: "Tell us a bit about your background — your field, projects, or skills.",
@@ -34,6 +37,7 @@ const CFG: Record<
       "Couldn't read distinctive strengths from that text. Add concrete projects, methods, and tools, then try again.",
     logFilter: () => "company",
     allowWeb: true,
+    webMode: "companies",
   },
   supervisors: {
     noun: "universities & labs",
@@ -43,8 +47,9 @@ const CFG: Record<
       'Tell us the research area or background you want a supervisor in (e.g. "neuroradiology, brain MRI segmentation").',
     zeroMsg:
       "Couldn't read a research focus from that text. Add the specific topics or methods you care about, then try again.",
-    logFilter: () => "university",
+    logFilter: (c) => (c === "CA" ? "university" : `university:${c}`),
     allowWeb: false,
+    webMode: "labs",
   },
   "research-pi": {
     noun: "funded labs",
@@ -55,7 +60,8 @@ const CFG: Record<
     zeroMsg:
       "Couldn't read a research focus from that text. Add the specific clinical areas, methods, or conditions you work on, then try again.",
     logFilter: (c) => `pi:${c}`,
-    allowWeb: false,
+    allowWeb: true,
+    webMode: "labs",
   },
 };
 
@@ -69,7 +75,12 @@ export async function POST(req: Request) {
   const cfg = CFG[kind];
   const background = String(form.get("bg") ?? "").trim();
   const rawCountry = String(form.get("country") ?? "CA");
-  const country: Country = rawCountry === "AU" || rawCountry === "both" ? rawCountry : "CA";
+  const country: Country =
+    rawCountry === "AU" || rawCountry === "US" || rawCountry === "UK" || rawCountry === "all"
+      ? rawCountry
+      : rawCountry === "both" // legacy value from before US/UK existed
+        ? "all"
+        : "CA";
   const wantWeb = form.get("web") === "1" && !!cfg?.allowWeb;
   const token = String(form.get("cf-turnstile-response") ?? "").trim() || null;
 
@@ -128,18 +139,30 @@ export async function POST(req: Request) {
       // (wantWeb only succeeds for an active pass).
       let web: WebResults | undefined;
       if (wantWeb && gate.identity.tier === "pass") {
-        emit({ t: "phase", key: "web", label: "Searching the web for funded companies" });
+        const isLabs = cfg.webMode === "labs";
+        // Web search needs one locale; for "all" we default to CA.
+        const webCountry = country === "all" ? "CA" : country;
+        const onSearch = (q: string) => emit({ t: "detail", text: `“${q}”` });
+        emit({
+          t: "phase",
+          key: "web",
+          label: isLabs ? "Searching the web for labs that may be hiring" : "Searching the web for funded companies",
+        });
         try {
-          const companies = await webSearchCompanies(query, {
-            country: country === "AU" ? "AU" : "CA",
-            // Surface each web_search query live under the active step.
-            onSearch: (q) => emit({ t: "detail", text: `“${q}”` }),
-          });
-          emit({ t: "phase", key: "signals", label: "Checking funding signals" });
-          web = { companies };
+          if (isLabs) {
+            const labs = await webSearchLabs(query, { country: webCountry, onSearch });
+            emit({ t: "phase", key: "signals", label: "Checking for recruiting signals" });
+            web = { kind: "labs", labs };
+          } else {
+            const companies = await webSearchCompanies(query, { country: webCountry, onSearch });
+            emit({ t: "phase", key: "signals", label: "Checking funding signals" });
+            web = { kind: "companies", companies };
+          }
         } catch (e) {
           console.error("[websearch] failed:", e);
-          web = { companies: [], note: "Web search is temporarily unavailable — showing grant matches only." };
+          web = isLabs
+            ? { kind: "labs", labs: [], note: "Web search is temporarily unavailable — showing grant matches only." }
+            : { kind: "companies", companies: [], note: "Web search is temporarily unavailable — showing grant matches only." };
         }
       }
 
