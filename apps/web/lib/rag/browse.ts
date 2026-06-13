@@ -1,6 +1,14 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
-import { supabaseAnon } from "@/lib/db/supabase-server";
+// service_role (not anon) for the browse/stats reads. The anon role has a 3s
+// statement_timeout, which the browse + stats aggregates (count(*) over() and
+// GROUP BYs over 167k+ grants) blow past on a cache-cold / small instance,
+// surfacing as hard runtime errors. service_role has a 30s timeout, so these
+// degrade to "slow" instead of "failing". Same rationale as searchCompanies:
+// the grants data is already public (these RPCs are its only exposure), and
+// results are cached via the "search" tag. The trigram name lookup stays anon —
+// it's sub-millisecond and doesn't need the headroom.
+import { supabaseAnon, supabaseService } from "@/lib/db/supabase-server";
 import { splitQueryParts } from "@/lib/resume";
 import type {
   BrowseGrant,
@@ -24,7 +32,7 @@ export async function browseGrants(
   cacheLife("minutes");
   cacheTag("search");
 
-  const supabase = supabaseAnon();
+  const supabase = supabaseService();
   const { data, error } = await supabase.rpc("browse_grants", {
     province_filter: filters.province ?? null,
     program_codes: filters.programCodes ?? null,
@@ -52,7 +60,7 @@ export async function listFacets(): Promise<{
   cacheLife("hours");
   cacheTag("search");
 
-  const supabase = supabaseAnon();
+  const supabase = supabaseService();
   const { data, error } = await supabase.rpc("list_filter_facets");
   if (error) throw new Error(`list_filter_facets RPC failed: ${error.message}`);
   const all = (data ?? []) as FilterFacet[];
@@ -70,7 +78,7 @@ export async function statsByProgram(
   cacheLife("minutes");
   cacheTag("search");
 
-  const supabase = supabaseAnon();
+  const supabase = supabaseService();
   const { data, error } = await supabase.rpc("stats_by_program", {
     min_start_date: minDate,
     max_start_date: maxDate,
@@ -87,7 +95,7 @@ export async function statsByProvince(
   cacheLife("minutes");
   cacheTag("search");
 
-  const supabase = supabaseAnon();
+  const supabase = supabaseService();
   const { data, error } = await supabase.rpc("stats_by_province", {
     min_start_date: minDate,
     max_start_date: maxDate,
@@ -104,7 +112,7 @@ export async function statsByYear(
   cacheLife("minutes");
   cacheTag("search");
 
-  const supabase = supabaseAnon();
+  const supabase = supabaseService();
   const { data, error } = await supabase.rpc("stats_by_year", {
     min_start_date: minDate,
     max_start_date: maxDate,
