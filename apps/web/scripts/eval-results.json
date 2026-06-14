@@ -4,563 +4,24 @@
     "kind": "research-pi",
     "country": "all",
     "bg": "Neuroradiologist (MD) focused on brain MRI segmentation and quantitative imaging biomarkers for stroke and small-vessel disease. Looking for a funded lab to host me.",
-    "status": "SLOW",
-    "ms": 40260,
-    "spikes": 2,
-    "scopes": 4,
-    "nSearches": 8,
-    "nFailed": 2,
-    "totalMatches": 12,
+    "status": "OK",
+    "ms": 15192,
+    "spikes": 3,
+    "scopes": 1,
+    "nSearches": 3,
+    "nRerank": 3,
+    "nFailed": 0,
+    "totalMatches": 18,
     "perSpike": [
       {
-        "label": "Brain MRI segmentation and biomarkers",
-        "groups": [
-          [
-            {
-              "company_id": "251a5d8a-3870-48a2-bc41-4c0f5781fdd2",
-              "best_chunk_id": "931d9d02-040e-4edd-9cbf-977d586d5891",
-              "best_chunk": "Context: Cerebral small vessel disease (cSVD) is the commonest vascular cause of cognitive impairment and dementia (VCI/VaD, 20% of dementias), and commonly causes mixed dementia with Alzheimer’s disease, totalling some 45-50% of dementias. cSVD also causes 25% of strokes (‘lacunar’), frailty, loss of independence and accelerated brain ageing. It is often detected incidentally on brain scans. With no effective treatment, cSVD constitutes a substantial global unmet need.\nThe challenge is to determine how cSVD causes brain damage, both directly due to damaged blood vessels and/or other indirect mechanisms, what factors drive cSVD progression, and how this can be stopped or reversed. Although cSVD associates strongly with hypertension, diabetes, smoking, intensive vascular risk factor management has had limited effects on stopping cSVD progression.\nHuman brain magnetic resonance imaging (MRI) studies suggested an abnormality in cSVD in the small blood vessel lining (endothelium) and vessel wall that leads to leaky blood-brain barrier, poor control of blood flow, impaired fluid and waste clearance, and both ‘direct’ vascular and secondary ‘indirect’ brain tissue damage. Importantly, cSVD brain lesions can reverse spontaneously, leading to improved clinical outcomes, but which lesions, and whether secondary brain damage can be stopped, is unknown.\nIn the LACunar Intervention Trial-2 (LACI-2), in 363 patients with lacunar (cSVD) stroke, two endothelial-stabilising drugs, isosorbide mononitrate (ISMN) and cilostazol, acting at different points on complementary vascular pathways, improved cognitive, cerebrovascular, and physical outcomes, with possible synergy.\nOur aims and objectives are to: track how cSVD contributes to cognitive decline and neurodegeneration visualised on brain MRI; use blood biomarkers to identify cells and pathways linked with clinical and tissue outcomes; determine if ISMN and cilostazol improve outcomes by reducing cSVD vascular lesion and/or neurode",
-              "best_grant_id": "80648fe2-5d32-4b9f-97eb-88b037f52960",
-              "vector_score": 0.617305,
-              "fts_score": 0,
-              "hybrid_score": 0.432114
-            },
-            {
-              "company_id": "2f0c3f0f-e749-4133-a50d-e8809119a72d",
-              "best_chunk_id": "b89cf93c-deac-428a-bf27-86f32f3fcb9a",
-              "best_chunk": "Novel Imaging and Biofluid Biomarkers of Small Vessel Cerebrovascular Disease",
-              "best_grant_id": "76db60b8-75c4-4129-afc8-5072b29a31f1",
-              "vector_score": 0.636677,
-              "fts_score": 0,
-              "hybrid_score": 0.445674
-            },
-            {
-              "company_id": "7bedb49d-20ed-42b3-b462-5a5f4ae56c9c",
-              "best_chunk_id": "8b5b32a2-2b4b-4e16-98fd-7a7dfd9ff965",
-              "best_chunk": "Normalized cerebrovascular reactivity MRI in small-vessel-disease (SVD) related cognitive impairment",
-              "best_grant_id": "159e0001-6aaf-4033-b4c9-65192f735465",
-              "vector_score": 0.630898,
-              "fts_score": 0,
-              "hybrid_score": 0.441629
-            },
-            {
-              "company_id": "d19c1a34-be91-437c-b133-58e6b85df2c2",
-              "best_chunk_id": "8e758fcf-16ed-4341-b175-7ea47c72acb3",
-              "best_chunk": "PROJECT SUMMARY / ABSTRACT\nImproving vascular health is a potential strategy to delay the onset of Alzheimer's disease (AD) and related\ndementias (ADRD). The overlap of cerebral small vessel disease (SVD) and AD pathology may be the most\ncommon neuropathologic phenotype of age-related dementia. However, rarely do imaging studies of ADRD\ninclude measures of SVD commonly observed on brain MRI scans in older adults. Due to challenges in\nquantification in large cohort studies, manual reads are typically done; these are very time-consuming, prone to\nhuman error, and lack spatial anatomic resolution. This distinction is most apparent in the Clinical Core studies\nof NIH-funded Alzheimer's Disease Research Centers (ADRCs), where SVD biomarkers are technically\nchallenging, time-consuming, and often overlooked. Filling this critical gap will require technologies to robustly\nidentify SVD lesions on brain MRI. Recent technological advances make computerized SVD biomarkers\npossible, reproducible, and feasible for large cohorts. Using various MRI pulse sequences, we have developed\nnovel deep-learning methods to accurately quantify SVD biomarkers, including cerebral microbleeds, white\nmatter hyperintensities, and enlarged perivascular spaces. These reading methods are reliable and offer greater\nanatomic precision and dynamic range than previous scoring systems. Thus, our primary aim is to create an\ninter-ADRC set of objectively measured SVD MRI biomarkers from large and diverse clinical cohorts to determine\nthe role of SVD in vascular contributions to ADRD. These ADRCs include 4,831 (49% minority) individuals at\nrisk for ADRD. We will use the rich clinical and neuroimaging (structural MRI) data within the South Texas, Wake\nForest, Wisconsin, and the University of California Davis ADRCs and their affiliated cohorts, including the\nVascular Contributions to Cognitive Impairment and Dementia consortium, the Multi-Ethnic Study of\nAtherosclerosis, and The Wisconsin Registry for Alzheime",
-              "best_grant_id": "6e345bc3-feaa-46b7-87f5-33643b522c03",
-              "vector_score": 0.655242,
-              "fts_score": 0,
-              "hybrid_score": 0.45867
-            },
-            {
-              "company_id": "98b2ac61-d5e0-4c81-a189-cc0c12e82151",
-              "best_chunk_id": "d9b43729-2345-4f32-9de8-796de70f21d6",
-              "best_chunk": "This project is focused on the design and application of novel software tools to analyze large datasets of neurological MRI. Imaging markers of brain health and neurodegeneration, and their relationship to vascular disease and dementia will be examined. We have identified new imaging biomarkers that can be applied in a routine clinical setting, for clinical trial design and for research purpose\n\nKeywords: IMAGE ANALYSIS; MACHINE LEARNING; MRI; DEMENTIA; BRAIN HEALTH; CEREBROVASCULAR DISEASE; ARTIFICIAL INTELLIGENCE",
-              "best_grant_id": "551aa02f-a1cf-4c50-a5e2-325a95090329",
-              "vector_score": 0.616059,
-              "fts_score": 0,
-              "hybrid_score": 0.431241
-            },
-            {
-              "company_id": "e4b470ed-091f-4a38-bf69-732c29abd4de",
-              "best_chunk_id": "3752aa86-aabe-4085-b5ce-378fcdea67bd",
-              "best_chunk": "Project Summary / Abstract\nDescriptive Title: REpeated ASSEssment of SurvivorS in ICH-MRI, an ancillary neuroimaging study of the\nREASSESS ICH longitudinal study.\nPurpose: The REpeated ASSEssment of SurvivorS MRI study will conduct a single MRI with SWI/GRE along\nwith blinded central measurement of cerebral small vessel disease (CSVD) parameters to determine if\nevacuation of spontaneous intracerebral hemorrhage (ICH) reduces risk of later progression of CSVD. This\nstudy builds on the funded REASSESS ICH parent study which is conducting serial long-term cognitive and\nfunctional assessments on the same population to determine if ICH evacuation reduces risk of cognitive\ndecline in the ageing brain. This study will compare CSVD burden after minimally invasive surgery (MIS) as\nperformed in the MISTIE III and ENRICH trials, and standard of care, supplemented by comparative data from\nThe ROSE-Longitudinal Assessment With Neuroimaging (ROSE-LAWN) study (R-01-NS120493) which is\nconducting MRI on 250 cases recruited into the ROSE study of ICH at 12-24 months with cognitive exams.\nRationale: ICH survivors are at high risk for progressive cognitive impairment which is strongly associated with\ngreater hematoma volume, but also with cerebral amyloid angiopathy, and with multiple markers for CSVD, the\nmost common cause of vascular dementia. MIS with effective hematoma volume reduction may improve long-\nterm functional outcomes while also reducing mortality. As such, reducing hematoma volume after ICH may\nreduce the progression of CSVD as a mechanism for reducing the risk of post ICH cognitive decline.\nDesign: REASSESS MRI is an MRI study ancillary to the ongoing REASSESS study. MRI will be performed\nduring a one-time in-person visit of an anticipated 150-200 ICH survivors enrolled in MISTIE III or ENRICH.\nAim 1: To determine the effects of surgical clot reduction on MRI markers of cerebral small vessel\ndisease (CSVD) after ICH. We hypothesize that reducing end of treatment (EOT) I",
-              "best_grant_id": "4b42c069-6a1d-43e1-93fa-3edf036cb6a6",
-              "vector_score": 0.623568,
-              "fts_score": 0,
-              "hybrid_score": 0.436497
-            },
-            {
-              "company_id": "34213ff1-5959-4f40-a1c2-540832bcadcd",
-              "best_chunk_id": "4f13dc09-e022-41bf-89ba-b3c27739f0ff",
-              "best_chunk": "Project Summary/Abstract\nThe blood-brain barrier (BBB) plays a crucial role in protecting the central nervous system (CNS)\nfrom harmful substances such as plasma proteins and inorganic solutes. A non-invasive MRI\ntechnique to detect subtle BBB dysfunction could be an extremely valuable tool for early diagnosis\nof neurodegenerative disorders. Our team has developed a diffusion prepared pseudo-continuous\narterial spin labeling (OP-pCASL) technique for mapping BBB water exchange rate (kw), which\nhas been validated by preclinical studies and found to be associated with aging, small vascular\ndisease, APOE epsilon4 genotype, amyloid PET, and CSF Aβ-42 in cognitively normal subjects.\nHowever, the OP-pCASL technique currently has low spatial resolution and cannot estimate the\npermeability surface area product of water (PSw) due to a lack of venous compartment in its\nmodeling. Mapping both kw and PSw is significant because they assess different aspects of the\nBBB and provide comprehensive information about its function. Changes in PSw can indicate a\ncombination of changes in capillary surface and permeability, making it a potential biomarker for\nsubtle BBB leakage across endothelial cells. In contrast, kw measures the exchange rate between\nblood and tissue and can be more sensitive to transport mechanisms, e.g. AQP4 function, and\npotentially linked to the glymphatic function. However, the exact neurophysiological mechanisms\nof kw and PSw are still unclear. The proposed project aims to develop and optimize a highresolution\ndiffusion-weighted arterial spin labeling (OW-ASL) technique and mathematical models\nto non-invasively quantify BBB kw and PSw simultaneously. The individual BBB kw and PSw\nmeasurements will be evaluated for test-retest repeatability. The age-related changes of BBB\nfunction and BBB dysfunction in cerebral small vessel disease (cSVO) will be investigated by\nmeasuring kw and PSw in a cohort of healthy subjects across the lifespan of 18-90 years and\nelderly su",
-              "best_grant_id": "84a71a00-424d-4228-96c1-d831c8a9e3e6",
-              "vector_score": 0.617228,
-              "fts_score": 0,
-              "hybrid_score": 0.43206
-            },
-            {
-              "company_id": "3e7f669e-87ab-4670-9e9e-55043c969358",
-              "best_chunk_id": "d31b12a3-2d65-4b69-bd6c-0732d4a7ea4f",
-              "best_chunk": "Reporting Quantitative Microstructural MRI Metrics to Stage and Monitor Multiple Sclerosis",
-              "best_grant_id": "e4719d86-70e8-443b-bc53-2b0e040dad1a",
-              "vector_score": 0.617911,
-              "fts_score": 0,
-              "hybrid_score": 0.432538
-            },
-            {
-              "company_id": "68a9bc1a-7dd5-4099-a890-15857fc5c5f1",
-              "best_chunk_id": "6f01af6e-fa9b-4226-bfe3-20bd55830a1b",
-              "best_chunk": "There is a knowledge gap as to whether statins should be used in patients with intracerebral hemorrhage (ICH), in particular patients with lobar ICH who are at high-risk for recurrent ICH. There are no prospective or randomized data on the effects of continuation vs. discontinuation of statins after ICH regarding the risks of ICH recurrence, incidence of cardiovascular events, or long-term functional or cognitive outcomes and quality of life. The SATURN trial (a multi-center, pragmatic, prospective, randomized, open-label, Phase III clinical trial with blinded end-point assessment in patients with lobar ICH taking statins) was recently funded within the NIH/NINDS StrokeNet to address the above uncertainties. We propose an ancillary MRI study (SATURN MRI) which builds on SATURN’s framework. Participants in SATURN will undergo a standardized brain MRI at baseline and at 24 months in order to assess for the presence and burden of markers of cerebral small vessel disease (CSVD) and their progression. The main objective is to determine the effects of continued long-term statin therapy compared to statin discontinuation on the incidence of new hemorrhagic MRI markers of CSVD, namely cerebral microbleeds (CMBs) and cortical superficial siderosis (cSS) on end-study MRI. Secondary objectives are: 1) to assess whether the presence and burden of CMBs and cSS on baseline MRI can be used as an imaging marker to stratify the risk/benefit of statin therapy in patients with lobar ICH; and 2) to evaluate the effects of statin continuation vs. discontinuation on the incidence of new ischemic MRI markers (white matter hyperintensities and covert infarcts) on end-study MRI. This information will be invaluable to complement the interpretation of SATURN’s results. It will provide unique insights on the effect of statins on progression of markers of CSVD, and could lead to validation of MRI imaging markers as tools to assist with individualized decision-making regarding the safety of stat",
-              "best_grant_id": "03089216-1dec-4c28-bd35-c46a0a74e746",
-              "vector_score": 0.612409,
-              "fts_score": 0,
-              "hybrid_score": 0.428686
-            }
-          ],
-          [],
-          [
-            {
-              "company_id": "251a5d8a-3870-48a2-bc41-4c0f5781fdd2",
-              "best_chunk_id": "931d9d02-040e-4edd-9cbf-977d586d5891",
-              "best_chunk": "Context: Cerebral small vessel disease (cSVD) is the commonest vascular cause of cognitive impairment and dementia (VCI/VaD, 20% of dementias), and commonly causes mixed dementia with Alzheimer’s disease, totalling some 45-50% of dementias. cSVD also causes 25% of strokes (‘lacunar’), frailty, loss of independence and accelerated brain ageing. It is often detected incidentally on brain scans. With no effective treatment, cSVD constitutes a substantial global unmet need.\nThe challenge is to determine how cSVD causes brain damage, both directly due to damaged blood vessels and/or other indirect mechanisms, what factors drive cSVD progression, and how this can be stopped or reversed. Although cSVD associates strongly with hypertension, diabetes, smoking, intensive vascular risk factor management has had limited effects on stopping cSVD progression.\nHuman brain magnetic resonance imaging (MRI) studies suggested an abnormality in cSVD in the small blood vessel lining (endothelium) and vessel wall that leads to leaky blood-brain barrier, poor control of blood flow, impaired fluid and waste clearance, and both ‘direct’ vascular and secondary ‘indirect’ brain tissue damage. Importantly, cSVD brain lesions can reverse spontaneously, leading to improved clinical outcomes, but which lesions, and whether secondary brain damage can be stopped, is unknown.\nIn the LACunar Intervention Trial-2 (LACI-2), in 363 patients with lacunar (cSVD) stroke, two endothelial-stabilising drugs, isosorbide mononitrate (ISMN) and cilostazol, acting at different points on complementary vascular pathways, improved cognitive, cerebrovascular, and physical outcomes, with possible synergy.\nOur aims and objectives are to: track how cSVD contributes to cognitive decline and neurodegeneration visualised on brain MRI; use blood biomarkers to identify cells and pathways linked with clinical and tissue outcomes; determine if ISMN and cilostazol improve outcomes by reducing cSVD vascular lesion and/or neurode",
-              "best_grant_id": "80648fe2-5d32-4b9f-97eb-88b037f52960",
-              "vector_score": 0.617104,
-              "fts_score": 0,
-              "hybrid_score": 0.431973
-            },
-            {
-              "company_id": "ad0b223e-0307-4459-8b72-6e128b369f39",
-              "best_chunk_id": "c54f36e9-d5b3-424d-9c6c-df73cd734be8",
-              "best_chunk": "Cerebral small vessel disease is the most common cause of neurological disability, seen on MRI scans as damage to the deep regions of the brain in over half of people by 65 years old. It causes 30% of strokes, falls, frailty, late-onset depression and up to 40% of dementia. However, it has no treatment due to limited understanding of the underlying mechanisms of the disease. \n\nSmall vessel disease is strongly related to long-standing high blood pressure and to its effects on the body, including stiffer blood vessels and an increased variation in blood pressure during and between each heart beat. It is also related to reduced responsiveness of blood vessels in the brain, limiting their ability to compensate for blood pressure changes. Finally, genetic studies support the role of blood pressure but also identified genes responsible for the integrity of the tissue of the brain. As such, some patients may have more severe disease because their brains are more vulnerable to being damaged.\n\nWe propose that small vessel disease is due to a balance between increased transmission of variable blood pressure to the brain, a reduced ability of the brain to compensate for this and an increased vulnerability of the brain to being damaged. However, no study has measured all these elements together in a large enough population to test this, and thus to identify and test potential treatments.\n\nThis project will combine our groups' expertise to measure all aspects of this mechanism in UK Biobank. This study includes brain scans in more than 100,000 people, detailed medical history and lifestyle information and genetic testing. However, it has lacked measurement of changes in blood flow to the brain and its ability to compensate. By adapting the brain scans in UK Biobank, we have developed novel measures of variation in blood flow to the brain with each heart beat and the ability of the lining of the blood vessels in the brain to control blood flow, measured by spontaneous fluctuation",
-              "best_grant_id": "36aab3b6-04fa-4b08-bfb1-42ca590e61d9",
-              "vector_score": 0.577023,
-              "fts_score": 0,
-              "hybrid_score": 0.403916
-            },
-            {
-              "company_id": "5cd28d75-6ba1-4502-abf1-04b4419b692d",
-              "best_chunk_id": "d9b606a9-90b2-47f4-9ad8-024134255278",
-              "best_chunk": "MRI is a key methodology in modern neuroimaging, but conventional MRI relies on visual interpretation of intensity differences in the images, which is heavily dependent on scanner settings. Quantitative MRI (qMRI) is an attractive alternative MRI method that allows quantitative measurement of physical tissue parameters, enabling objective comparison between patients and across time.\n\nMoreover, qMRI facilitates early detection of pathological changes in the brain resulting from neurological disorders such as multiple sclerosis. Unfortunately, and despite the demonstrated potential in research settings, the implementation of aMRI in routine clinical practice remains limited due to long scan and post-processing times. Even though artificial intelligence has recently led to breakthroughs in the medical imaging field, reduced transparency about the underlying processes and limited information about the accuracy of the results has limited its use for clinical qMRI applications so far.\n\nIn IQ-BRAIN, we propose a unique research and training programme that tackles this urgent need for improved and accelerated q MRI methodology for neuroimaging applications. By integrating both physics-based models and trustworthy artificial intelligence methods along the qMRI pipeline, our innovative approach combines the best of both worlds. IQ-BRAIN will prepare the next generation of qMRI specialists trained in the different aspects of the qMRl-neuroimaging pipeline, that can bridge the gap between qMRI method development and clinical need. Through a training programme of network-wide events, international secondments, and strong interaction between partners from academia, industry and hospitals, IQ-BRAIN offers early-stage researchers a rich combination of knowledge, expertise and essential transferable skills that prepares them for a thriving career as R&amp;D professionals in the qMRI field.",
-              "best_grant_id": "a277914e-7dad-4d60-a4b6-f6c1f2ed5f9a",
-              "vector_score": 0.551817,
-              "fts_score": 0,
-              "hybrid_score": 0.386272
-            },
-            {
-              "company_id": "102703f2-c7f9-47a5-93d0-07ab2b4593fc",
-              "best_chunk_id": "f59870da-2420-4f2d-9a56-f87630f378e2",
-              "best_chunk": "Learned Quantitative Stochastic Imaging",
-              "best_grant_id": "c84edc91-0172-488d-8718-dd9adb513843",
-              "vector_score": 0.516443,
-              "fts_score": 0,
-              "hybrid_score": 0.36151
-            },
-            {
-              "company_id": "95721a98-a082-4e60-8eb8-6860402b9d30",
-              "best_chunk_id": "9f5a12c4-6705-450d-a56c-acc89629d3a2",
-              "best_chunk": "NEUROQUANT - Neurovascular MR coil powered by quantitative neuroimaging technologies for Alzheimer’s disease diagnosis, prognosis, and therapy monitoring.",
-              "best_grant_id": "94211e7e-9762-4516-9aae-5e808c563c35",
-              "vector_score": 0.566188,
-              "fts_score": 0,
-              "hybrid_score": 0.396332
-            },
-            {
-              "company_id": "fe4e0117-9c4a-498f-ab4f-e4a4f7e3f519",
-              "best_chunk_id": "343741a0-da96-4c33-bf91-e40dad317c25",
-              "best_chunk": "AI-Enhanced Vascular Imaging: Pioneering Stroke Risk Analysis in Underserved Populations",
-              "best_grant_id": "f1b0ac2a-de41-46b9-b405-365b4e50e3fe",
-              "vector_score": 0.542863,
-              "fts_score": 0,
-              "hybrid_score": 0.380004
-            },
-            {
-              "company_id": "6bec41bb-dced-491c-a2c5-9f29b5463a5e",
-              "best_chunk_id": "23866b4c-9f64-4d2f-b981-2f0fed3ae881",
-              "best_chunk": "Mapping cerebrovascular (dys)function in the early stages of Alzheimer's disease",
-              "best_grant_id": "65eef7b1-84c1-4af0-a036-491295915229",
-              "vector_score": 0.523773,
-              "fts_score": 0,
-              "hybrid_score": 0.366641
-            },
-            {
-              "company_id": "f12f1447-dcd0-40ee-958b-82e1b2f08dc8",
-              "best_chunk_id": "016998c4-da74-4dc2-befa-e6e8e4adad44",
-              "best_chunk": "Reducing the risk of secondary ischaemic stroke in patients with acute intracerebral haemorrhage: Multimodal definition of vulnerable phenotypes",
-              "best_grant_id": "de89fe58-e8b9-4c7a-929c-7d8bf0e2255a",
-              "vector_score": 0.535091,
-              "fts_score": 0,
-              "hybrid_score": 0.374564
-            },
-            {
-              "company_id": "06d4852b-32fa-4282-b012-9245f0f49943",
-              "best_chunk_id": "f12f26e5-bd97-40aa-9422-79c93642bf30",
-              "best_chunk": "Parkinson’s disease (PD) is the second most common neurodegenerative disorder, with progressive and disabling symptoms. Diagnosis of PD is currently made on clinical grounds as there are no objective tests to diagnose or stage PD. Depending on the experience of the clinician, the rate of misdiagnosis ranges between 5-26%.\nAlthough neuroimaging has revolutionised diagnosis and staging of many common neurological diseases, it currently plays a very limited role in the diagnosis of PD. In practice magnetic resonance imaging (MRI) is used qualitatively, mainly to exclude other secondary causes and to help guide the differential diagnosis of other movement disorders diagnosis.\nSensitive biomarkers of disease will transform the clinical reporting of MR examinations by providing objective and quantifiable measures which will decrease inter-rater variability and increase the reliability of diagnosis in daily clinical routine, thereby improving patient care. They will be also essential in clinical trials.&nbsp; Three main MRI biomarkers have been suggested to date: a) iron assessed by susceptibility-weighted imaging or quantitative susceptibility mapping (QSM), b) neuromelanin (NM) assessed by neuromelanin-sensitive sequences and c) brain-volume assessed by 3D-T1 weighted sequences.Translating quantitative techniques into the clinical setting, however, presents significant challenges, which must be addressed to meet the demand for accurate, timely and impactful clinical imaging services. We developed the Quantitative Neuroradiology Initiative (QNI), as a model framework for the technical and clinical validation necessary to embed automated segmentation and other image quantification software into the clinical neuroradiology workflow. We have 2 exemplar tools: a) brain volume, commercialised through a startup company (Brainminer) and b) Quantitative Neuroradiology report for epilepsy patients with hippocampal sclerosis, which has been successfully introduced into the clinical",
-              "best_grant_id": "5e9185e6-1ec8-4f26-bb4a-c591277e262a",
-              "vector_score": 0.552901,
-              "fts_score": 0,
-              "hybrid_score": 0.387031
-            }
-          ],
-          [
-            {
-              "company_id": "6c9cb7ee-9825-4019-9da2-25d234e9e068",
-              "best_chunk_id": "236e380f-05fc-4f50-9bfc-15b6c8c437c4",
-              "best_chunk": "Radiomic prediction of acute ischaemic and haemorrhagic stroke outcomes...\nCategory: Medical Research",
-              "best_grant_id": "c5d829fb-4396-4f29-8702-7b87cf1bbf53",
-              "vector_score": 0.54735,
-              "fts_score": 0,
-              "hybrid_score": 0.383145
-            },
-            {
-              "company_id": "9bdd6997-6c18-47e6-a9c5-2aa829518f80",
-              "best_chunk_id": "87338a90-337d-40cb-8ae3-64a87de5ffa3",
-              "best_chunk": "Clot radiomics and haemodynamic profiling in acute ischaemic stroke:...\nCategory: Medical Research",
-              "best_grant_id": "0ea8c226-e438-4835-a299-1d033bb8c0bd",
-              "vector_score": 0.537049,
-              "fts_score": 0,
-              "hybrid_score": 0.375935
-            },
-            {
-              "company_id": "42e53077-32a2-47c8-bc31-847696c54abb",
-              "best_chunk_id": "4d4e65d2-a25e-4209-89bb-1a7dadff88fe",
-              "best_chunk": "Fractional dynamic models for MRI to probe tissue microstructure. This project aims to develop new mathematical tools for mapping tissue microstructural properties via the use of space-time fractional calculus methods. In magnetic resonance imaging, mathematical models and their parameters play a key role in associating information between images and biology, with the overall aim of producing spatially resolved maps of tissue property variations. However, models which can inform on changes in microscale tissue properties are lacking. The tools developed by this project will be used to generate new magnetic resonance image based maps to convey information on tissue microstructure changes in the human brain. Additionally, the mathematical tools developed will be transferable to other applications where diffusion and transport in heterogeneous porous media play a role.\n\nField of research: 0102 - Applied Mathematics",
-              "best_grant_id": "0d75bdde-ece6-4b3d-a038-ea98a7cb3768",
-              "vector_score": 0.536024,
-              "fts_score": 0,
-              "hybrid_score": 0.375217
-            },
-            {
-              "company_id": "b5636865-e921-4a42-8dd3-e25d2f9cc50d",
-              "best_chunk_id": "8bc6fa31-7c81-4975-a7e9-4c7bc38bdaeb",
-              "best_chunk": "Artificial intelligence-enabled quantitative atherosclerosis imaging by...\nCategory: Medical Research",
-              "best_grant_id": "a4f7733a-282c-44eb-9891-ad8cb175c38d",
-              "vector_score": 0.529128,
-              "fts_score": 0,
-              "hybrid_score": 0.370389
-            },
-            {
-              "company_id": "1a43dd13-2df1-415b-ba2c-0c31c43c3d22",
-              "best_chunk_id": "abea514b-37c4-40c5-86d6-30714af436a2",
-              "best_chunk": "A novel, dictionary-free, multi-contrast MRI method for microscopic imaging. This project aims to develop a novel quantitative imaging technique for comprehensive in vitro and in vivo tissue characterisation on the microscopic scale. The technology innovated in the project could revolutionise microscopic imaging techniques by breaking through the sub-millimetre image resolution bottleneck of current magnetic resonance imaging (MRI) methods. This project expects to generate new knowledge in the emerging field of biological imaging and to deliver an integrated imaging platform for mapping various tissue microscopic components at the cellular level. Successful outcomes have the potential for commercialisation and will accelerate a range of fundamental science and engineering studies requiring imaging techniques.\n\nField of research: 0801 - Artificial Intelligence and Image Processing\n\nQuantitative tissue microscopic characterisation is a prerequisite for many fundamental science studies. Conventional magnetic resonance imaging (MRI) methods are commonly used for in vitro and in vivo imaging non-invasively but can only achieve a spatial resolution on the sub-millimetre scale. This project aims to innovate an advanced MRI technique, which will enable quantitative imaging at the microscopic cellular level. Successful outcomes will lead to more than 400% MRI scan time reduction, which could revolutionise the current imaging practice in Australia and save a tremendous amount of money for various research studies requiring tissue imaging. This project will also expand knowledge in signal and image processing technology as well as computer science and artificial intelligence, which may benefit a broader range of applications beyond life sciences. Finally, the high-quality research environment will contribute to the field of imaging research in Australia and promote national and international collaborations.",
-              "best_grant_id": "51b49dd8-96cb-49ec-9776-6d99449c5627",
-              "vector_score": 0.486072,
-              "fts_score": 0,
-              "hybrid_score": 0.34025
-            },
-            {
-              "company_id": "a75ae75e-a571-48ae-bc3c-cbe31e3b8947",
-              "best_chunk_id": "dae79879-3509-4d32-899c-d0663a1efd01",
-              "best_chunk": "Quantitative Imaging At Nanoscale with SUper-resolution (QIAN SU) for...\nCategory: Medical Research",
-              "best_grant_id": "6f62fa30-9025-49c5-abd4-2b1c0056ce73",
-              "vector_score": 0.51296,
-              "fts_score": 0,
-              "hybrid_score": 0.359072
-            },
-            {
-              "company_id": "1d451e31-2709-449c-b0b6-67bdebb03183",
-              "best_chunk_id": "47a6ae28-efb8-4cd9-ae25-275b60930139",
-              "best_chunk": "Structural-functional connectivity in the brain. This project aims to develop magnetic resonance imaging analysis methods to non-invasively study brain connectivity. Recent advances in imaging can comprehensively describe the brain’s complex network of functional and structural connections (the brain ‘connectome’). This project will simultaneously investigate structural and functional connectivity, and characterise the dynamic properties of the connectome using graph-theoretic approaches. This project should give neuroscientists computational tools to comprehensively map the network architecture of the human brain.\n\nField of research: 0801 - Artificial Intelligence and Image Processing",
-              "best_grant_id": "2200d123-78b5-4aad-aba9-d28d376785f4",
-              "vector_score": 0.496728,
-              "fts_score": 0,
-              "hybrid_score": 0.34771
-            },
-            {
-              "company_id": "ac1fead1-0b9a-4015-8879-69ceaad8d5e6",
-              "best_chunk_id": "65587279-20dc-49e2-b155-4e17a66f44cf",
-              "best_chunk": "A Patient-Centric Microfluidic Screening Platform for Stroke Recurrence...\nCategory: Medical Research",
-              "best_grant_id": "58b4d49e-918e-4d00-82d3-a2297dfd0d8e",
-              "vector_score": 0.516798,
-              "fts_score": 0,
-              "hybrid_score": 0.361759
-            },
-            {
-              "company_id": "36f539c6-5479-4364-8db4-4cb7983ea1d3",
-              "best_chunk_id": "f72c594d-6141-4905-96c6-0ff23699cb2c",
-              "best_chunk": "Deep brain neurovascular coupling analysis using multimode fibre...\nCategory: Humanities, Arts and Social Sciences (HASS) Research",
-              "best_grant_id": "e916676a-b5c1-4d31-9f87-0cc2ccf7dba9",
-              "vector_score": 0.500304,
-              "fts_score": 0,
-              "hybrid_score": 0.350213
-            },
-            {
-              "company_id": "66842423-a912-40ba-bc89-bd1ac8b6dfd2",
-              "best_chunk_id": "8175f05b-169d-4394-a58a-c7b3dea716c4",
-              "best_chunk": "Micro- and Nanoplastics in Atherosclerosis: Assessing Vascular and...\nCategory: Medical Research",
-              "best_grant_id": "603a61e8-1b81-44b4-8e44-ddc2e161e236",
-              "vector_score": 0.488317,
-              "fts_score": 0,
-              "hybrid_score": 0.341822
-            }
-          ]
-        ],
-        "anyOk": true,
         "count": 6,
         "failed": false
       },
       {
-        "label": "Stroke and cerebrovascular imaging analysis",
-        "groups": [
-          [
-            {
-              "company_id": "4cc68449-0018-439d-9fc4-d3d21fa07ff1",
-              "best_chunk_id": "a43cdf2e-5652-49b6-b07f-34735757caf1",
-              "best_chunk": "PROJECT SUMMARY/ABSTRACT\nImaging is an essential tool to guide stroke patient management. Recent DAWN and DEFUSE-3 trials have\nprovided the definitive evidence that imaging is critical to guide late endovascular therapy (EVT), underscoring\nthe need to transition from onset time-based to tissue-based treatment. However, it has been estimated that\nthe majority of stroke patients (~70%) presenting 6-24 hrs with NIH Stroke Scale (NIHSS) over 6 are not\nDAWN and/or DEFUSE-3 eligible (Desai et al. J Neurointerv Surg. 2018; 10:1033-37). The 2018 American\nHeart Association Stroke Early Management Guidelines pointed out that it is “… reasonable to incorporate\ncollateral flow status into clinical decision making in some candidates to determine eligibility for mechanical\nthrombectomy.” Tissue metabolic MRI is a surrogate biomarker of the collateral flow status that is promising to\naddress this clinical need. We will develop fast pH and diffusion kurtosis imaging (DKI) and evaluate their value\nfor guiding reperfusion therapy in experimental stroke models.\nDuring the previous funding cycle, we made steady progress in developing new stroke MRI techniques. We\ndeveloped pH-specific imaging based on magnetization transfer and relaxation-normalized amide proton\ntransfer (MR-APT) MRI (Guo et al. Neuroimage 2016;242-9). Using filament middle cerebral artery occlusion\nrats, we refined the perfusion/diffusion-weighted imaging (PWI/DWI) lesion mismatch for the metabolic\npenumbra and benign oligemia (Wang et al. Neuroimage 2019;610-7). Our acute stroke patient study showed\nthat the volumes of acute DKI lesions have a higher correlation coefficient than those on the apparent diffusion\ncoefficient (ADC) maps with 1-month follow-up T2 images (Yin et al. Radiology 2018:651-7). This echoes the\nrecent study from NINDS investigators who reported: “ADC evolution in patients with early, complete\nrevascularization, now more commonly seen with EVT, is strikingly different from our historical understan",
-              "best_grant_id": "4d742ea6-682c-4a4f-af7b-8bdf56123398",
-              "vector_score": 0.709566,
-              "fts_score": 0,
-              "hybrid_score": 0.496696
-            },
-            {
-              "company_id": "3f8e2da7-e181-45e3-93fb-028ff458350e",
-              "best_chunk_id": "b2312dbb-30a0-4631-b788-ebf8cdbcb3ad",
-              "best_chunk": "Quantitative Cerebral Oxygen Metabolic Imaging of Acute Ischemic Stroke",
-              "best_grant_id": "15e25ad5-96d1-4b1d-aeb7-e60d9f1bbc0e",
-              "vector_score": 0.674251,
-              "fts_score": 0,
-              "hybrid_score": 0.471975
-            },
-            {
-              "company_id": "128eafae-3e32-4f7b-b766-64f21a7c7076",
-              "best_chunk_id": "88f6f887-71af-4df4-bcd4-2c0832570979",
-              "best_chunk": "Abstract\nStroke is a disabling cerebrovascular disease that causes 5.5 million deaths each\nyear globally. The disease progresses rapidly and irreversibly, leaving a narrow\ntime window for intervention. Existing methods for patient selection for endo-\nvascular thrombectomy are suboptimal, based exclusively on simple linear\nthreshold models applied to neuroimaging. Deep learning has shown great\npromise in recent years for many medical applications. We believe that it can\nbe used to integrate imaging and non-imaging data in a seamless and data-\ndriven way to improve stroke triage and clinical trials.\nThe goal of this project is to develop deep convolutional neural network\napproaches to the initial MR and CT imaging, the most commonly performed\nstroke imaging protocol in acute ischemic stroke patients, and to combine this\nwith non-imaging clinical information. We will train networks to predict the\nmost likely final tissue and clinical outcomes under 2 extreme conditions\n(major reperfusion and minimal reperfusion) to estimate the treatment effect at\nthe individual level. Next, we use the methods and learning from this first study\nto train deep learning models without using contrast perfusion imaging, which\nwill improve safety, cost, and time-to-treatment. Finally, we will test the\ngeneralizability and explainability of these AI methods in external cohorts\nwhich differ in terms of population and scanner types, including testing on data\nfrom mobile CT scanners.\nAccomplishment of these aims will fundamentally shift the acute stroke\nparadigm beyond the relatively simplistic mismatch concept and replace it with\na data-driven method that takes into account the immense amount of imaging\nand clinical data that can be brought to the stroke decision-making process.\nThe methods developed will improve long-term outcomes and reduce of the\ncost of stroke care worldwide.",
-              "best_grant_id": "4c10e189-bac3-4e29-8ca7-d8a3961a6e49",
-              "vector_score": 0.663644,
-              "fts_score": 0,
-              "hybrid_score": 0.464551
-            },
-            {
-              "company_id": "7bedb49d-20ed-42b3-b462-5a5f4ae56c9c",
-              "best_chunk_id": "2833b4be-20e5-49b9-b4a3-9d8748ce67cb",
-              "best_chunk": "Hyperpolarized 13C metabolic imaging in an endovascular swine model of ischemic stroke",
-              "best_grant_id": "57e8dd9c-0ecc-4fb8-b36f-34b3c1f703b9",
-              "vector_score": 0.654758,
-              "fts_score": 0,
-              "hybrid_score": 0.458331
-            },
-            {
-              "company_id": "e07ba32a-e5a3-4efa-9081-17cf131ca905",
-              "best_chunk_id": "08063f1d-2bfd-4c1f-a731-f9aa70ddfde6",
-              "best_chunk": "Dual Contrast pH-Weighted MRI for Stroke Imaging",
-              "best_grant_id": "02e403f1-1e95-4829-b7f5-5614e0814bb9",
-              "vector_score": 0.657479,
-              "fts_score": 0,
-              "hybrid_score": 0.460236
-            },
-            {
-              "company_id": "ed9546db-8309-4576-b7e8-5cae8a6f6b9c",
-              "best_chunk_id": "b06193a6-fa28-4e1d-ada6-70c451309497",
-              "best_chunk": "SUMMARY/ABSTRACT\nCurrently, stroke diagnosis requires advanced imaging (e.g., CT, MRI) to distinguish stroke from mimics, which\naffect up to 58% of individuals presenting with clinical stroke symptoms. Lack of prompt diagnosis for ischemic\nstroke, as well as exclusion criteria that stem from potentially severe risk factors associated with global tissue\nplasminogen activator (tPA) administration, resulted in less than 4% of U.S. patients receiving thrombolytic\ntherapy. CT is typically used to rule out presence of a large hemorrhage or bleeding (10-15% of cases) yet\nfrequently cannot be performed in time for effective thrombolysis. Furthermore, while cerebral blood flow (CBF)\nperfusion is a direct target parameter for management during acute initial intervention and throughout recovery\n(12-72 hours post treatment), current hardware is either ‘snapshot’ (perfusion CT and ASL-MRI), or highly\ninvasive (EVD probes). As a result, neuro-intensivists are often left assessing brain perfusion indirectly using\nsystemic targets such as cerebral perfusion pressure. There is no currently available clinically effective\nmethod to directly measure CBF rapidly, continuously, quantitatively, and non-invasively. Optical methods\nhold promise for continuous assessment of CBF. However, absolute quantification of CBF has remained a\nchallenge, requiring high brain specificity in addition to time-of-flight information, which enables accounting for\nhead anatomy and optical properties. While interferometric Near-Infrared Spectroscopy (iNIRS), developed by\nour team, has addressed the challenge of quantification by providing the time-of-flight dimension, it suffers from\nlow photon collection of a single mode fiber, requiring temporal averaging of 10 seconds or longer. On the other\nhand, multi-speckle approaches demonstrated recently have unprecedented light collection efficiency but to date\ndo not provide absolute quantification of blood flow. A high throughput version of iNIRS is therefore requi",
-              "best_grant_id": "5b71a900-a3ac-4409-adc0-ab903c5a2bb1",
-              "vector_score": 0.655633,
-              "fts_score": 0,
-              "hybrid_score": 0.458943
-            },
-            {
-              "company_id": "68e5ddc4-7d4e-4b29-bd56-e15c8a3a53d6",
-              "best_chunk_id": "92e7532f-2114-41e7-a0aa-6d1a0a3424aa",
-              "best_chunk": "Dynamic cerebrovascular morphology changes in acute ischemic stroke",
-              "best_grant_id": "be53b641-e4df-49b0-ad45-fea1188d89f5",
-              "vector_score": 0.668644,
-              "fts_score": 0,
-              "hybrid_score": 0.46805
-            },
-            {
-              "company_id": "680c266f-0a73-407f-a927-ac85585c3790",
-              "best_chunk_id": "9023e502-8ed8-4819-ad88-f974776d8738",
-              "best_chunk": "Project Summary/Abstract\nThe long-term goal of this work is to reduce the incident of stroke by identifying the most vulnerable patients\nusing MRI scans. Currently roughly 1 of every 8 patient who have had an initial stroke from intracranial\natherosclerosis disease (ICAD) will suffer a second stroke within a year. Patients who are likely to fail medical\nmanagement have loss of cerebrovascular reserve, poor collateral arterial blood supply, and/or plaque that is\nvulnerable to rupture from active macrophage infiltration. Our goal is to identify vulnerable patients to inform the\nselection for new medical management protocols, stenting or stent-less angioplasty. We will develop a suite of\nnew MRI scans and evaluate them in the intended patient population, comparing to reference standard CO2\nChallenge CVR, HMPAO SPECT or direct imaging of active macrophages.\nSignificance: ICAD is one of the most common causes of stroke worldwide and carries an extremely a high risk\nof recurrent stroke. ICAD patients with severe stenosis (70 to 99%) are at particularly high risk for recurrent\nstroke in the vascular territory of the stenosis (~12 to 20% within 12 months) despite treatment with aspirin,\nPlavix and management of risk factors (hypertension, smoking etc). The use of new, preventative treatment\nincluding angioplasty, new anti-platelet medication would benefit if the most vulnerable patient can be identified.\nOur imaging biomarkers will improve risk stratification for the of stroke in a vulnerable, high risk\npopulation.\nInnovation: We have developed time resolve MRI scans that are targeted to risk factor of stroke in ICAD:\n (1) Cardiac Gated “Snapshot” images of transient changes in the cerebral vasculature in response to arterial\n pressure changes induced by the cardiac cycle. These changes are muted by a loss of cerebrovascular\n reserve a risk fact of stroke.\n (2) A new mathematical deconvolution algorithm based on linear time-invariant system theory to quantify\n perfusion sup",
-              "best_grant_id": "096cf8c0-9a40-45d9-9efd-8f62beced143",
-              "vector_score": 0.66279,
-              "fts_score": 0,
-              "hybrid_score": 0.463953
-            },
-            {
-              "company_id": "1c34ae7b-eaef-4b15-a1ef-11487d5ac42f",
-              "best_chunk_id": "643d7625-1469-49ca-8bf9-9d31de6ea4c5",
-              "best_chunk": "MRS DITCH - Magnetic Resonance Selection with DIffusion Tensor Imaging in Cerebral Hemorrhage",
-              "best_grant_id": "a7c0b3d7-93d6-4088-be95-501d9cb6356b",
-              "vector_score": 0.669541,
-              "fts_score": 0,
-              "hybrid_score": 0.468679
-            },
-            {
-              "company_id": "ba612d7b-a316-4757-85cc-990c848bf148",
-              "best_chunk_id": "8850bf21-3716-463f-82f8-950786c3e47f",
-              "best_chunk": "PROJECT SUMMARY\nPost-stroke cognitive impairment is common, particularly in older individuals. Existing knowledge gaps about\nmechanisms underpinning poor outcome, particularly in the aged, have been the most significant barriers to\ndeveloping novel therapeutic targets and approaches to prevent cognitive decline and progression to Alzheimer’s\ndisease and related dementias (ADRD). This is especially relevant to health disparity populations, specifically\nwomen and Black demographics. Previous studies of Alzheimer’s disease and mild cognitive impairment,\nsuggest that the morphological changes of the corpus callosum are related to cognitive measures. Existing data\nshow that classical neuroimaging biomarkers such as acute infarct volume, location, and white matter\nhyperintensity burden have modest prognostic predictive utility in models of post-stroke cognitive function. We\nhave recently used diffusion tensor imaging in acute stroke patients to show that decreased fractional anisotropy\nof the ipsi- and contra-lateral hemispheric normal appearing white matter, as well as the corpus callosum, are\nassociated with higher stroke scale impairment severity. Additionally, we have also used advanced diffusion\nimaging to examine white matter microstructure in midlife individuals with significant vascular risk factors, as well\nas Black and women demographics at risk for stroke and cognitive impairment. Our preliminary results suggest\nthat the corpus callosum and other white matter structures involved in cognition manifest specific diffusion\nchanges that not only relate to vascular risk factor burden exposure, but also to post-stroke outcome. Our\nlaboratory has pioneered diffusion MRI acquisition and modeling approaches that are sensitive to not only white\nmatter anisotropy, but also white matter complexity. As such, we are well poised to comprehensively characterize\nthe diffusion properties of normal appearing white matter across time and age, in acute stroke patients and their\npost",
-              "best_grant_id": "a564ce94-f69d-4164-afd3-4aa5b4d3fdb9",
-              "vector_score": 0.683022,
-              "fts_score": 0,
-              "hybrid_score": 0.478115
-            }
-          ],
-          [],
-          [
-            {
-              "company_id": "fe4e0117-9c4a-498f-ab4f-e4a4f7e3f519",
-              "best_chunk_id": "343741a0-da96-4c33-bf91-e40dad317c25",
-              "best_chunk": "AI-Enhanced Vascular Imaging: Pioneering Stroke Risk Analysis in Underserved Populations",
-              "best_grant_id": "f1b0ac2a-de41-46b9-b405-365b4e50e3fe",
-              "vector_score": 0.594934,
-              "fts_score": 0,
-              "hybrid_score": 0.416454
-            },
-            {
-              "company_id": "f12f1447-dcd0-40ee-958b-82e1b2f08dc8",
-              "best_chunk_id": "016998c4-da74-4dc2-befa-e6e8e4adad44",
-              "best_chunk": "Reducing the risk of secondary ischaemic stroke in patients with acute intracerebral haemorrhage: Multimodal definition of vulnerable phenotypes",
-              "best_grant_id": "de89fe58-e8b9-4c7a-929c-7d8bf0e2255a",
-              "vector_score": 0.603345,
-              "fts_score": 0,
-              "hybrid_score": 0.422342
-            },
-            {
-              "company_id": "8c3a32f0-9946-45cb-83e7-5e756778a856",
-              "best_chunk_id": "e78198e9-8e74-458f-9816-a7974f0a3bda",
-              "best_chunk": "The Cerefuze system ' ReVive' introduces an innovative approach as an adjunct tool for mechanical thrombectomy, pioneering a new method for delivering neuroprotective drugs directly to the brain's microvasculature while also mitigating reperfusion injury.\n\nThe proposed ReVive device, the first of its kind, is uniquely designed to seamlessly integrate with the exisiting thrombectomy procedures, enhancing stroke outcomes by restoring microvascular perfusion in ischemic brain regions and overcoming the limitations of standard medical management. Additionally, it is future-proofed for MRI-guided stroke interventions, allowing real-time monitoring of reperfusion to ensure precision and effectiveness during treatment.\n\nA significant barrier in stroke care is the &quot;no-reflow&quot; phenomenon, where damaged brain tissues are not adequately reached by therapeutic agents even after successful thrombectomy, thus limiting the efficacy of neuroprotectants.\n\nCerefuze addresses this challenge by delivering drugs directly into the microvasculature, ensuring effective targeting of ischemic brain tissue to reduce injury. Current interventions, such as therapeutic hypothermia and remote ischemic conditioning, have shown limited success, and traditional methods of drug administration have struggled with poor tissue penetration. Consequently, numerous neuroprotective compounds have failed in clinical trials, underscoring the need for a reliable solution that Cerefuze can provide.\n\nReVive's disposable perfusion device is engineered to work within existing thrombectomy workflows, establishing a novel adjunct therapy that significantly improves stroke care. By delivering matrix metalloprotease inhibitors (e.g., Marimastat) to over 90% of the ischemic regions targeted, it aims to reduce tissue damage and improve recovery outcomes.\n\nThe Cerefuze system's immediate clinical benefit lies in its capacity to alleviate ischemia reperfusion injury in patients undergoing thrombectomy, enhancing",
-              "best_grant_id": "ba531501-1809-455a-b809-167c033dee41",
-              "vector_score": 0.5701,
-              "fts_score": 0,
-              "hybrid_score": 0.39907
-            },
-            {
-              "company_id": "251a5d8a-3870-48a2-bc41-4c0f5781fdd2",
-              "best_chunk_id": "931d9d02-040e-4edd-9cbf-977d586d5891",
-              "best_chunk": "Context: Cerebral small vessel disease (cSVD) is the commonest vascular cause of cognitive impairment and dementia (VCI/VaD, 20% of dementias), and commonly causes mixed dementia with Alzheimer’s disease, totalling some 45-50% of dementias. cSVD also causes 25% of strokes (‘lacunar’), frailty, loss of independence and accelerated brain ageing. It is often detected incidentally on brain scans. With no effective treatment, cSVD constitutes a substantial global unmet need.\nThe challenge is to determine how cSVD causes brain damage, both directly due to damaged blood vessels and/or other indirect mechanisms, what factors drive cSVD progression, and how this can be stopped or reversed. Although cSVD associates strongly with hypertension, diabetes, smoking, intensive vascular risk factor management has had limited effects on stopping cSVD progression.\nHuman brain magnetic resonance imaging (MRI) studies suggested an abnormality in cSVD in the small blood vessel lining (endothelium) and vessel wall that leads to leaky blood-brain barrier, poor control of blood flow, impaired fluid and waste clearance, and both ‘direct’ vascular and secondary ‘indirect’ brain tissue damage. Importantly, cSVD brain lesions can reverse spontaneously, leading to improved clinical outcomes, but which lesions, and whether secondary brain damage can be stopped, is unknown.\nIn the LACunar Intervention Trial-2 (LACI-2), in 363 patients with lacunar (cSVD) stroke, two endothelial-stabilising drugs, isosorbide mononitrate (ISMN) and cilostazol, acting at different points on complementary vascular pathways, improved cognitive, cerebrovascular, and physical outcomes, with possible synergy.\nOur aims and objectives are to: track how cSVD contributes to cognitive decline and neurodegeneration visualised on brain MRI; use blood biomarkers to identify cells and pathways linked with clinical and tissue outcomes; determine if ISMN and cilostazol improve outcomes by reducing cSVD vascular lesion and/or neurode",
-              "best_grant_id": "80648fe2-5d32-4b9f-97eb-88b037f52960",
-              "vector_score": 0.562457,
-              "fts_score": 0,
-              "hybrid_score": 0.39372
-            },
-            {
-              "company_id": "6bec41bb-dced-491c-a2c5-9f29b5463a5e",
-              "best_chunk_id": "23866b4c-9f64-4d2f-b981-2f0fed3ae881",
-              "best_chunk": "Mapping cerebrovascular (dys)function in the early stages of Alzheimer's disease",
-              "best_grant_id": "65eef7b1-84c1-4af0-a036-491295915229",
-              "vector_score": 0.573201,
-              "fts_score": 0,
-              "hybrid_score": 0.401241
-            },
-            {
-              "company_id": "95721a98-a082-4e60-8eb8-6860402b9d30",
-              "best_chunk_id": "9f5a12c4-6705-450d-a56c-acc89629d3a2",
-              "best_chunk": "NEUROQUANT - Neurovascular MR coil powered by quantitative neuroimaging technologies for Alzheimer’s disease diagnosis, prognosis, and therapy monitoring.",
-              "best_grant_id": "94211e7e-9762-4516-9aae-5e808c563c35",
-              "vector_score": 0.552638,
-              "fts_score": 0,
-              "hybrid_score": 0.386847
-            },
-            {
-              "company_id": "5cd28d75-6ba1-4502-abf1-04b4419b692d",
-              "best_chunk_id": "43116a7e-4702-4900-80df-6f89531f8e12",
-              "best_chunk": "AI-powered portable MRI abnormality detection (APPMAD)",
-              "best_grant_id": "153a1d9a-4597-43a4-9167-b157b5d1073c",
-              "vector_score": 0.556226,
-              "fts_score": 0,
-              "hybrid_score": 0.389358
-            },
-            {
-              "company_id": "ad0b223e-0307-4459-8b72-6e128b369f39",
-              "best_chunk_id": "02738364-a91e-4399-a6b4-ac7e425fb5b1",
-              "best_chunk": "ICF: Defining the role of PDE5 on cerebrovascular function in small vessel disease",
-              "best_grant_id": "135ef37f-a17d-45ec-8126-79f454163878",
-              "vector_score": 0.546576,
-              "fts_score": 0,
-              "hybrid_score": 0.382603
-            },
-            {
-              "company_id": "06d4852b-32fa-4282-b012-9245f0f49943",
-              "best_chunk_id": "20ece172-8bf0-42fb-9f1b-0f27faeadd3d",
-              "best_chunk": "Worldwide, preterm birth and intrapartum events are the biggest causes of death and lifelong disability in children under 5 years of age, and often it is the lack of early diagnosis that leads to permanent damage. Perinatal arterial ischemic stroke (PAIS), for example, affects 1 in 2500 newborn infants and is a significant cause of lifelong disability. Despite being more common than large-artery stroke in adults, it is far less well understood. PAIS is also comparatively under-diagnosed, such that opportunities for timely treatment are often missed. While there have been major improvements in neonatal intensive care over the past 40 years, continuous monitoring of the brain remains rudimentary.\nWe propose to evaluate an entirely new form of optical imaging, known as wavelength-modulation diffuse optical tomography (WM-DOT), for diagnosing and assessing PAIS and other forms of brain injury in newborn babies. It is safe, portable, low-cost, and easy to use. WM-DOT avoids dependency on variable surface effects and patient motion which have severely inhibited previous optical methods, and yields images which are sensitive to absolute rather than differences in optical properties. The images will reveal abnormalities in cerebral tissue oxygenation and thus lead to more prompt intervention, reducing incidence of permanent disability.\nDiffuse optical imaging involves illuminating the scalp with a harmless beam of light and measuring the amount of light that emerges after considerable scattering within the underlying tissues. The light is absorbed differently by the oxygenated and deoxygenated forms of haemoglobin (the molecule in blood that carries oxygen around the body), and thus these measurements are sensitive to the volume and oxygenation of blood. While methods known as near-infrared spectroscopy (NIRS) and diffuse optical tomography (DOT) have been explored as a means of brain monitoring of infants and adults for several decades, they are notoriously sensitive to th",
-              "best_grant_id": "1568000e-753d-4ab1-a452-7e2ad47fce6e",
-              "vector_score": 0.579713,
-              "fts_score": 0,
-              "hybrid_score": 0.405799
-            },
-            {
-              "company_id": "a548d198-d784-458f-a065-949c6f879da8",
-              "best_chunk_id": "2b0dc38f-f88d-4866-9f40-72f8e46d9305",
-              "best_chunk": "Enhanced Predictive Analytics for Stroke Recovery in the UK",
-              "best_grant_id": "f600fa55-19c1-4d87-8dd9-cc77f92f0797",
-              "vector_score": 0.548067,
-              "fts_score": 0,
-              "hybrid_score": 0.383647
-            }
-          ],
-          [
-            {
-              "company_id": "9bdd6997-6c18-47e6-a9c5-2aa829518f80",
-              "best_chunk_id": "87338a90-337d-40cb-8ae3-64a87de5ffa3",
-              "best_chunk": "Clot radiomics and haemodynamic profiling in acute ischaemic stroke:...\nCategory: Medical Research",
-              "best_grant_id": "0ea8c226-e438-4835-a299-1d033bb8c0bd",
-              "vector_score": 0.642633,
-              "fts_score": 0,
-              "hybrid_score": 0.449843
-            },
-            {
-              "company_id": "6c9cb7ee-9825-4019-9da2-25d234e9e068",
-              "best_chunk_id": "236e380f-05fc-4f50-9bfc-15b6c8c437c4",
-              "best_chunk": "Radiomic prediction of acute ischaemic and haemorrhagic stroke outcomes...\nCategory: Medical Research",
-              "best_grant_id": "c5d829fb-4396-4f29-8702-7b87cf1bbf53",
-              "vector_score": 0.631035,
-              "fts_score": 0,
-              "hybrid_score": 0.441724
-            },
-            {
-              "company_id": "42e53077-32a2-47c8-bc31-847696c54abb",
-              "best_chunk_id": "15979ed9-ca4c-43dc-b482-48279924af57",
-              "best_chunk": "New mathematical models for brain tissue microstructure imaging. Diffusion MRI is a modern workhorse for neuroscientists to non-invasively study the brain. However, the mechanism underlying diffusion MRI signal formation, due to the movement of water molecules in complex brain tissue, is still unclear. This project aims to develop the next generation mathematical framework to interpret and model diffusion-weighted MRI signals, surpassing the capability of conventional mathematical models. Expected outcomes include novel mathematical and computational approaches enabling more sensitive and specific imaging markers for characterising brain tissue microstructure. The mathematical tools developed will advance the state of the art in diffusion MRI data analysis and benefit both researchers and clinicians.\n\nField of research: 4901 - Applied Mathematics\n\nSince the first images of water diffusion in the human brain were captured in 1985, diffusion-weighted magnetic resonance imaging (DW-MRI) has become a crucial tool for neuroscientists. This project will develop the next-generation mathematical theory and computational tools to interpret and analyse DW-MRI signals, surpassing the capabilities of traditional imaging models like diffusion tensor imaging (DTI) and diffusion kurtosis imaging (DKI). The highly efficient computational models and tools will establish a mapping between the mathematical model parameters and tissue microstructural properties, potentially leading to more sensitive and specific imaging markers for characterizing brain tissue microstructure. The innovative techniques are poised to not only benefit researchers in applied mathematics, biological mathematics, and biomedical imaging, but also neuroscientists and clinicians. Through publications in high-impact journals, this project will position Australia as a world leader in mathematical modelling with fractional calculus theory and tissue microstructure imaging using DW-MRI. Furthermore, it will foster l",
-              "best_grant_id": "043897d1-2647-4b24-8c20-0e764eaeb2c7",
-              "vector_score": 0.600635,
-              "fts_score": 0,
-              "hybrid_score": 0.420444
-            },
-            {
-              "company_id": "44e1ebef-2a77-4fa7-b074-0130a0832c59",
-              "best_chunk_id": "c28b7cc9-8ff3-4449-b93e-07f02abb45d5",
-              "best_chunk": "Sampling and processing for diffusion magnetic resonance imaging. This project aims to develop optimal, efficient and robust signal processing methods for diffusion magnetic resonance imaging (dMRI) with reduced scan times. A child, possibly distressed, can only be motionless long enough to undergo a basic dMRI scan of the brain, but enhanced forms of dMRI need at least 60 minutes. The project’s processing methods will use spherical geometries, which encode information about white matter fibres in the brain, to collect and reconstruct images. The project is expected to reduce dMRI scan times and ultimately make non-invasive and inexpensive early detection of neurological disorders such as dementia feasible.\n\nField of research: 0906 - Electrical and Electronic Engineering",
-              "best_grant_id": "07891ee3-6843-4760-b857-bc526a06193b",
-              "vector_score": 0.555046,
-              "fts_score": 0,
-              "hybrid_score": 0.388532
-            },
-            {
-              "company_id": "13b1ae89-8992-41e2-afe4-f8f22afcee1e",
-              "best_chunk_id": "93daddc2-bf26-41f7-9d90-7a0d51605d2d",
-              "best_chunk": "Improving early stroke diagnosis in regional hospitals\nCategory: Industry Innovation",
-              "best_grant_id": "05bc3192-d020-4a37-aab9-4894bfec2c8e",
-              "vector_score": 0.545031,
-              "fts_score": 0,
-              "hybrid_score": 0.381522
-            },
-            {
-              "company_id": "36f539c6-5479-4364-8db4-4cb7983ea1d3",
-              "best_chunk_id": "4cb5d177-dbae-409a-bcde-0ccb982a5e2b",
-              "best_chunk": "Characterising blood oxygenation changes in functional human brain imaging. This project aims to characterise and image the human vasculature in vivo that underlies functional brain mapping techniques, which can blur and mask the accurate mapping of human cognition. This project expects to generate new knowledge in the field of functional imaging and anatomy, physiology, and function of the human brain. Expected outcomes include a detailed map of the blood vessel anatomy of the living human brain, and vascular models of functional brain signals in space and time describing systemic and neurovascular processes. Potential benefits include new technologies for neuroscience and brain physiology research to shed new light onto human cognitive hierarchy and computation.\n\nField of research: 4003 - Biomedical Engineering\n\nThe proposed project aims to increase our understanding of human brain function by investigating the biophysical mechanisms that underpin brain processes. During this project experts will be traind and increase Australia’s capacity in the inter-disciplinary area between biomedical engineering, human brain imaging, and computer science/machine learning. This will increase critical knowledge and capability in AI that Australia urgently needs to capitalise on bringing AI into medical imaging delivering economic, commercial, and social impact via publicly sharing new computational tools, research outcomes (data and analysis pipelines), as well as developing intellectual property strategies. The project will make use of Australia’s national resource in biomedical imaging of the National Imaging Facility - a research network of 10 Australian universities. Australia’s international collaboration will be expanded via collaboration with Stanford University (US) and Maastricht University through this project, providing access to unique expertise and facilities not available in Australia.",
-              "best_grant_id": "304a2998-804d-4061-bf2b-4dbbc99a4578",
-              "vector_score": 0.538526,
-              "fts_score": 0,
-              "hybrid_score": 0.376968
-            },
-            {
-              "company_id": "e065c7b8-7154-4aed-a7e9-184e809753b7",
-              "best_chunk_id": "ebd464fe-2fc8-4871-9592-ff7eb765cc6b",
-              "best_chunk": "Feasibility of intra-arterial therapy for patients with primary brain...\nCategory: Medical Research",
-              "best_grant_id": "0c87fca9-94c0-47f4-8dc5-77acf85fbca9",
-              "vector_score": 0.539292,
-              "fts_score": 0,
-              "hybrid_score": 0.377504
-            },
-            {
-              "company_id": "ac1fead1-0b9a-4015-8879-69ceaad8d5e6",
-              "best_chunk_id": "65587279-20dc-49e2-b155-4e17a66f44cf",
-              "best_chunk": "A Patient-Centric Microfluidic Screening Platform for Stroke Recurrence...\nCategory: Medical Research",
-              "best_grant_id": "58b4d49e-918e-4d00-82d3-a2297dfd0d8e",
-              "vector_score": 0.563572,
-              "fts_score": 0,
-              "hybrid_score": 0.3945
-            },
-            {
-              "company_id": "b5636865-e921-4a42-8dd3-e25d2f9cc50d",
-              "best_chunk_id": "1aa27125-f94a-467b-9a3b-7e4d9695d01e",
-              "best_chunk": "Novel strategy to reduce neuroinflammation after stroke\nCategory: Medical Research",
-              "best_grant_id": "87645738-4a5f-45f0-8a10-4b15c136937d",
-              "vector_score": 0.566366,
-              "fts_score": 0,
-              "hybrid_score": 0.396456
-            },
-            {
-              "company_id": "1d451e31-2709-449c-b0b6-67bdebb03183",
-              "best_chunk_id": "fd6a1dba-4e49-40f6-80a9-de200e23e251",
-              "best_chunk": "Neuroimaging, Neural Models, and Neurobiology: A Fresh Look at Dementia\nCategory: Medical Research",
-              "best_grant_id": "e5fb16fd-9e5a-409a-86fd-5fbfc62079ff",
-              "vector_score": 0.524713,
-              "fts_score": 0,
-              "hybrid_score": 0.367299
-            }
-          ]
-        ],
-        "anyOk": true,
+        "count": 6,
+        "failed": false
+      },
+      {
         "count": 6,
         "failed": false
       }
@@ -572,202 +33,491 @@
     "country": "CA",
     "bg": "Neuroradiology, brain MRI segmentation, diffusion imaging, deep learning for lesion detection.",
     "status": "OK",
-    "ms": 25808,
+    "ms": 27233,
     "spikes": 3,
     "scopes": 1,
     "nSearches": 3,
+    "nRerank": 3,
     "nFailed": 0,
     "totalMatches": 18,
     "perSpike": [
       {
-        "label": "Brain MRI lesion segmentation",
-        "groups": [
-          [
-            {
-              "company_id": "c4c6f237-75be-4405-b6b7-58b6d62ca20f",
-              "best_chunk_id": "065c3914-970c-4d62-a73e-b0e5c7500754",
-              "best_chunk": "I-Corps: Translation potential of an artificial intelligence (AI) approach for brain lesion segmentation",
-              "best_grant_id": "1d1afbca-e1e3-425b-8678-668f086cc37c",
-              "vector_score": 0.694117,
-              "fts_score": 0,
-              "hybrid_score": 0.485882
-            },
-            {
-              "company_id": "e1083cd9-d23d-4169-b912-046e788c3926",
-              "best_chunk_id": "4c3cb2ec-7162-4fd9-a247-a095a03b617b",
-              "best_chunk": "As the management of multiple intracranial metastases is rapidly evolving, the demands for\ndetection and delineation of a large number of potentially very small metastatic lesions in the\nbrain on 3D magnetic resonance images (MRI) are increasing dramatically. Artificial intelligence\n(AI) systems can assist both the radiologist as well as radiation oncologist in their roles in\nmanagement of patients with multiple tumors metastatic to the brain. In response to PAR-20-\n155, we have assembled an academic-industrial partnership including investigators from three\nacademic institutes and an industrial AI team to develop, translate and validate AI systems to\naddress this unmet clinical question. In this proposal, a neural network system based upon\nmultiple scale 3D fully convolutional one-stage objective detectors containing segmentation\nheads will be optimized and investigated. Training and testing data will be provided from clinical\nimages of patients treated with radiosurgery to multiple small metastases acquired from three\nacademic centers, curated by experts, and augmented by addition of realistic synthetic lesions\ninjected into images. The clinical utility of the network will be investigated for its ability to assist\na) radiologists in detecting multiple metastases accurately and efficiently, and b) radiation\noncologists in delineating multiple metastatic lesions to support selection of therapeutic strategies\nand planning of treatments.",
-              "best_grant_id": "32ee0103-faa6-4ae4-a868-9997e34e7db6",
-              "vector_score": 0.660872,
-              "fts_score": 0,
-              "hybrid_score": 0.46261
-            },
-            {
-              "company_id": "7ef11165-5936-4056-9a18-04c71edd6201",
-              "best_chunk_id": "4a17a44d-63ca-400b-89a0-9441e7a954da",
-              "best_chunk": "The objective of this research is to design and develop novel deep learning architectures to address major challenged that Artificial Intelligence (AI) in Medicine faces. Although Convolutional Neural Networks (CNNs) have shown series of breakthroughs in Computer Vision and have achieved promising results in different Medical Imaging tasks such as cancer diagnosis (e.g., tumour detection) and prognosis, there are unmet challenges that impede their efficacy in translation into clinical settings. First, the visualization of CNNs' results is recognized as a major challenge for the integration of AI into clinical workflow and there is a knowledge gap in understanding how images contribute to the final results. Second, while the Area Under the receiver operating characteristic Curve (AUC) is the main evaluation metric for cancer diagnostic solutions in Medical Imaging, CNNs cannot be directly optimized for AUC, which may lead to suboptimal results. Third, as a preprocessing step, most CNN-based diagnostic and prognostic solutions rely on segmentation of tumour regions (region of interest or ROI). This is usually done manually by a clinician (e.g., radiologist) or automatically or semi-automatically by a segmentation algorithm, which is trained using the manual annotations. Because there is no definite way to confirm the exact boundaries of a tumour, the ROI annotation therefore heavily relies on radiologists' expertise and understanding of the underlying phenotype of the cancerous tissue and its appearance on the medical images. This leads to a wide variation of tumour regions annotated by different radiologists for the same case resulting in a significant variation in CNN models trained using ROIs. ROI variability significantly decreases the accuracy of AI-based diagnostic and prognostic models for a given label (e.g., patient survival).\n\n In this research, we will design, develop, and validate deep learning architectures that address these major challenges for AI in Medical Imaging. We will design and implement three different visualization methods for CNNs, which can be used for both CNN visualization and tumour localization at pixel level using image-level labels only. We will develop a genetic algorithm embedded into CNN architecture which enables the network to be directly optimized for AUC. Finally, we will develop a deep generative model that not only discovers the associations between medical images and the label (e.g., cancer grade), it also automatically generates the subregions in the image which drive such associations.\n\n We will apply the proposed solutions to different imaging modalities and cancer sites including brain tumours (MRI), prostate cancer (MRI), and lung cancer (CT). The outcome of this research will be novel solutions to harness meaningful information latent in imaging data to generate attention maps and significantly improve the performance and reliability of CNNs for both cancer diagnosis and prognosis in Medical Imaging.",
-              "best_grant_id": "fbf164ec-507e-44e4-8d46-3c023394ca5e",
-              "vector_score": 0.649507,
-              "fts_score": 0,
-              "hybrid_score": 0.454655
-            },
-            {
-              "company_id": "c9cb8ce6-4506-4fc9-b594-ff947cd6ab9e",
-              "best_chunk_id": "2238e8a0-a7c7-4fe4-9a24-5d3d841a0c6a",
-              "best_chunk": "Project Summary\nTitle\nFast and Robust Deep Learning for Medical imaging: Segmentation and Registration methods invariant to con-\ntrast and resolution.\nSummary\nSegmentation and registration are critical tasks in a broad range of scientific studies, and have been widely\nimplemented in imaging analysis frameworks. Unfortunately, most existing tools suffer from two important draw-\nbacks: they are computationally demanding, and most often impose limiting restrictions on the type of image\ndata that can be accurately analyzed. While the former drawback has been recently addressed through the use\nof deep neural networks that execute rapidly once trained, these systems amplify the latter, which remains a\nmajor restriction. This typically means that tools only yield accurate results on a very limited range of scan types,\nmost commonly those that they were trained on and are susceptible to repeating bias present in those data. For\nsegmentation this is particularly burdensome as training frequently requires manually labeled representations for\ndifferent types of input data.\nThe constraint of image type greatly restricts image analysis and its downstream impact in an array of important\ndomains. For example, in research imaging, it limits multi-site and longitudinal studies that must hold acquisition\nprotocols constant or attempt to harmonize protocols across different acquisition platforms, and even this process\nhas limited success when the differences are too extreme (e.g. across field strength). Investigators often need\nto adjust, redesign, or retrain the tools for their intended tasks and available images and manual labels, leading\nto more barriers to analysis. There is also a wealth of knowledge to be gained from analyzing clinically-sourced\nMR images, which could lead to better understanding of the biological underpinnings of many disease processes\nand a more precise quantification of the efficacy of therapeutic interventions. However, scans acquired as part\nof routine clin",
-              "best_grant_id": "d476e25b-09ca-4684-9a10-8bd8252d257e",
-              "vector_score": 0.643096,
-              "fts_score": 0,
-              "hybrid_score": 0.450167
-            },
-            {
-              "company_id": "38130ba8-5e49-4cac-aa1c-2765a5fca0b4",
-              "best_chunk_id": "e107eb1b-7fa5-4817-a6f7-277e3bb16094",
-              "best_chunk": "Project Summary\nDeep learning algorithms have revolutionized the field of medical image analysis with their ability to automatically\nextract information without the need for handcrafted features. These algorithms have been shown to be\nparticularly effective for image segmentation (identifying regions of interest) in well-curated datasets. However,\ndeep learning can perform suboptimally when applied to input data acquired differently from the training data.\nThis issue of “out of distribution data” or “domain shift” hinders accurate and robust performance when applied\nto magnetic resonance (MR) images given the diversity of both subject populations and MR acquisition protocols.\nThe appearance of MR images is notoriously sensitive to both hardware differences and software differences\nand as a result, routine use of deep learning has proven to be extremely challenging in clinical neuroimaging. In\nthis project, we propose to surmount the challenges of domain shift in medical images by combining two\napproaches: federated learning (FL) and harmonization. To focus our work on this problem, we will specifically\nwork with MR data from people with multiple sclerosis (MS), an inflammatory disease of the central nervous\nsystem and a leading cause of neurological disability in younger adults. Because reduction or stabilization of\nwhite matter lesion burden is one of the goals of MS therapy, there is strong interest in establishing accurate and\nreliable white matter lesion quantification from MR images. Machine learning would seem to offer a viable\nsolution, but despite decades of research, there is no method for automated lesion segmentation that can be\nrobustly applied across data from different research and clinical sites. One approach is to expand the amount of\ntraining using FL, which builds a deep learning model across multiple institutions without requiring sharing of\npatient data. This bypasses the legal and regulatory restrictions associated with sharing patient data, whi",
-              "best_grant_id": "eef26d99-f33b-4f1d-b5fb-6d4c1470db6b",
-              "vector_score": 0.644735,
-              "fts_score": 0,
-              "hybrid_score": 0.451315
-            },
-            {
-              "company_id": "8e1b1200-6a9d-4474-9cb5-c4e7c28362ee",
-              "best_chunk_id": "b24b0c38-eb1b-48d1-bc62-1ff9eafaf189",
-              "best_chunk": "Deep shape priors for medical image segmentation",
-              "best_grant_id": "d946d5ef-3682-4d17-bc8e-b3ccc22ff87b",
-              "vector_score": 0.646876,
-              "fts_score": 0,
-              "hybrid_score": 0.452814
-            }
-          ]
-        ],
-        "anyOk": true,
         "count": 6,
         "failed": false
       },
       {
-        "label": "Diffusion imaging analysis",
-        "groups": [
-          [
-            {
-              "company_id": "e39e6397-8bdd-4356-9934-464f9d72c503",
-              "best_chunk_id": "ba490f55-a5ae-4279-bd46-27504445ae59",
-              "best_chunk": "TractoMap: A Novel Computational Framework for Analyzing White Matter Pathways with Diffusion MRI",
-              "best_grant_id": "68c7c4a2-ae06-4775-8b0e-6661a14e882f",
-              "vector_score": 0.656537,
-              "fts_score": 0,
-              "hybrid_score": 0.459576
-            },
-            {
-              "company_id": "d1c5da79-e9f1-4d81-9f22-35ac7cd556c6",
-              "best_chunk_id": "82f0492a-b676-4a85-bffd-c66debdfad09",
-              "best_chunk": "Reproducible characterization of white matter connectome through diffusion MRI and tractography",
-              "best_grant_id": "91d89255-144e-47ac-87e6-add04d558a56",
-              "vector_score": 0.644922,
-              "fts_score": 0,
-              "hybrid_score": 0.451445
-            },
-            {
-              "company_id": "34213ff1-5959-4f40-a1c2-540832bcadcd",
-              "best_chunk_id": "1a558f4b-eae1-4e97-a6e5-ba8836b54d32",
-              "best_chunk": "Surface-Based Fiber Tracking and Modeling Techniques for Mapping the Superficial White Matter Connectome with Diffusion MRI",
-              "best_grant_id": "90db944b-50e9-451c-9b9a-7a18d7583851",
-              "vector_score": 0.624777,
-              "fts_score": 0,
-              "hybrid_score": 0.437344
-            },
-            {
-              "company_id": "4cc68449-0018-439d-9fc4-d3d21fa07ff1",
-              "best_chunk_id": "a43cdf2e-5652-49b6-b07f-34735757caf1",
-              "best_chunk": "PROJECT SUMMARY/ABSTRACT\nImaging is an essential tool to guide stroke patient management. Recent DAWN and DEFUSE-3 trials have\nprovided the definitive evidence that imaging is critical to guide late endovascular therapy (EVT), underscoring\nthe need to transition from onset time-based to tissue-based treatment. However, it has been estimated that\nthe majority of stroke patients (~70%) presenting 6-24 hrs with NIH Stroke Scale (NIHSS) over 6 are not\nDAWN and/or DEFUSE-3 eligible (Desai et al. J Neurointerv Surg. 2018; 10:1033-37). The 2018 American\nHeart Association Stroke Early Management Guidelines pointed out that it is “… reasonable to incorporate\ncollateral flow status into clinical decision making in some candidates to determine eligibility for mechanical\nthrombectomy.” Tissue metabolic MRI is a surrogate biomarker of the collateral flow status that is promising to\naddress this clinical need. We will develop fast pH and diffusion kurtosis imaging (DKI) and evaluate their value\nfor guiding reperfusion therapy in experimental stroke models.\nDuring the previous funding cycle, we made steady progress in developing new stroke MRI techniques. We\ndeveloped pH-specific imaging based on magnetization transfer and relaxation-normalized amide proton\ntransfer (MR-APT) MRI (Guo et al. Neuroimage 2016;242-9). Using filament middle cerebral artery occlusion\nrats, we refined the perfusion/diffusion-weighted imaging (PWI/DWI) lesion mismatch for the metabolic\npenumbra and benign oligemia (Wang et al. Neuroimage 2019;610-7). Our acute stroke patient study showed\nthat the volumes of acute DKI lesions have a higher correlation coefficient than those on the apparent diffusion\ncoefficient (ADC) maps with 1-month follow-up T2 images (Yin et al. Radiology 2018:651-7). This echoes the\nrecent study from NINDS investigators who reported: “ADC evolution in patients with early, complete\nrevascularization, now more commonly seen with EVT, is strikingly different from our historical understan",
-              "best_grant_id": "4d742ea6-682c-4a4f-af7b-8bdf56123398",
-              "vector_score": 0.625165,
-              "fts_score": 0,
-              "hybrid_score": 0.437615
-            },
-            {
-              "company_id": "aeac0328-2bfe-4a28-b098-5f5603e80277",
-              "best_chunk_id": "e6fa2408-726e-4ad6-b515-d171edeecd42",
-              "best_chunk": "ABSTRACT\n White matter hyperintensities (WMH) are an important factor in the occurrence and progression of stroke,\ncognitive decline, and dementia in the aging population, but pose a puzzling challenge in evaluations of\nbrain health and disease due to its underlying pathologic heterogeneity. While WMH are frequently\nconsidered as a consequence of cerebral small-vessel disease (CSVD), emerging evidence suggest WMH\nmay also arise from non-vascular processes including Alzheimer’s disease (AD)-related neurodegeneration\nor neuroinflammation. Understanding the multifactorial etiologies of WMH is critical for development of much\nneeded therapies and preventative strategies, especially given its high prevalence in older community\npersons. However, commonly used assessment methods based on global severity burden fail to address\nsuch heterogeneity. WMH spatial patterns is a novel phenotype that can be extracted from structural MRI\ndata using advanced pattern analysis methods that capitalizes on variability in WMH topography across\ndifferent diseases. We previously show that machine learning (ML)-derived spatial patterns of WMH more\nprecisely capture the underlying heterogeneity in WMH pathology compared to standard region or lobar-\nbased classifications. Distinct ML-derived WMH spatial patterns have unique associations with different\nWMH etiologies, distinguishing between WMH arising from CSVD subtypes (cerebral amyloid angiopathy\nvs. hypertensive), AD, and normal aging. We hypothesize that focusing on ML-derived WMH spatial patterns\nwill greatly expand the discovery of genetic contributions to WMH, leading to better understanding of the\nmolecular basis of WMH and development of mechanism-based treatments. To this end, we will leverage\nexisting neuroimaging and genetic data resources from 7 cohorts enriched for diverse conditions with high\nWMH prevalence (n=4,872) as the discovery cohort, and the UK Biobank (UKB, n>60,000) representing the\ngeneral population. This will allow ",
-              "best_grant_id": "152b5f75-31bf-4b53-80fb-65c0dfbb1d00",
-              "vector_score": 0.620429,
-              "fts_score": 0,
-              "hybrid_score": 0.4343
-            },
-            {
-              "company_id": "ba612d7b-a316-4757-85cc-990c848bf148",
-              "best_chunk_id": "8850bf21-3716-463f-82f8-950786c3e47f",
-              "best_chunk": "PROJECT SUMMARY\nPost-stroke cognitive impairment is common, particularly in older individuals. Existing knowledge gaps about\nmechanisms underpinning poor outcome, particularly in the aged, have been the most significant barriers to\ndeveloping novel therapeutic targets and approaches to prevent cognitive decline and progression to Alzheimer’s\ndisease and related dementias (ADRD). This is especially relevant to health disparity populations, specifically\nwomen and Black demographics. Previous studies of Alzheimer’s disease and mild cognitive impairment,\nsuggest that the morphological changes of the corpus callosum are related to cognitive measures. Existing data\nshow that classical neuroimaging biomarkers such as acute infarct volume, location, and white matter\nhyperintensity burden have modest prognostic predictive utility in models of post-stroke cognitive function. We\nhave recently used diffusion tensor imaging in acute stroke patients to show that decreased fractional anisotropy\nof the ipsi- and contra-lateral hemispheric normal appearing white matter, as well as the corpus callosum, are\nassociated with higher stroke scale impairment severity. Additionally, we have also used advanced diffusion\nimaging to examine white matter microstructure in midlife individuals with significant vascular risk factors, as well\nas Black and women demographics at risk for stroke and cognitive impairment. Our preliminary results suggest\nthat the corpus callosum and other white matter structures involved in cognition manifest specific diffusion\nchanges that not only relate to vascular risk factor burden exposure, but also to post-stroke outcome. Our\nlaboratory has pioneered diffusion MRI acquisition and modeling approaches that are sensitive to not only white\nmatter anisotropy, but also white matter complexity. As such, we are well poised to comprehensively characterize\nthe diffusion properties of normal appearing white matter across time and age, in acute stroke patients and their\npost",
-              "best_grant_id": "a564ce94-f69d-4164-afd3-4aa5b4d3fdb9",
-              "vector_score": 0.664426,
-              "fts_score": 0,
-              "hybrid_score": 0.465099
-            }
-          ]
-        ],
-        "anyOk": true,
         "count": 6,
         "failed": false
       },
       {
-        "label": "Medical image deep learning",
-        "groups": [
-          [
-            {
-              "company_id": "514f8680-249a-4ffe-8b29-3852335b8200",
-              "best_chunk_id": "8b4363d8-f925-4666-8811-3a5f130c22a9",
-              "best_chunk": "Deep Learning Segmentation of Anatomical Structures in Three-Dimensional Ultrasound Images of the Female Pelvic Floor",
-              "best_grant_id": "96ef9be3-b8f0-4fb7-9a55-91a377db6a46",
-              "vector_score": 0.612463,
-              "fts_score": 0,
-              "hybrid_score": 0.428724
-            },
-            {
-              "company_id": "c9cb8ce6-4506-4fc9-b594-ff947cd6ab9e",
-              "best_chunk_id": "913b6fb5-3b55-4d9a-bb36-f0ccef8f689a",
-              "best_chunk": "Fast and Robust Deep Learning for Medical imaging: Segmentation and Registration methods invariant to contrast and resolution",
-              "best_grant_id": "d476e25b-09ca-4684-9a10-8bd8252d257e",
-              "vector_score": 0.610552,
-              "fts_score": 0,
-              "hybrid_score": 0.427387
-            },
-            {
-              "company_id": "7ef11165-5936-4056-9a18-04c71edd6201",
-              "best_chunk_id": "99ed582f-821a-4bd2-b184-742730d1cc08",
-              "best_chunk": "A unifying approach to machine learning driven medical image segmentation",
-              "best_grant_id": "04128244-d321-4f3a-97e1-618712aad306",
-              "vector_score": 0.633539,
-              "fts_score": 0,
-              "hybrid_score": 0.443477
-            },
-            {
-              "company_id": "98b2ac61-d5e0-4c81-a189-cc0c12e82151",
-              "best_chunk_id": "e6fa6a28-a078-4dfa-9c28-610745c182af",
-              "best_chunk": "MRI, Airways, Segmentation, Deep Learning, Pediatric, Automated, Biomarker, Lung, UTE, Imaging",
-              "best_grant_id": "53bbb3e6-4140-4c54-a4c8-5de820b55b80",
-              "vector_score": 0.63597,
-              "fts_score": 0,
-              "hybrid_score": 0.445179
-            },
-            {
-              "company_id": "d1c5da79-e9f1-4d81-9f22-35ac7cd556c6",
-              "best_chunk_id": "0f890649-36b1-4750-84d1-590b1b599eb7",
-              "best_chunk": "Imagerie médicale, Caractérisation de population, Apprentissage automatique, Réseaux de neurones, Apprentissage de variété, Bases de données médicales, Imagerie échocardio-graphique, Segmentation d'imagerie cardiaque, Auto-encodeur variationnel",
-              "best_grant_id": "e906f59c-922d-41d7-ae3c-fe282683359c",
-              "vector_score": 0.602663,
-              "fts_score": 0,
-              "hybrid_score": 0.421864
-            },
-            {
-              "company_id": "60e85640-59fa-48b6-9e5e-b5ab9026e368",
-              "best_chunk_id": "57ef83b9-3515-4d59-b7c8-049ad3725c04",
-              "best_chunk": "Quantitative Radiology holds great promise to transform our ability to diagnose, monitor, stage, prognosticate,\nand detect diseases as well as to plan and guide patient therapeutic interventions. However, the process of\nlocating and delineating anatomic organs and pathologic regions in medical images, known as image\nsegmentation, at a high level of automation has remained a major hurdle to these advances. Most\ndevelopments on image segmentation have focused on a specific organ or a small group of objects in a\nspecific body region. A new method or a major adaptation of an existing method is engineered when any of\nthese parameters changed. Such an approach is not sustainable and becomes a stumbling block when dealing\nwith whole-body systemic diseases where body-wide image analytics is required. A critical advance is needed\nin this field to overcome two main challenges: (1) Although prior information about normal anatomy is deemed\nvital for image segmentation and analysis, its creation and utilization body-wide on a massive scale have not\nbeen attempted and are sorely lacking. (2) Techniques to employ such information and methods for body-wide\ndisease quantification at high levels of automation do not exist. The overarching goal\nis to overcome these\nchallenges by developing a body-wide and generalizable anatomy-guided deep learning image segmentation\nmethodology\nand demonstrate its application in the study of patients with diffuse large B cell lymphoma\n(DLBCL) for which PET-based staging and response assessment are of paramount importance.\nThe project has three specific aims. Aim1: To develop a family of body-wide anatomy models representing the\nentire human adult age spectrum.\nExisting FDG PET/CT scans of 600 patients from two institutions (Penn and\nNew York Proton Center) covering 10 age groups will be utilized to build anatomy models involving 50 organs\nand 50 lymph node zones in the extended body torso including neck, thorax, abdomen, and pelvis.\nA family of\n40 ana",
-              "best_grant_id": "d2cc9716-3b04-43cc-a824-422eb75fd8b6",
-              "vector_score": 0.624987,
-              "fts_score": 0,
-              "hybrid_score": 0.437491
-            }
-          ]
-        ],
-        "anyOk": true,
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "biomech-jobs-ca",
+    "kind": "jobs",
+    "country": "CA",
+    "bg": "Markerless motion capture for human biomechanics: multi-camera pose estimation, musculoskeletal modeling, gait analysis. Built real-time capture pipelines in Python and C++.",
+    "status": "OK",
+    "ms": 23286,
+    "spikes": 2,
+    "scopes": 1,
+    "nSearches": 2,
+    "nRerank": 2,
+    "nFailed": 0,
+    "totalMatches": 12,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "battery-jobs-ca",
+    "kind": "jobs",
+    "country": "CA",
+    "bg": "Materials scientist working on solid-state electrolytes and lithium-metal anodes for next-gen batteries. Electrochemistry, XRD, in-situ characterization.",
+    "status": "OK",
+    "ms": 28246,
+    "spikes": 3,
+    "scopes": 1,
+    "nSearches": 3,
+    "nRerank": 3,
+    "nFailed": 0,
+    "totalMatches": 18,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "perovskite-sup-all",
+    "kind": "supervisors",
+    "country": "all",
+    "bg": "Perovskite solar cells, thin-film photovoltaics, stability and encapsulation, device physics.",
+    "status": "OK",
+    "ms": 12503,
+    "spikes": 3,
+    "scopes": 1,
+    "nSearches": 3,
+    "nRerank": 3,
+    "nFailed": 0,
+    "totalMatches": 18,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "cfd-jobs-uk",
+    "kind": "jobs",
+    "country": "UK",
+    "bg": "Computational fluid dynamics for turbomachinery: RANS/LES, turbine blade cooling, mesh generation, OpenFOAM and in-house solvers.",
+    "status": "OK",
+    "ms": 13810,
+    "spikes": 3,
+    "scopes": 1,
+    "nSearches": 3,
+    "nRerank": 3,
+    "nFailed": 0,
+    "totalMatches": 18,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "quantum-pi-uk",
+    "kind": "research-pi",
+    "country": "UK",
+    "bg": "Quantum error correction on superconducting qubits, surface codes, cryogenic control electronics.",
+    "status": "OK",
+    "ms": 11243,
+    "spikes": 2,
+    "scopes": 1,
+    "nSearches": 2,
+    "nRerank": 2,
+    "nFailed": 0,
+    "totalMatches": 12,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "auv-jobs-us",
+    "kind": "jobs",
+    "country": "US",
+    "bg": "Autonomous underwater vehicles: SLAM, acoustic navigation, sensor fusion, marine robotics field trials.",
+    "status": "OK",
+    "ms": 29299,
+    "spikes": 2,
+    "scopes": 1,
+    "nSearches": 2,
+    "nRerank": 2,
+    "nFailed": 0,
+    "totalMatches": 12,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "imaging-jobs-us",
+    "kind": "jobs",
+    "country": "US",
+    "bg": "Medical imaging segmentation with deep learning: U-Net variants, multi-modal CT/MRI, FDA-pathway model validation.",
+    "status": "OK",
+    "ms": 23947,
+    "spikes": 2,
+    "scopes": 1,
+    "nSearches": 2,
+    "nRerank": 2,
+    "nFailed": 0,
+    "totalMatches": 12,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "mrna-pi-us",
+    "kind": "research-pi",
+    "country": "US",
+    "bg": "mRNA vaccine delivery using lipid nanoparticles, formulation chemistry, immunogenicity assays.",
+    "status": "OK",
+    "ms": 13136,
+    "spikes": 2,
+    "scopes": 1,
+    "nSearches": 2,
+    "nRerank": 2,
+    "nFailed": 0,
+    "totalMatches": 12,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "crispr-sup-au",
+    "kind": "supervisors",
+    "country": "AU",
+    "bg": "CRISPR gene editing for crop resilience to drought and heat, plant molecular biology, field phenotyping.",
+    "status": "OK",
+    "ms": 16617,
+    "spikes": 3,
+    "scopes": 1,
+    "nSearches": 3,
+    "nRerank": 3,
+    "nFailed": 0,
+    "totalMatches": 18,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "cardiac-pi-all",
+    "kind": "research-pi",
+    "country": "all",
+    "bg": "Cardiac electrophysiology, catheter ablation mapping, atrial fibrillation, computational heart models.",
+    "status": "OK",
+    "ms": 18987,
+    "spikes": 2,
+    "scopes": 1,
+    "nSearches": 2,
+    "nRerank": 2,
+    "nFailed": 0,
+    "totalMatches": 8,
+    "perSpike": [
+      {
+        "count": 2,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "als-sup-all",
+    "kind": "supervisors",
+    "country": "all",
+    "bg": "ALS and neurodegeneration, proteomics of TDP-43 aggregation, iPSC motor-neuron models.",
+    "status": "OK",
+    "ms": 16626,
+    "spikes": 3,
+    "scopes": 1,
+    "nSearches": 3,
+    "nRerank": 3,
+    "nFailed": 0,
+    "totalMatches": 18,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "healthecon-pi-uk",
+    "kind": "research-pi",
+    "country": "UK",
+    "bg": "Health economics and RCT methodology, cost-effectiveness modeling, trial design and biostatistics.",
+    "status": "OK",
+    "ms": 13479,
+    "spikes": 2,
+    "scopes": 1,
+    "nSearches": 2,
+    "nRerank": 2,
+    "nFailed": 0,
+    "totalMatches": 12,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "nlp-jobs-ca",
+    "kind": "jobs",
+    "country": "CA",
+    "bg": "NLP for low-resource languages: morphological modeling, transfer learning, building corpora and tokenizers for under-served languages.",
+    "status": "OK",
+    "ms": 26187,
+    "spikes": 2,
+    "scopes": 1,
+    "nSearches": 2,
+    "nRerank": 2,
+    "nFailed": 0,
+    "totalMatches": 12,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "rl-jobs-ca",
+    "kind": "jobs",
+    "country": "CA",
+    "bg": "Reinforcement learning for robotic manipulation, sim-to-real transfer, dexterous grasping, MuJoCo and ROS.",
+    "status": "OK",
+    "ms": 23375,
+    "spikes": 3,
+    "scopes": 1,
+    "nSearches": 3,
+    "nRerank": 3,
+    "nFailed": 0,
+    "totalMatches": 18,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "cyber-jobs-ca",
+    "kind": "jobs",
+    "country": "CA",
+    "bg": "Cybersecurity: anomaly detection on IoT sensor networks, intrusion detection, embedded device firmware analysis.",
+    "status": "OK",
+    "ms": 26930,
+    "spikes": 2,
+    "scopes": 1,
+    "nSearches": 2,
+    "nRerank": 2,
+    "nFailed": 0,
+    "totalMatches": 12,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "wildfire-pi-ca",
+    "kind": "research-pi",
+    "country": "CA",
+    "bg": "Wildfire remote sensing and fire-spread modeling, satellite imagery, machine learning for burn-severity mapping.",
+    "status": "OK",
+    "ms": 13845,
+    "spikes": 3,
+    "scopes": 1,
+    "nSearches": 3,
+    "nRerank": 3,
+    "nFailed": 0,
+    "totalMatches": 18,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "agridrone-jobs-au",
+    "kind": "jobs",
+    "country": "AU",
+    "bg": "Agricultural drones with multispectral imaging for crop phenotyping, NDVI analytics, precision-agriculture pipelines.",
+    "status": "OK",
+    "ms": 9522,
+    "spikes": 3,
+    "scopes": 1,
+    "nSearches": 3,
+    "nRerank": 3,
+    "nFailed": 0,
+    "totalMatches": 18,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      }
+    ]
+  },
+  {
+    "id": "indiglang-sup-ca",
+    "kind": "supervisors",
+    "country": "CA",
+    "bg": "Indigenous language revitalization, community-based linguistics, language documentation and pedagogy.",
+    "status": "SLOW",
+    "ms": 31213,
+    "spikes": 3,
+    "scopes": 1,
+    "nSearches": 3,
+    "nRerank": 3,
+    "nFailed": 0,
+    "totalMatches": 18,
+    "perSpike": [
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
+        "count": 6,
+        "failed": false
+      },
+      {
         "count": 6,
         "failed": false
       }

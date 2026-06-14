@@ -116,10 +116,9 @@ async function voyageEmbed(text) {
   return (await r.json()).data[0].embedding;
 }
 
-// One scope search: embed → search_companies RPC → (optional) Claude rerank → topK.
-// Returns { ok, matches } where matches is the post-rerank topK slice. ok:false
-// on any backend error or timeout — mirroring searchCompanies' tagged outcome.
-async function searchScope(query, { orgFilter, codes, topK }) {
+// Retrieval half: embed → search_companies RPC. Returns { ok, hits } (raw
+// hybrid order, no rerank). ok:false on any backend error / timeout.
+async function retrieveScope(query, { orgFilter, codes, matchCount = 25 }) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), SEARCH_TIMEOUT_MS);
   try {
@@ -130,31 +129,48 @@ async function searchScope(query, { orgFilter, codes, topK }) {
       signal: ctrl.signal,
       headers: { "content-type": "application/json", apikey: SB_KEY, authorization: `Bearer ${SB_KEY}` },
       body: JSON.stringify({
-        query_embedding: embedding, query_text: embedText, match_count: 25,
+        query_embedding: embedding, query_text: embedText, match_count: matchCount,
         org_filter: orgFilter, province_filter: null, program_codes: codes,
         min_start_date: null, max_start_date: null, min_amount: null, max_amount: null,
       }),
     });
-    if (!rr.ok) return { ok: false, matches: [] };
+    if (!rr.ok) return { ok: false, hits: [] };
     const hits = await rr.json();
-    if (!Array.isArray(hits) || hits.length === 0) return { ok: true, matches: [] };
-    if (NO_RERANK) return { ok: true, matches: hits.slice(0, topK) };
-
-    const pool = hits.slice(0, 10);
-    const user = [
-      `<user_query>\n${query}\n</user_query>`,
-      `\nORGANIZATIONS (rank these):\n`,
-      ...pool.map((h, i) => `--- [${i}] id=${h.company_id}\n<chunk>${(h.best_chunk || "").slice(0, 300)}</chunk>`),
-    ].join("\n");
-    const { ranked } = await anthropicJson(RERANK_SYSTEM, user, RERANK_SCHEMA);
-    const order = new Map(pool.map((h) => [h.company_id, h]));
-    const top = (ranked ?? []).map((r) => order.get(r.id)).filter(Boolean).slice(0, topK);
-    return { ok: true, matches: top };
+    return Array.isArray(hits) ? { ok: true, hits } : { ok: false, hits: [] };
   } catch {
-    return { ok: false, matches: [] }; // timeout or network error
+    return { ok: false, hits: [] };
   } finally {
     clearTimeout(timer);
   }
+}
+
+// One Claude rerank over a candidate batch → topK. NO_RERANK falls back to raw
+// hybrid order (skips the LLM call entirely).
+async function rerankHits(query, hits, topK) {
+  if (hits.length === 0) return [];
+  if (NO_RERANK) return hits.slice(0, topK);
+  const pool = hits.slice(0, Math.max(topK, 16));
+  const user = [
+    `<user_query>\n${query}\n</user_query>`,
+    `\nORGANIZATIONS (rank these):\n`,
+    ...pool.map((h, i) => `--- [${i}] id=${h.company_id}\n<chunk>${(h.best_chunk || "").slice(0, 300)}</chunk>`),
+  ].join("\n");
+  try {
+    const { ranked } = await anthropicJson(RERANK_SYSTEM, user, RERANK_SCHEMA);
+    const order = new Map(pool.map((h) => [h.company_id, h]));
+    return (ranked ?? []).map((r) => order.get(r.id)).filter(Boolean).slice(0, topK);
+  } catch {
+    return pool.slice(0, topK);
+  }
+}
+
+// Single-country scope: retrieve (25) + rerank (top 10 → topK), mirroring
+// searchCompanies. Returns { ok, matches }.
+async function searchScope(query, { orgFilter, codes, topK }) {
+  const r = await retrieveScope(query, { orgFilter, codes, matchCount: 25 });
+  if (!r.ok) return { ok: false, matches: [] };
+  const matches = await rerankHits(query, r.hits.slice(0, 10), topK);
+  return { ok: true, matches };
 }
 
 function scopesFor(country) {
@@ -197,26 +213,46 @@ async function runCase(c) {
   const orgFilter = ORG_FILTER[c.kind];
   const piMode = c.kind === "research-pi";
   const topK = piMode ? 10 : 6;
-  const scopes = scopesFor(c.country);
+  let nSearches, nRerank, nFailed, scopeCount;
+  const perSpike = [];
 
-  // Bounded-concurrency spike × scope fan-out (mirrors lib/njf/find.ts).
-  const tasks = spikes.flatMap((spike, si) => scopes.map((scope, sci) => ({ spike, scope, si, sci })));
-  const settled = await mapLimit(tasks, SEARCH_CONC, ({ spike, scope }) =>
-    searchScope(spike.query, { orgFilter, codes: scope.codes, topK }),
-  );
-  const nSearches = tasks.length;
-  const nFailed = settled.filter((s) => !s.ok).length;
-
-  const perSpike = spikes.map((spike) => ({ label: spike.label, groups: scopes.map(() => []), anyOk: false }));
-  tasks.forEach((t, i) => {
-    const out = settled[i];
-    if (out.ok) perSpike[t.si].anyOk = true;
-    perSpike[t.si].groups[t.sci] = out.matches;
-  });
-  for (const s of perSpike) {
-    const merged = (c.country === "all" ? interleave(s.groups) : s.groups.flat()).slice(0, 6);
-    s.count = merged.length;
-    s.failed = !s.anyOk;
+  if (c.country === "all" || c.kind === "research-pi") {
+    // Unfiltered path (mirrors findFunded): research-pi (org=null, times out on
+    // dense corpora if DB-filtered) and "anywhere" both retrieve unfiltered.
+    // ONE wide retrieval + ONE rerank per spike. Retrieve with org=null (the DB
+    // "university"/program filter is
+    // slow enough to hit the 30s statement timeout at a wide match_count); the
+    // real app applies the org restriction in JS via company.org_type. NOTE: this
+    // replica can't bucket by country or filter by org_type (both need the
+    // company/grants joins), so counts are approximate. The COST/LATENCY it
+    // measures — 1 retrieve + 1 rerank per spike vs spikes×4 before — is faithful.
+    scopeCount = 1;
+    const out = await mapLimit(spikes, SEARCH_CONC, async (spike) => {
+      const r = await retrieveScope(spike.query, { orgFilter: null, codes: null, matchCount: 80 });
+      if (!r.ok) return { failed: true, count: 0 };
+      const matches = await rerankHits(spike.query, r.hits, 6);
+      return { failed: false, count: matches.length };
+    });
+    nSearches = spikes.length;
+    nRerank = spikes.length;
+    nFailed = out.filter((o) => o.failed).length;
+    for (const o of out) perSpike.push({ count: o.count, failed: o.failed });
+  } else {
+    const scopes = scopesFor(c.country); // single scope for one country
+    scopeCount = scopes.length;
+    const tasks = spikes.flatMap((spike, si) => scopes.map((scope, sci) => ({ spike, scope, si, sci })));
+    const settled = await mapLimit(tasks, SEARCH_CONC, ({ spike, scope }) =>
+      searchScope(spike.query, { orgFilter, codes: scope.codes, topK }),
+    );
+    nSearches = tasks.length;
+    nRerank = tasks.length;
+    nFailed = settled.filter((s) => !s.ok).length;
+    const grouped = spikes.map(() => ({ groups: scopes.map(() => []), anyOk: false }));
+    tasks.forEach((t, i) => {
+      if (settled[i].ok) grouped[t.si].anyOk = true;
+      grouped[t.si].groups[t.sci] = settled[i].matches;
+    });
+    for (const g of grouped) perSpike.push({ count: g.groups.flat().slice(0, 6).length, failed: !g.anyOk });
   }
 
   const ms = Date.now() - t0;
@@ -229,7 +265,7 @@ async function runCase(c) {
   else if (ms > SLOW_MS) status = "SLOW";
   else status = "OK";
 
-  return { ...c, status, ms, spikes: spikes.length, scopes: scopes.length, nSearches, nFailed, totalMatches, perSpike };
+  return { ...c, status, ms, spikes: spikes.length, scopes: scopeCount, nSearches, nRerank, nFailed, totalMatches, perSpike };
 }
 
 // ---- run ----
@@ -238,8 +274,8 @@ console.log(`Running ${cases.length} case(s) — model=${MODEL}, rerank=${NO_RER
 
 const pad = (s, n) => String(s).padEnd(n);
 const padL = (s, n) => String(s).padStart(n);
-console.log(pad("id", 18), pad("kind", 14), pad("ctry", 5), padL("spk", 3), padL("srch", 5), padL("fail", 5), padL("hits", 5), padL("time", 8), "status");
-console.log("-".repeat(86));
+console.log(pad("id", 18), pad("kind", 14), pad("ctry", 5), padL("spk", 3), padL("rtv", 4), padL("rrk", 4), padL("fail", 5), padL("hits", 5), padL("time", 8), "status");
+console.log("-".repeat(92));
 
 const results = [];
 for (const c of cases) {
@@ -249,7 +285,7 @@ for (const c of cases) {
   const tag = { OK: "✓ OK", SLOW: "⚠ SLOW", "OVER-BUDGET": "✗ OVER-BUDGET", ZERO: "○ ZERO", FAIL: "✗ FAIL", ERROR: "✗ ERROR" }[r.status] || r.status;
   console.log(
     pad(r.id, 18), pad(r.kind, 14), pad(r.country, 5),
-    padL(r.spikes ?? "-", 3), padL(r.nSearches ?? "-", 5), padL(r.nFailed ?? "-", 5),
+    padL(r.spikes ?? "-", 3), padL(r.nSearches ?? "-", 4), padL(r.nRerank ?? "-", 4), padL(r.nFailed ?? "-", 5),
     padL(r.totalMatches ?? "-", 5), padL(secs, 8), tag + (r.note ? `  (${r.note})` : ""),
   );
 }

@@ -1,6 +1,6 @@
 import "server-only";
 import { chatJson } from "@/lib/ai/llm";
-import { searchCompanies, type Match } from "@/lib/rag/search";
+import { searchCompanies, retrieveCandidates, rerankCandidates, type Match } from "@/lib/rag/search";
 import { supabaseService } from "@/lib/db/supabase-server";
 import type { OrgType } from "@/lib/db/types";
 import type { WebCompany, WebLab } from "@/lib/ai/websearch";
@@ -113,8 +113,8 @@ export type FindOptions = {
 };
 
 // Funder → country mapping lives in lib/countries (single source of truth,
-// shared with the browse/search filter). FOREIGN_PROGRAM_CODES is keyed by the
-// non-Canadian countries, which is exactly the scope set this finder needs.
+// shared with the browse/search filter). FOREIGN_PROGRAM_CODES keys the
+// per-country program codes the DB-filtered single-country search restricts to.
 const COUNTRY_PROGRAMS = FOREIGN_PROGRAM_CODES;
 const sourceCountry = (source: string | null | undefined): Country => countryOfFunder(source);
 
@@ -128,6 +128,12 @@ function interleave<T>(lists: T[][]): T[] {
   }
   return out;
 }
+
+// Cap on concurrent searches across the spike fan-out. The per-search cost is
+// the rerank LLM call (the DB RPC is sub-second and service_role has no
+// statement timeout), so a small cap parallelizes without overloading any
+// backend. Shared by the single-country and "anywhere" paths.
+const SEARCH_CONCURRENCY = 5;
 
 // Run `fn` over `items` with at most `limit` promises in flight at once,
 // returning results in input order. Used to bound the spike × scope search
@@ -170,107 +176,151 @@ export async function findBySpikes(
   // and hospitals all qualify; companies are dropped post-filter below.
   const orgFilter = opts.orgFilter ?? null;
   // Default to Canada so /jobs stays Canada-only; /supervisors and /research-pi
-  // pass the user's choice. The Canadian corpus is far denser, so for "all" we
-  // must search each country separately or the others get crowded out of the
-  // global top-N entirely.
+  // pass the user's choice.
   const country: Country = opts.country ?? "CA";
-  const topK = piMode ? 10 : 6;
 
-  // Per-country search scopes. A specific foreign country restricts retrieval
-  // to its funders' program codes; "CA" searches globally with `codes: null`
-  // (then drops the foreign hits in the filter below — robust to new Canadian
-  // sources without enumerating them); "all" runs one search per country and
-  // interleaves so each is represented.
-  type Scope = { codes: string[] | null; country: Exclude<Country, "all"> };
-  const scopes: Scope[] =
-    country === "all"
-      ? [
-          { codes: null, country: "CA" },
-          ...(Object.entries(COUNTRY_PROGRAMS) as [Exclude<Country, "CA" | "all">, string[]][]).map(
-            ([c, codes]): Scope => ({ codes, country: c }),
-          ),
-        ]
-      : country === "CA"
-        ? [{ codes: null, country: "CA" }]
-        : [{ codes: COUNTRY_PROGRAMS[country], country }];
+  // PI mode (org=null) and "anywhere" use the unfiltered retrieval path: a DB
+  // program_codes/org filter defeats the vector index and times out on dense
+  // corpora (US research-pi), and PIs/universities are dense enough to retrieve
+  // unfiltered without losing depth. Single-country /jobs & /supervisors keep the
+  // DB-filtered search — its org filter both scopes results AND prunes the scan
+  // (so it stays under the statement timeout) and gives better depth for a
+  // minority org type (companies especially, which are sparse in the corpus).
+  if (piMode || country === "all") return findFunded(spikes, { orgFilter, piMode, country });
+  return findScoped(spikes, { orgFilter, country });
+}
 
-  // Run every spike × scope search with bounded concurrency. These were once
-  // serialized to avoid concurrent heavy hybrid vector+FTS scans tripping the
-  // DB's `statement_timeout` — but searchCompanies now uses service_role (no
-  // statement timeout) and the RPC is sub-second; the real per-search cost is
-  // the rerank LLM call, which has no DB-contention risk. Serializing made the
-  // "all" path (spikes × 4 country scopes) run long enough to blow the streaming
-  // route's budget and surface nothing. A small cap parallelizes without
-  // overloading the embed / rerank / RPC backends.
-  const SEARCH_CONCURRENCY = 5;
-  const tasks = spikes.flatMap((spike, si) => scopes.map((scope, sci) => ({ spike, scope, si, sci })));
-  const settled = await mapLimit(tasks, SEARCH_CONCURRENCY, async ({ spike, scope }) => {
-    const outcome = await searchCompanies(spike.query, { orgFilter, programCodes: scope.codes, topK });
-    // In PI mode we post-filter to PI-held lab grants, which discards some hits
-    // (trainee awards, companies) — so widen the pool with the un-reranked
-    // `more` tail to be sure enough PIs survive the filter.
-    const matches: NjfMatch[] = outcome.ok
-      ? piMode
-        ? [...(outcome.matches as NjfMatch[]), ...(outcome.more as NjfMatch[])]
-        : (outcome.matches as NjfMatch[])
-      : [];
-    return { ok: outcome.ok, matches };
-  });
+/**
+ * Single-country /jobs & /supervisors: one DB-filtered hybrid search per spike,
+ * restricted to the country's funders (program codes; CA searches the whole
+ * corpus and drops foreign hits) and to the org type. The org filter is load-
+ * bearing twice over — it scopes results to companies/universities AND prunes
+ * the scan enough to stay under the statement timeout, while giving real depth
+ * for the target org type (unlike the unfiltered path, where companies are a
+ * sparse minority). PI mode, which has no org filter to prune with and so times
+ * out on dense corpora, goes through findFunded instead.
+ */
+async function findScoped(
+  spikes: Spike[],
+  { orgFilter, country }: { orgFilter: OrgType | null; country: Exclude<Country, "all"> },
+): Promise<SpikeResult[]> {
+  const codes = country === "CA" ? null : COUNTRY_PROGRAMS[country];
+  const settled = await mapLimit(spikes, SEARCH_CONCURRENCY, (spike) =>
+    searchCompanies(spike.query, { orgFilter, programCodes: codes, topK: 6 }),
+  );
 
-  // Reassemble into per-spike groups, preserving spike and scope order (the
-  // "all" interleave below depends on scope order). A spike fails only if every
-  // one of its scope searches failed.
-  const scoped: { spike: Spike; groups: { scope: Scope; matches: NjfMatch[] }[]; failed: boolean }[] =
-    spikes.map((spike) => ({
-      spike,
-      groups: scopes.map((scope) => ({ scope, matches: [] as NjfMatch[] })),
-      failed: true,
-    }));
-  tasks.forEach((t, i) => {
-    const r = settled[i]!;
-    if (r.ok) {
-      scoped[t.si]!.failed = false;
-      scoped[t.si]!.groups[t.sci]!.matches = r.matches;
-    }
-  });
-
-  // Enrich every match with its grant's funder and holder (the supervisor, if
-  // it's a faculty grant). One batched lookup across all matches.
-  const grantIds = [
+  // Batched grant-meta lookup for holder/funder enrichment (+ the CA filter:
+  // CA's codes:null search spans the whole corpus, so drop foreign hits).
+  const ids = [
     ...new Set(
-      scoped.flatMap((r) =>
-        r.groups.flatMap((g) => g.matches.map((m) => m.best_grant_id).filter((id): id is string => !!id)),
-      ),
+      settled
+        .flatMap((o) => (o.ok ? (o.matches as NjfMatch[]) : []))
+        .map((m) => m.best_grant_id)
+        .filter((id): id is string => !!id),
     ),
   ];
-  const metaById = await fetchGrantMeta(grantIds);
+  const metaById = await fetchGrantMeta(ids);
 
-  const results: SpikeResult[] = [];
-  for (const r of scoped) {
-    const filtered: NjfMatch[][] = [];
-    for (const g of r.groups) {
-      let matches = g.matches;
-      for (const m of matches) {
-        const meta = m.best_grant_id ? metaById.get(m.best_grant_id) : undefined;
-        m.holder = meta?.holder;
-        m.funder = meta?.funder ?? null;
-      }
-      // PI mode: keep only PI-held grants at non-company orgs — a lab lead who
-      // could host an incoming researcher. Drops trainee awards and industry.
-      if (piMode) {
-        matches = matches.filter((m) => m.holder?.isPI && m.company.org_type !== "company");
-      }
-      // The global scope retrieves across the whole corpus, so drop foreign
-      // hits there; program-scoped searches are already country-exact.
-      if (g.scope.codes === null) {
-        matches = matches.filter((m) => sourceCountry(m.funder) === "CA");
-      }
-      filtered.push(matches);
+  return spikes.map((spike, i) => {
+    const o = settled[i]!;
+    if (!o.ok) return { ...spike, matches: [], failed: true };
+    let matches = o.matches as NjfMatch[];
+    for (const m of matches) {
+      const meta = m.best_grant_id ? metaById.get(m.best_grant_id) : undefined;
+      m.holder = meta?.holder;
+      m.funder = meta?.funder ?? null;
     }
-    const matches = (country === "all" ? interleave(filtered) : filtered.flat()).slice(0, 6);
-    results.push({ ...r.spike, matches, failed: r.failed });
-  }
-  return results;
+    if (country === "CA") matches = matches.filter((m) => sourceCountry(m.funder) === "CA");
+    return { ...spike, matches: matches.slice(0, 6), failed: false };
+  });
+}
+
+// Countries represented in the "anywhere" view, in interleave order.
+const ALL_COUNTRIES: Exclude<Country, "all">[] = ["CA", "US", "UK", "AU"];
+// Unfiltered retrieval width per spike. We ALWAYS retrieve with codes:null +
+// org:null — the only fast path. Any DB program_codes or org_filter defeats the
+// vector index and forces a slow post-filter scan that hits the 30s statement
+// timeout on dense corpora (US/NSF+NIH timed out; "university" was ~20s). org/PI
+// and country are applied in JS instead, so we widen the pool to ensure enough
+// of each country survives: wider for foreign single-country and "anywhere"
+// (sparser per-country), smaller for CA (corpus-dense).
+const MATCH_COUNT = { all: 80, CA: 80, foreign: 150 };
+// Candidates per country entering the single rerank. "Anywhere" caps each
+// country low so the densest corpus can't fill the batch; single-country gives
+// its lone country a deeper batch.
+const RERANK_CAP_ALL = 5;
+const RERANK_CAP_SINGLE = 16;
+
+/**
+ * Finder pipeline for any country selection. For each spike: ONE wide unfiltered
+ * retrieval (codes:null, org:null — see MATCH_COUNT for why), enrich with grant
+ * meta, apply the org / PI / country filters IN JS, then a SINGLE rerank. For
+ * "anywhere" the rerank batch is country-balanced and the result interleaved so
+ * every country is represented; for one country it's that country's deepest
+ * candidates. Collapsing the old per-country fan-out to one retrieve + one rerank
+ * cut the "anywhere" cost ~4×, and moving filters out of the DB removed the
+ * statement-timeout failures on filtered single-country searches.
+ */
+async function findFunded(
+  spikes: Spike[],
+  { orgFilter, piMode, country }: { orgFilter: OrgType | null; piMode: boolean; country: Country },
+): Promise<SpikeResult[]> {
+  const isAll = country === "all";
+  const targets: Exclude<Country, "all">[] = isAll ? ALL_COUNTRIES : [country];
+  const matchCount = isAll ? MATCH_COUNT.all : country === "CA" ? MATCH_COUNT.CA : MATCH_COUNT.foreign;
+  const perCountryCap = isAll ? RERANK_CAP_ALL : RERANK_CAP_SINGLE;
+
+  // 1. One wide unfiltered retrieval per spike, in parallel. No rerank yet —
+  //    that's the expensive step (one per spike instead of one per country).
+  const retrieved = await mapLimit(spikes, SEARCH_CONCURRENCY, (spike) =>
+    retrieveCandidates(spike.query, { orgFilter: null, programCodes: null, matchCount }),
+  );
+
+  // 2. One batched grant-meta lookup across every candidate of every spike, so
+  //    we can bucket by funder country and apply the PI filter before rerank.
+  const allIds = [
+    ...new Set(
+      retrieved
+        .flatMap((r) => (r.ok ? r.candidates : []))
+        .map((m) => m.best_grant_id)
+        .filter((id): id is string => !!id),
+    ),
+  ];
+  const metaById = await fetchGrantMeta(allIds);
+
+  // 3. Per spike: enrich → org/PI filter → bucket by country → balanced batch →
+  //    single rerank → (interleave for "all") → top 6.
+  const pairs = spikes.map((spike, i) => ({ spike, outcome: retrieved[i]! }));
+  return mapLimit(pairs, SEARCH_CONCURRENCY, async ({ spike, outcome }) => {
+    if (!outcome.ok) return { ...spike, matches: [], failed: true };
+    let cands = outcome.candidates as NjfMatch[];
+    for (const m of cands) {
+      const meta = m.best_grant_id ? metaById.get(m.best_grant_id) : undefined;
+      m.holder = meta?.holder;
+      m.funder = meta?.funder ?? null;
+    }
+    // Org restriction in JS (DB-side filter skipped above for speed): "company"
+    // for /jobs, "university" for /supervisors.
+    if (orgFilter) cands = cands.filter((m) => m.company.org_type === orgFilter);
+    // PI mode: keep only PI-held grants at non-company orgs (a lab lead who could
+    // host an incoming researcher). Drops trainee awards and industry.
+    if (piMode) cands = cands.filter((m) => m.holder?.isPI && m.company.org_type !== "company");
+
+    // Bucket by funder country (unknown funders fall to CA, countryOfFunder's
+    // default), keeping only the target country/countries, hybrid order within.
+    const bucketOf = (cc: Exclude<Country, "all">) => cands.filter((m) => sourceCountry(m.funder) === cc);
+    const batch = targets.flatMap((cc) => bucketOf(cc).slice(0, perCountryCap));
+    if (batch.length === 0) return { ...spike, matches: [], failed: false };
+
+    const ranked = (await rerankCandidates(spike.query, batch, batch.length)) as NjfMatch[];
+
+    // "Anywhere": interleave the reranked list by country so each is represented.
+    // Single country: the reranked order already is that one country.
+    const matches = isAll
+      ? interleave(targets.map((cc) => ranked.filter((m) => sourceCountry(m.funder) === cc))).slice(0, 6)
+      : ranked.slice(0, 6);
+    return { ...spike, matches, failed: false };
+  });
 }
 
 // Program names that mean the recipient is a TRAINEE (student/postdoc), so the

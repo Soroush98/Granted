@@ -46,12 +46,52 @@ export async function searchCompanies(
   cacheTag("search");
 
   const topK = opts.topK ?? 5;
+  const retrieved = await retrieveCandidates(query, opts);
+  if (!retrieved.ok) return { ok: false };
+  if (retrieved.candidates.length === 0) return { ok: true, matches: [], more: [] };
+
+  // Only the strongest 10 go through Claude rerank — keeps latency / cost
+  // flat. The remaining candidates fall back to raw hybrid order and surface
+  // as the "more potentially relevant" tail (no rationale, just a long list).
+  const rerankPool = retrieved.candidates.slice(0, 10);
+  const matches = await rerankLocally(query, rerankPool, topK);
+
+  const chosen = new Set(matches.map((m) => m.company.id));
+  const more = retrieved.candidates.filter((c) => !chosen.has(c.company.id));
+  return { ok: true, matches, more };
+}
+
+export type RetrieveOutcome = { ok: true; candidates: Match[] } | { ok: false };
+
+/**
+ * Retrieval half of the pipeline: embed → hybrid `search_companies` RPC → join
+ * company rows, returning candidates in raw hybrid order WITHOUT the Claude
+ * rerank. searchCompanies layers the rerank on top; the "anywhere" finder path
+ * (lib/njf/find.ts) calls this directly so it can bucket candidates by funder
+ * country and run a SINGLE rerank over a country-balanced batch — instead of one
+ * full search + rerank per country. `matchCount` widens the pool (default 25)
+ * so the dense Canadian corpus can't crowd smaller countries out before
+ * bucketing. Same tagged-outcome contract as searchCompanies (never throws) so a
+ * transient failure renders as empty, never an error boundary.
+ */
+export async function retrieveCandidates(
+  query: string,
+  opts: SearchFilters & { matchCount?: number } = {},
+): Promise<RetrieveOutcome> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("search");
+
   // service_role here is deliberate. The anon role has statement_timeout=3s
   // (Supabase default), which long medical/scientific FTS queries occasionally
   // exceed during a cold HNSW+FTS scan, yielding a "Search is temporarily
-  // unavailable" UI on the very first uncached attempt. service_role has no
-  // statement timeout. The data is already public (the search RPC is its only
-  // exposure), and the rate-limit gate in results.tsx still bounds spend.
+  // unavailable" UI on the very first uncached attempt. service_role gets a much
+  // larger budget (~30s) — but it is NOT unlimited: a `program_codes` or
+  // `org_filter` constraint defeats the vector index and forces a slow scan that
+  // can still hit the 30s timeout at a wide match_count (the "anywhere" finder
+  // path works around this by retrieving unfiltered and filtering in JS). The
+  // data is already public (the search RPC is its only exposure), and the
+  // rate-limit gate in results.tsx still bounds spend.
   const supabase = supabaseService();
   const { embedText, ftsText } = prepareEmbedQuery(query, opts);
 
@@ -66,7 +106,7 @@ export async function searchCompanies(
   const { data: hits, error } = await supabase.rpc("search_companies", {
     query_embedding: embedding,
     query_text: ftsText,
-    match_count: 25,
+    match_count: opts.matchCount ?? 25,
     org_filter: opts.orgFilter ?? null,
     province_filter: opts.province ?? null,
     program_codes: opts.programCodes ?? null,
@@ -79,7 +119,7 @@ export async function searchCompanies(
     console.error("[search] search_companies RPC failed:", error.message);
     return { ok: false };
   }
-  if (!hits || hits.length === 0) return { ok: true, matches: [], more: [] };
+  if (!hits || hits.length === 0) return { ok: true, candidates: [] };
 
   const companyIds = hits.map((h) => h.company_id);
   const { data: companies, error: cErr } = await supabase
@@ -98,16 +138,18 @@ export async function searchCompanies(
       return c ? { ...h, company: c } : null;
     })
     .filter((x): x is Match => x !== null);
+  return { ok: true, candidates };
+}
 
-  // Only the strongest 10 go through Claude rerank — keeps latency / cost
-  // flat. The remaining candidates fall back to raw hybrid order and surface
-  // as the "more potentially relevant" tail (no rationale, just a long list).
-  const rerankPool = candidates.slice(0, 10);
-  const matches = await rerankLocally(query, rerankPool, topK);
-
-  const chosen = new Set(matches.map((m) => m.company.id));
-  const more = candidates.filter((c) => !chosen.has(c.company.id));
-  return { ok: true, matches, more };
+/** Public wrapper around the Claude rerank, for callers (the "anywhere" path)
+ * that retrieve candidates themselves and rerank a custom, country-balanced
+ * batch. Returns up to `topK` matches in ranked order, each with a rationale. */
+export async function rerankCandidates(
+  query: string,
+  candidates: Match[],
+  topK: number,
+): Promise<Match[]> {
+  return rerankLocally(query, candidates, topK);
 }
 
 /** Claude-API rerank. Strict JSON output. Hardened against prompt injection
