@@ -115,7 +115,7 @@ export type FindOptions = {
 // grant's funding source: each non-Canadian country's sources are dedicated
 // program codes, and every unlisted funder is Canadian.
 const COUNTRY_PROGRAMS: Record<Exclude<Country, "CA" | "all">, string[]> = {
-  AU: ["ARC", "NHMRC"],
+  AU: ["ARC", "NHMRC", "GRANTCONNECT"],
   US: ["NSF", "NIH"],
   UK: ["UKRI"],
 };

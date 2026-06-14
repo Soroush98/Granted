@@ -11,7 +11,7 @@ from rich.console import Console
 
 from . import db, voyage
 from .config import settings
-from .sources import abinnovates, arc, cfi, cihr, era, frq, nhmrc, nih, nserc, nsf, proactive, scaleai, ukri
+from .sources import abinnovates, arc, cfi, cihr, era, frq, grantconnect, nhmrc, nih, nserc, nsf, proactive, scaleai, ukri
 
 app = typer.Typer(add_completion=False)
 console = Console()
@@ -182,6 +182,21 @@ def ingest_arc(
     to the find-a-PI flow; pairs with ingest-nhmrc for medical research."""
     companies, grants = arc.ingest_api(since_year=since_year, limit=limit)
     console.log(f"[bold green]ARC:[/] {grants} grants, {companies} unique institutions")
+
+
+@app.command("ingest-grantconnect")
+def ingest_grantconnect(
+    since: str = typer.Option("2024-06-01", help="ISO date; keep grants published on/after this."),
+    until: str | None = typer.Option(None, help="ISO date; defaults to today."),
+    limit: int | None = typer.Option(None, help="Stop after roughly this many grants (smoke testing)."),
+    all_grants: bool = typer.Option(False, "--all", help="Ingest the full all-of-government feed instead of only R&D/industry grants."),
+) -> None:
+    """Ingest Australian federal grant awards from GrantConnect (grants.gov.au).
+    The only AU source that funds companies (ARC/NHMRC are university-only), so
+    it's what makes /jobs cover Australia. Defaults to a targeted R&D/industry
+    filter (GrantConnect is ~95% social/subsidy grants); pass --all for everything."""
+    companies, grants = grantconnect.ingest_recent(since=since, until=until, limit=limit, targeted=not all_grants)
+    console.log(f"[bold green]GrantConnect:[/] {grants} grants, {companies} unique recipients")
 
 
 @app.command("ingest-nhmrc")

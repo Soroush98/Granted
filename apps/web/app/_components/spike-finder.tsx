@@ -62,6 +62,7 @@ function displayName(name: string): string {
 const FUNDER_COUNTRY: Record<string, string> = {
   ARC: "Australia",
   NHMRC: "Australia",
+  GRANTCONNECT: "Australia",
   NSF: "United States",
   NIH: "United States",
   UKRI: "United Kingdom",
