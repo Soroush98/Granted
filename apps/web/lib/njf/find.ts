@@ -129,6 +129,27 @@ function interleave<T>(lists: T[][]): T[] {
   return out;
 }
 
+// Run `fn` over `items` with at most `limit` promises in flight at once,
+// returning results in input order. Used to bound the spike × scope search
+// fan-out so the "all" path doesn't fire a dozen searches at once nor crawl
+// through them one at a time.
+async function mapLimit<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const i = next++;
+      results[i] = await fn(items[i]!);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
 /**
  * Full NJF pipeline: extract spikes, then run an independent grant search per
  * spike, optionally filtered to a single org type. Each result group is the
@@ -173,33 +194,45 @@ export async function findBySpikes(
         ? [{ codes: null, country: "CA" }]
         : [{ codes: COUNTRY_PROGRAMS[country], country }];
 
-  // Serialize the per-spike searches. Running them concurrently fires multiple
-  // heavy hybrid vector+FTS scans over grant_chunks at once, which contend for
-  // the DB and trip `statement_timeout` — surfaced as {ok:false} and then
-  // cached. One-at-a-time keeps each query within budget.
-  const scoped: { spike: Spike; groups: { scope: Scope; matches: NjfMatch[] }[]; failed: boolean }[] = [];
-  for (const spike of spikes) {
-    const groups: { scope: Scope; matches: NjfMatch[] }[] = [];
-    let anyOk = false;
-    for (const scope of scopes) {
-      const outcome = await searchCompanies(spike.query, { orgFilter, programCodes: scope.codes, topK });
-      // In PI mode we post-filter to PI-held lab grants, which discards some
-      // hits (trainee awards, companies) — so widen the pool with the
-      // un-reranked `more` tail to be sure enough PIs survive the filter.
-      if (outcome.ok) {
-        anyOk = true;
-        groups.push({
-          scope,
-          matches: piMode
-            ? [...(outcome.matches as NjfMatch[]), ...(outcome.more as NjfMatch[])]
-            : (outcome.matches as NjfMatch[]),
-        });
-      } else {
-        groups.push({ scope, matches: [] });
-      }
+  // Run every spike × scope search with bounded concurrency. These were once
+  // serialized to avoid concurrent heavy hybrid vector+FTS scans tripping the
+  // DB's `statement_timeout` — but searchCompanies now uses service_role (no
+  // statement timeout) and the RPC is sub-second; the real per-search cost is
+  // the rerank LLM call, which has no DB-contention risk. Serializing made the
+  // "all" path (spikes × 4 country scopes) run long enough to blow the streaming
+  // route's budget and surface nothing. A small cap parallelizes without
+  // overloading the embed / rerank / RPC backends.
+  const SEARCH_CONCURRENCY = 5;
+  const tasks = spikes.flatMap((spike, si) => scopes.map((scope, sci) => ({ spike, scope, si, sci })));
+  const settled = await mapLimit(tasks, SEARCH_CONCURRENCY, async ({ spike, scope }) => {
+    const outcome = await searchCompanies(spike.query, { orgFilter, programCodes: scope.codes, topK });
+    // In PI mode we post-filter to PI-held lab grants, which discards some hits
+    // (trainee awards, companies) — so widen the pool with the un-reranked
+    // `more` tail to be sure enough PIs survive the filter.
+    const matches: NjfMatch[] = outcome.ok
+      ? piMode
+        ? [...(outcome.matches as NjfMatch[]), ...(outcome.more as NjfMatch[])]
+        : (outcome.matches as NjfMatch[])
+      : [];
+    return { ok: outcome.ok, matches };
+  });
+
+  // Reassemble into per-spike groups, preserving spike and scope order (the
+  // "all" interleave below depends on scope order). A spike fails only if every
+  // one of its scope searches failed.
+  const scoped: { spike: Spike; groups: { scope: Scope; matches: NjfMatch[] }[]; failed: boolean }[] =
+    spikes.map((spike) => ({
+      spike,
+      groups: scopes.map((scope) => ({ scope, matches: [] as NjfMatch[] })),
+      failed: true,
+    }));
+  tasks.forEach((t, i) => {
+    const r = settled[i]!;
+    if (r.ok) {
+      scoped[t.si]!.failed = false;
+      scoped[t.si]!.groups[t.sci]!.matches = r.matches;
     }
-    scoped.push({ spike, groups, failed: !anyOk });
-  }
+  });
 
   // Enrich every match with its grant's funder and holder (the supervisor, if
   // it's a faculty grant). One batched lookup across all matches.
