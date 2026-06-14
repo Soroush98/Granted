@@ -159,3 +159,27 @@ export async function gateSearch(opts: { wantWeb: boolean }): Promise<GateResult
   if (!(await globalOk())) return { ok: false, code: "global", message: GLOBAL_MSG };
   return { ok: true, identity: { tier: "anon", ip, userId: null }, creditsRemaining: null };
 }
+
+/**
+ * READ (without consuming) how many of the FREE_ACCOUNT_MAX monthly free
+ * searches a signed-in free-tier user has left. Mirrors the `free:<userId>`
+ * fixed-window bucket that gateSearch() spends — windows are aligned and
+ * non-overlapping, so the one whose start is within the last window is the
+ * current one. Returns FREE_ACCOUNT_MAX when no row exists yet (none used).
+ */
+export async function freeSearchesRemaining(userId: string): Promise<number> {
+  const since = new Date(Date.now() - FREE_WINDOW_SECS * 1000).toISOString();
+  const { data, error } = await supabaseService()
+    .from("rate_limit")
+    .select("count")
+    .eq("bucket", `free:${userId}`)
+    .gt("window_start", since)
+    .order("window_start", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) {
+    console.error("[access] freeSearchesRemaining read failed:", error);
+    return FREE_ACCOUNT_MAX; // fail open — don't show a scary 0
+  }
+  return Math.max(0, FREE_ACCOUNT_MAX - (data?.count ?? 0));
+}
