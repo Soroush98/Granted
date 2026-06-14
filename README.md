@@ -1,8 +1,8 @@
 # Granted
 
-Find Canadian organizations actually doing the work you care about. It indexes
-their public R&D funding history and matches it against your query, resume, or
-research paper.
+Find organizations actually doing the work you care about — across **Canada, the
+United States, the United Kingdom, and Australia**. It indexes their public R&D
+funding history and matches it against your query, resume, or research paper.
 
 ```
                   ┌──────────────────────────┐
@@ -15,7 +15,7 @@ research paper.
                   │   Claude Haiku rerank    │
                   │       (JSON output)      │
                   └──────────┬───────────────┘
-                             │ reads (RLS, anon)
+                             │ reads (service role)
                              ▼
                   ┌──────────────────────────┐
                   │   Supabase Postgres      │
@@ -26,32 +26,45 @@ research paper.
                   ┌──────────┴───────────────┐
                   │   services/scraper       │
                   │                          │
-                  │   NSERC  · IRAP · SIF    │
-                  │   FRQ · CFI · Scale AI   │
-                  │   Alberta · Proactive    │
+                  │  CA: NSERC·CIHR·FRQ·CFI  │
+                  │      IRAP·SIF·Proactive  │
+                  │  US: NSF · NIH           │
+                  │  UK: UKRI                │
+                  │  AU: ARC · GrantConnect  │
                   │           │              │
                   │           ▼              │
                   │   Voyage embed  ────────►│
                   └──────────────────────────┘
 ```
 
+The corpus has no `country` column — a grant's country is inferred from its
+funding program (`lib/countries.ts`): each non-Canadian country owns a fixed set
+of program codes, and everything else is Canadian.
+
 ## What's actually indexed
 
 Here's what's in the index after the latest data refresh:
 
-| Source | Program codes | Grants | Date coverage |
-|---|---|---:|---|
-| Federal Proactive Disclosure (all departments: ACOA, FedDev, CED, IRAP, SIF, etc.) | `FEDERAL_OTHER`, `IRAP`, `SIF` | 17,632 | 2024-05-24 → 2026-04-28 |
-| NSERC awards (Discovery, Alliance, CRD, Other) | `NSERC_*` | 22,510 | Fiscal year 2024 (FY2025 not yet published) |
-| Quebec FRQ (Santé / Nature et technologies / Société et culture) | `FRQS`, `FRQNT`, `FRQSC` | 6,959 | FY2023-24 (latest FRQ publishes) |
-| Canada Foundation for Innovation funded-projects | `CFI` | 817 | Calendar 2024 to 2025 |
-| Alberta Innovates + Emissions Reduction Alberta | `PROVINCIAL_OTHER` | 879 | 2024 to 2025 (dates sparse) |
-| Scale AI funded projects | `SCALE_AI` | 167 | No per-project dates |
+| Country | Source | Program codes | Grants | Date coverage |
+|---|---|---|---:|---|
+| 🇨🇦 | NSERC awards (Discovery, Alliance, CRD, Other) | `NSERC_*` | 22,510 | FY2024 (FY2025 not yet published) |
+| 🇨🇦 | Federal Proactive Disclosure (ACOA, FedDev, CED, IRAP, SIF, …) | `FEDERAL_OTHER`, `IRAP`, `SIF` | 17,226 | 2024-05-24 → 2026-04-28 |
+| 🇨🇦 | CIHR Grants & Awards (with abstracts) | `CIHR` | 7,398 | FY2025-26 |
+| 🇨🇦 | Quebec FRQ (Santé / Nature et technologies / Société et culture) | `FRQS`, `FRQNT`, `FRQSC` | 6,947 | FY2023-24 (latest FRQ publishes) |
+| 🇨🇦 | Alberta Innovates + Emissions Reduction Alberta | `PROVINCIAL_OTHER` | 879 | 2024 to 2025 (dates sparse) |
+| 🇨🇦 | Canada Foundation for Innovation funded-projects | `CFI` | 817 | Calendar 2024 to 2025 |
+| 🇨🇦 | Scale AI funded projects | `SCALE_AI` | 167 | No per-project dates |
+| 🇺🇸 | NIH RePORTER (medical research, with abstracts) | `NIH` | 72,941 | ~2 years (award notice 2024-06 →) |
+| 🇺🇸 | NSF Awards (science & engineering, incl. SBIR/STTR) | `NSF` | 17,422 | ~2 years (2024-06 →) |
+| 🇬🇧 | UKRI Gateway to Research (7 councils + Innovate UK) | `UKRI` | 8,881 | ~2 years (fund start 2024-06 →) |
+| 🇦🇺 | ARC National Competitive Grants (non-medical research) | `ARC` | 12,510 | Commencing 2016 → |
+| 🇦🇺 | GrantConnect (federal grants, R&D/industry-filtered) | `GRANTCONNECT` | 10,844 | ~2 years (publish 2024-06 →) |
 
-**Totals**: 48,952 grants, 14,759 organizations, 93,002 indexed text chunks.
+**Totals**: 178,542 grants, 26,372 organizations, 336,740 indexed text chunks.
 Each chunk has a 1024-dim Voyage embedding and a tsvector for full-text search.
+(The homepage/stats pages now render these totals live, so they don't go stale.)
 
-Browse the live data at `/browse`, see totals at `/stats`, and read the
+Browse the live data at `/search`, see totals at `/stats`, and read the
 limitations at `/about`.
 
 ## Tech stack
@@ -80,8 +93,10 @@ limitations at `/about`.
 3. **Auto-filter detection**: a place name (`Toronto`, `Quebec City`,
    `Atlantic Canada`) turns into a strict `province` filter, and an org-type
    word (`companies`, `universities`, `research institutes`, `labs`) turns
-   into an `org_type` filter. The user can override either one in the
-   Advanced Filters panel.
+   into an `org_type` filter. The user can override either one — or pick a
+   **country** (CA/US/UK/AU) — in the Advanced Filters panel. The country
+   filter resolves to its program codes at query time (Canada = every program
+   code minus the foreign ones, derived from the live facet list).
 4. **Name lookup**: a separate `pg_trgm` query against
    `companies.display_name` runs in parallel. If the query looks like an org
    name (e.g. "Wedge Networks") and the top hit is at least 40% similar, it
@@ -104,12 +119,15 @@ Time per search: about 4 to 6 seconds end-to-end (Voyage embed ≈ 200ms, RPC �
   form, ink-to-accent gradient.
 - **`/search`**: Suspense-streamed results with a "Did you mean?" name-match
   banner, an auto-filter indicator, and a collapsible Advanced Filters panel
-  (province, program, date range, amount, org type).
-- **`/browse`**: paginated list of every grant in the index, sortable by
-  recency, largest, or smallest amount. Uses the same filter schema as
-  `/search`.
-- **`/stats`**: three SVG bar charts: total $ by program, grants per
-  province, grants per year. Honors the same date-window URL params.
+  (**country**, org type, region (province/state), program, date range, amount).
+  With no query it becomes the browsable grant ledger (paginated, sortable by
+  recency / largest / smallest amount).
+- **`/jobs`, `/supervisors`, `/research-pi`**: the spike finders, each with a
+  country selector (CA/US/UK/AU/Anywhere). `/research-pi` also has an optional
+  live web search for labs that look like they're recruiting.
+- **`/stats`**: three SVG bar charts: total $ by program (with a mixed-currency
+  caveat), grants per region (province/state), grants per year. Honors the same
+  date-window URL params.
 - **`/companies/[id]`**: full grant list for one organization, 25 per page,
   sortable, with in-page text search across that org's titles and
   descriptions.
@@ -150,14 +168,22 @@ cp .env.example .env
 # fill in SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_DB_URL,
 # VOYAGE_API_KEY, REVALIDATE_SECRET
 
-# Each ingester pulls from a public source. Examples:
+# Each ingester pulls from a public source. CA (CSV/scrape):
 granted-scraper ingest-nserc        ./nserc_data/NSERC_FY2024_Expenditures.csv
 granted-scraper ingest-federal-recent ./proactive_data/grants.csv
+granted-scraper ingest-cihr         ./cihr_data/cihr_2025_2026.xlsx
 granted-scraper ingest-frq          ./frq_data/frqs_2023_2024.csv  --program FRQS
 granted-scraper ingest-cfi          --year 2024 --year 2025
 granted-scraper ingest-abinnovates
 granted-scraper ingest-era
 granted-scraper ingest-scaleai      ./scaleai_urls.json
+
+# US / UK / AU (live public APIs — no file needed; default to a ~2-year window):
+granted-scraper ingest-nsf          # NSF Awards API
+granted-scraper ingest-nih          # NIH RePORTER API
+granted-scraper ingest-ukri         # UKRI Gateway to Research (long scan)
+granted-scraper ingest-arc          # ARC Data Portal API
+granted-scraper ingest-grantconnect # AU GrantConnect (R&D/industry-filtered; --all for everything)
 
 # Fill in any chunks that don't have an embedding yet:
 granted-scraper embed-pending
@@ -205,9 +231,11 @@ a history of 14 fix-up migrations.
 │   │   ├── search/                    Hybrid + rerank results
 │   │   └── stats/                     SVG charts
 │   ├── lib/
-│   │   ├── ai/                        Voyage embed + Claude chat
+│   │   ├── ai/                        Voyage embed + Claude chat + web search
 │   │   ├── db/                        Supabase clients + hand-typed schema
+│   │   ├── njf/                       spike finders (find.ts) + access/usage
 │   │   ├── rag/                       search.ts, browse.ts, prepare-query.ts
+│   │   ├── countries.ts               Country ↔ funding-source mapping (shared)
 │   │   ├── filters.ts                 URL ↔ SearchFilters helpers
 │   │   ├── ip.ts                      Rate-limit IP + constants
 │   │   ├── locations.ts               Province + org-type auto-detect
@@ -216,13 +244,19 @@ a history of 14 fix-up migrations.
 ├── services/scraper/                  Python ingestion
 │   └── scraper/
 │       ├── sources/
-│       │   ├── nserc.py               NSERC awards CSV
-│       │   ├── proactive.py           Federal proactive disclosure CSV
-│       │   ├── frq.py                 Quebec FRQ CSV (S / NT / SC)
-│       │   ├── cfi.py                 CFI funded-projects HTML scraper
-│       │   ├── abinnovates.py         Alberta Innovates sitemap scraper
-│       │   ├── era.py                 ERA Alberta sitemap scraper
-│       │   └── scaleai.py             Scale AI press-release scraper
+│       │   ├── nserc.py               🇨🇦 NSERC awards CSV
+│       │   ├── proactive.py           🇨🇦 Federal proactive disclosure CSV
+│       │   ├── cihr.py                🇨🇦 CIHR Grants & Awards XLSX (abstracts)
+│       │   ├── frq.py                 🇨🇦 Quebec FRQ CSV (S / NT / SC)
+│       │   ├── cfi.py                 🇨🇦 CFI funded-projects HTML scraper
+│       │   ├── abinnovates.py         🇨🇦 Alberta Innovates sitemap scraper
+│       │   ├── era.py                 🇨🇦 ERA Alberta sitemap scraper
+│       │   ├── scaleai.py             🇨🇦 Scale AI press-release scraper
+│       │   ├── nsf.py                 🇺🇸 NSF Awards API
+│       │   ├── nih.py                 🇺🇸 NIH RePORTER API
+│       │   ├── ukri.py                🇬🇧 UKRI Gateway to Research API
+│       │   ├── arc.py                 🇦🇺 ARC Data Portal API
+│       │   └── grantconnect.py        🇦🇺 GrantConnect (R&D/industry-filtered)
 │       ├── db.py                      Supabase client + retry/bulk helpers
 │       ├── voyage.py                  Voyage REST wrapper
 │       ├── normalize.py               Entity-resolution helpers
@@ -233,6 +267,24 @@ a history of 14 fix-up migrations.
 
 ## Known limitations
 
+- **Coverage depth is uneven across countries.** Canada is deep but lagging
+  (NSERC a year behind, FRQ pre-window); the US, UK, and Australia (GrantConnect)
+  are the **last ~2 years** by design; ARC goes back to 2016. So "covered" means
+  different time depths per country.
+- **Amounts mix currencies.** Every grant's value sits in `amount_cad`
+  regardless of currency (CAD/USD/GBP/AUD), so cross-country `$` totals (e.g. on
+  `/stats`) are indicative only, not converted. A real fix needs a `currency`
+  column + FX.
+- **The region filter mixes provinces and states.** Canadian provinces and US
+  state codes share one field; UK and Australian sources report no sub-national
+  region, so they fall under "(unknown)".
+- **Australian company coverage is GrantConnect-only and partial.** ARC funds
+  university research only (no companies) and NHMRC couldn't be ingested
+  (bot-protected). GrantConnect supplies AU companies but is R&D/industry-
+  *filtered* from an all-of-government feed, and 8 high-volume months were
+  truncated at a page cap — so AU `/jobs` coverage is real but thinner than
+  CA/US/UK, and Australia's largest industry program (the R&D Tax Incentive)
+  is excluded because it publishes no project descriptions.
 - **SR&ED tax credits are confidential.** The biggest federal R&D channel in
   Canada (>$4B/year) is legally not disclosable per recipient. Treat the
   totals here as a *lower bound*.

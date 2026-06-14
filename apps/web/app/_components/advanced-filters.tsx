@@ -4,6 +4,7 @@
 // the wrapping <form>'s GET submission.
 
 import type { FilterFacet, OrgType, SearchFilters } from "@/lib/db/types";
+import { COUNTRY_LABELS, COUNTRY_ORDER } from "@/lib/countries";
 
 type Props = {
   facets: { provinces: FilterFacet[]; programs: FilterFacet[] };
@@ -42,6 +43,22 @@ export function AdvancedFilters({ facets, current, defaultOpen }: Props) {
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="grid gap-1.5">
           <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
+            Country
+          </span>
+          <select
+            name="country"
+            defaultValue={current.country ?? ""}
+            className="rounded-xl border border-black/10 bg-white px-3 py-2"
+          >
+            <option value="">All countries</option>
+            {COUNTRY_ORDER.map((c) => (
+              <option key={c} value={c}>{COUNTRY_LABELS[c]}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="grid gap-1.5">
+          <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
             Organization type
           </span>
           <select
@@ -55,16 +72,16 @@ export function AdvancedFilters({ facets, current, defaultOpen }: Props) {
           </select>
         </label>
 
-        <label className="grid gap-1.5">
+        <label className="grid gap-1.5 sm:col-span-2">
           <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
-            Province
+            Region (province / state)
           </span>
           <select
             name="province"
             defaultValue={current.province ?? ""}
             className="rounded-xl border border-black/10 bg-white px-3 py-2"
           >
-            <option value="">All provinces</option>
+            <option value="">All regions</option>
             {facets.provinces.map((p) => (
               <option key={p.value} value={p.value}>
                 {p.label} ({p.n.toLocaleString()})
@@ -75,7 +92,10 @@ export function AdvancedFilters({ facets, current, defaultOpen }: Props) {
 
         <fieldset className="sm:col-span-2 grid gap-1.5">
           <legend className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
-            Funding programs
+            Funding programs{" "}
+            <span className="font-normal normal-case text-[10px]">
+              (overrides the country filter when any are checked)
+            </span>
           </legend>
           {/* Multi-select via checkboxes. The form submits one ?programs=…
               CSV value built client-side by the form's hidden field; but to

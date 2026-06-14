@@ -4,6 +4,7 @@ import { searchCompanies, type Match } from "@/lib/rag/search";
 import { supabaseService } from "@/lib/db/supabase-server";
 import type { OrgType } from "@/lib/db/types";
 import type { WebCompany, WebLab } from "@/lib/ai/websearch";
+import { FOREIGN_PROGRAM_CODES, countryOfFunder } from "@/lib/countries";
 
 // A "spike" is one distinctive specialization pulled out of a person's
 // background — NOT a broad field. The whole point of NJF is that searching the
@@ -111,23 +112,11 @@ export type FindOptions = {
   onPhase?: (p: FindPhase) => void;
 };
 
-// Funder → country. The corpus has no country column, so we key off the
-// grant's funding source: each non-Canadian country's sources are dedicated
-// program codes, and every unlisted funder is Canadian.
-const COUNTRY_PROGRAMS: Record<Exclude<Country, "CA" | "all">, string[]> = {
-  AU: ["ARC", "NHMRC", "GRANTCONNECT"],
-  US: ["NSF", "NIH"],
-  UK: ["UKRI"],
-};
-const SOURCE_COUNTRY = new Map<string, Country>(
-  (Object.entries(COUNTRY_PROGRAMS) as [Country, string[]][]).flatMap(([c, codes]) =>
-    codes.map((code): [string, Country] => [code, c]),
-  ),
-);
-
-function sourceCountry(source: string | null | undefined): Country {
-  return (source && SOURCE_COUNTRY.get(source)) || "CA";
-}
+// Funder → country mapping lives in lib/countries (single source of truth,
+// shared with the browse/search filter). FOREIGN_PROGRAM_CODES is keyed by the
+// non-Canadian countries, which is exactly the scope set this finder needs.
+const COUNTRY_PROGRAMS = FOREIGN_PROGRAM_CODES;
+const sourceCountry = (source: string | null | undefined): Country => countryOfFunder(source);
 
 // Merge N ranked lists alternately (a, b, c, a, b, c, …) so every country is
 // represented even when one corpus is far denser — used for the "all" view.

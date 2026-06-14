@@ -1,21 +1,26 @@
 import Link from "next/link";
+import { corpusTotals } from "@/lib/rag/browse";
 
-export default function About() {
+export default async function About() {
+  const totals = await corpusTotals();
   return (
     <article className="max-w-3xl">
       <h1 className="text-2xl font-semibold tracking-tight">About Granted</h1>
       <p className="mt-3 text-sm leading-relaxed text-[var(--color-muted)]">
-        Granted indexes Canadian federally-funded R&amp;D and matches your goal (or your resume,
-        or a research paper) against organizations whose disclosed work overlaps with what you
-        care about. It is read-only, public-data-only, and built to be honest about what it
+        Granted indexes publicly-funded R&amp;D across <span className="font-medium text-[var(--color-ink)]">Canada,
+        the United States, the United Kingdom, and Australia</span>, and matches your goal (or your
+        resume, or a research paper) against organizations whose disclosed work overlaps with what
+        you care about. It is read-only, public-data-only, and built to be honest about what it
         cannot tell you.
       </p>
 
       <h2 className="mt-8 text-lg font-semibold">How it works</h2>
       <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed">
         <li>
-          We index each public funding source: every grant with its recipient organization, an
-          amount, a date, and a searchable description of the work.
+          We index each public funding source &mdash; Canadian (NSERC, CIHR, FRQ, federal
+          disclosure&hellip;), US (NSF, NIH), UK (UKRI), and Australian (ARC, GrantConnect) &mdash;
+          storing every grant with its recipient organization, an amount, a date, and a searchable
+          description of the work.
         </li>
         <li>
           When you search, we match your goal &mdash; or your resume or a research paper &mdash;
@@ -27,9 +32,11 @@ export default function About() {
           one-sentence reason it surfaced, so you can judge the fit at a glance.
         </li>
         <li>
-          Mention a place (&ldquo;Toronto&rdquo;, &ldquo;Quebec&rdquo;) or an org type
-          (&ldquo;companies&rdquo;, &ldquo;universities&rdquo;) and it becomes a filter; type an
-          organization&rsquo;s name and we surface the likely match directly.
+          Filter by <span className="font-medium">country</span> (Canada / US / UK / Australia),
+          org type, or region in the Filters panel &mdash; or just mention a place
+          (&ldquo;Toronto&rdquo;) or org type (&ldquo;companies&rdquo;) in your query and it
+          becomes a filter automatically. Type an organization&rsquo;s name and we surface the
+          likely match directly.
         </li>
       </ol>
 
@@ -38,33 +45,48 @@ export default function About() {
         <table className="w-full">
           <thead className="bg-black/5 text-left">
             <tr>
+              <th className="px-3 py-2 font-semibold"></th>
               <th className="px-3 py-2 font-semibold">Source</th>
               <th className="px-3 py-2 text-right font-semibold">Grants</th>
               <th className="px-3 py-2 font-semibold">Date coverage</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-black/5">
-            <Row source="Federal Proactive Disclosure (all departments)" code="FEDERAL_OTHER" count="13,573" coverage="2024-05-24 to 2026-04-28" />
-            <Row source="NSERC awards (Discovery, Alliance, CRD, Other)" code="NSERC_*" count="22,510" coverage="Fiscal year 2024 (FY2025 not yet published)" note />
-            <Row source="NRC Industrial Research Assistance Program" code="IRAP" count="4,029" coverage="2024-05-27 to 2026-01-19" />
-            <Row source="Quebec FRQ (Santé / Nature et technologies / Société et culture)" code="FRQ*" count="6,959" coverage="FY2023-24 (latest published by FRQ; pre-window)" note />
-            <Row source="Canada Foundation for Innovation (funded projects)" code="CFI" count="817" coverage="Calendar years 2024 to 2025" />
-            <Row source="Alberta Innovates + Emissions Reduction Alberta" code="PROVINCIAL_OTHER" count="879" coverage="2024 to 2025 (dates sparse)" note />
-            <Row source="Scale AI funded projects" code="SCALE_AI" count="167" coverage="No per-project dates" note />
-            <Row source="Strategic Innovation Fund" code="SIF" count="30" coverage="2024-06-11 to 2026-03-31" />
+            <Row flag="🇨🇦" source="NSERC awards (Discovery, Alliance, CRD, Other)" code="NSERC_*" count="22,510" coverage="Fiscal year 2024 (FY2025 not yet published)" note />
+            <Row flag="🇨🇦" source="Federal Proactive Disclosure (all departments)" code="FEDERAL_OTHER" count="13,167" coverage="2024-05-24 to 2026-04-28" />
+            <Row flag="🇨🇦" source="NRC Industrial Research Assistance Program" code="IRAP" count="4,029" coverage="2024-05-27 to 2026-01-19" />
+            <Row flag="🇨🇦" source="CIHR Grants & Awards (with abstracts)" code="CIHR" count="7,398" coverage="Fiscal year 2025-26" />
+            <Row flag="🇨🇦" source="Quebec FRQ (Santé / Nature et technologies / Société et culture)" code="FRQ*" count="6,947" coverage="FY2023-24 (latest published by FRQ; pre-window)" note />
+            <Row flag="🇨🇦" source="Canada Foundation for Innovation (funded projects)" code="CFI" count="817" coverage="Calendar years 2024 to 2025" />
+            <Row flag="🇨🇦" source="Alberta Innovates + Emissions Reduction Alberta" code="PROVINCIAL_OTHER" count="879" coverage="2024 to 2025 (dates sparse)" note />
+            <Row flag="🇨🇦" source="Scale AI funded projects" code="SCALE_AI" count="167" coverage="No per-project dates" note />
+            <Row flag="🇨🇦" source="Strategic Innovation Fund" code="SIF" count="30" coverage="2024-06-11 to 2026-03-31" />
+            <Row flag="🇺🇸" source="NIH RePORTER (medical research, with abstracts)" code="NIH" count="72,941" coverage="~2 years (award notice from 2024-06)" />
+            <Row flag="🇺🇸" source="NSF Awards (science & engineering, incl. SBIR/STTR)" code="NSF" count="17,422" coverage="~2 years (from 2024-06)" />
+            <Row flag="🇬🇧" source="UKRI Gateway to Research (7 councils + Innovate UK)" code="UKRI" count="8,881" coverage="~2 years (fund start from 2024-06)" />
+            <Row flag="🇦🇺" source="ARC National Competitive Grants (research)" code="ARC" count="12,510" coverage="Commencing 2016 onward" />
+            <Row flag="🇦🇺" source="GrantConnect (federal grants, R&D/industry-filtered)" code="GRANTCONNECT" count="10,844" coverage="~2 years (publish from 2024-06)" note />
           </tbody>
         </table>
       </div>
       <p className="mt-2 text-xs text-[var(--color-muted)]">
-        Totals (after entity-resolution cleanup): <span className="font-medium">48,952 grants</span>,{" "}
-        <span className="font-medium">14,759 organizations</span>,{" "}
-        <span className="font-medium">93,002 indexed text chunks</span>.
+        Totals (after entity-resolution cleanup): <span className="font-medium">{totals.grants.toLocaleString()} grants</span>,{" "}
+        <span className="font-medium">{totals.organizations.toLocaleString()} organizations</span>,{" "}
+        <span className="font-medium">{totals.chunks.toLocaleString()} indexed text chunks</span>.
         Browse the raw data at <Link href="/search" className="underline">/search</Link> or aggregate
         totals at <Link href="/stats" className="underline">/stats</Link>.
       </p>
 
       <h2 className="mt-8 text-lg font-semibold">What this is not (limitations)</h2>
       <ul className="mt-3 list-disc space-y-2.5 pl-5 text-sm leading-relaxed">
+        <li>
+          <span className="font-medium">Coverage varies by country.</span> Canada is deep but
+          lagging; the US, UK, and Australian (GrantConnect) feeds are the last ~2 years; ARC goes
+          back to 2016. Amounts sit in one field regardless of currency (CAD/USD/GBP/AUD), so
+          cross-country dollar totals are indicative, not converted. Australian <em>company</em>
+          coverage comes only from GrantConnect (R&amp;D-filtered, partial) &mdash; ARC funds
+          university research only.
+        </li>
         <li>
           <span className="font-medium">SR&amp;ED tax credits are confidential.</span> The Scientific
           Research and Experimental Development program is the single largest federal R&amp;D channel
@@ -137,11 +159,12 @@ export default function About() {
 
       <h2 className="mt-8 text-lg font-semibold">Provenance and verification</h2>
       <p className="mt-2 text-sm leading-relaxed">
-        Every data row links back to its source (open.canada.ca for federal proactive disclosure,
-        nserc-crsng.gc.ca for NSERC, donneesquebec.ca for FRQ, innovation.ca for CFI,
-        albertainnovates.ca and eralberta.ca for Alberta, scaleai.ca for Scale AI). Public data only.
-        Before contacting an organization or making a decision based on a match, verify on the
-        original source.
+        Every data row links back to its source &mdash; Canada: open.canada.ca (federal disclosure
+        &amp; CIHR), nserc-crsng.gc.ca, donneesquebec.ca (FRQ), innovation.ca (CFI),
+        albertainnovates.ca/eralberta.ca, scaleai.ca; US: api.nsf.gov (NSF), reporter.nih.gov (NIH);
+        UK: gtr.ukri.org (UKRI); Australia: dataportal.arc.gov.au (ARC), grants.gov.au (GrantConnect).
+        Public data only. Before contacting an organization or making a decision based on a match,
+        verify on the original source.
       </p>
 
       <p className="mt-8 text-xs text-[var(--color-muted)]">
@@ -153,10 +176,11 @@ export default function About() {
 }
 
 function Row({
-  source, code, count, coverage, note,
-}: { source: string; code: string; count: string; coverage: string; note?: boolean }) {
+  flag, source, code, count, coverage, note,
+}: { flag: string; source: string; code: string; count: string; coverage: string; note?: boolean }) {
   return (
     <tr>
+      <td className="px-3 py-2 text-center">{flag}</td>
       <td className="px-3 py-2">
         {source}
         <span className="ml-1.5 rounded-full bg-black/5 px-1.5 py-0.5 font-mono text-[10px] text-[var(--color-muted)]">

@@ -6,8 +6,9 @@ import { CompanyMatches } from "./company-matches";
 import { PdfPreview } from "./_components/pdf-preview";
 import { AdvancedFilters } from "@/app/_components/advanced-filters";
 import { BrowseList } from "@/app/_components/browse-list";
-import { extractNameQuery, listFacets, lookupCompaniesByName } from "@/lib/rag/browse";
+import { corpusTotals, extractNameQuery, listFacets, lookupCompaniesByName } from "@/lib/rag/browse";
 import { hasAnyFilter, readFilters, readPage, readSort, type Params } from "@/lib/filters";
+import { countryToProgramCodes } from "@/lib/countries";
 import { detectLocationFilter, detectOrgTypeFilter } from "@/lib/locations";
 import { splitQueryParts } from "@/lib/resume";
 
@@ -47,6 +48,7 @@ async function SearchPageContent({ searchParams }: SearchPageProps) {
   const errorParam = typeof params.error === "string" ? params.error : undefined;
   const errorMsg = errorParam ? ERROR_MESSAGES[errorParam] : null;
   const { goal, background } = splitQueryParts(query);
+  const totals = await corpusTotals();
 
   const filters = readFilters(params);
   const sort = readSort(params);
@@ -73,6 +75,20 @@ async function SearchPageContent({ searchParams }: SearchPageProps) {
   // Load facets in parallel with the page render; cached for hours.
   const facetsPromise = listFacets();
 
+  // `filters` drives the filter panel UI (shows the chosen country as a country,
+  // not as 50 checked programs). `effectiveFilters` is what actually hits the
+  // RPCs: a country selection is resolved to its program codes here (Canada =
+  // all program codes minus the foreign ones, from the live facet list), unless
+  // the user checked specific programs, which take precedence.
+  let effectiveFilters = filters;
+  if (filters.country && !(filters.programCodes && filters.programCodes.length > 0)) {
+    const facets = await facetsPromise;
+    effectiveFilters = {
+      ...filters,
+      programCodes: countryToProgramCodes(filters.country, facets.programs.map((p) => p.value)),
+    };
+  }
+
   return (
     <div className="mx-auto max-w-3xl">
       {!query && (
@@ -82,7 +98,7 @@ async function SearchPageContent({ searchParams }: SearchPageProps) {
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-pretty text-[15px] leading-relaxed text-[var(--color-muted)]">
             Describe what you&rsquo;re looking for in plain language — or just filter and browse
-            the full ledger of 48,952 grants below. Browsing is always free.
+            the full ledger of {totals.grants.toLocaleString()} grants below. Browsing is always free.
           </p>
         </header>
       )}
@@ -252,7 +268,7 @@ async function SearchPageContent({ searchParams }: SearchPageProps) {
       )}
       {query.length >= 20 && (
         <Suspense fallback={<ResultsSkeleton />}>
-          <Results query={query} filters={filters} />
+          <Results query={query} filters={effectiveFilters} />
         </Suspense>
       )}
 
@@ -260,7 +276,7 @@ async function SearchPageContent({ searchParams }: SearchPageProps) {
           unlimited, never touches the AI quota. */}
       {!query && (
         <Suspense fallback={<BrowseSkeleton />}>
-          <BrowseList filters={filters} sort={sort} page={page} />
+          <BrowseList filters={effectiveFilters} sort={sort} page={page} />
         </Suspense>
       )}
     </div>

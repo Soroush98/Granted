@@ -1,6 +1,8 @@
 // Hand-written types matching supabase/migrations/0005_granted_v0.sql.
 // Regenerate via `supabase gen types typescript` once the project is linked.
 
+import type { CountryCode } from "@/lib/countries";
+
 export type OrgType = "company" | "university" | "research_institute" | "nonprofit" | "government" | "other";
 
 export type GrantChunkKind = "grant_title" | "grant_description" | "company_summary";
@@ -78,6 +80,10 @@ export type SearchFilters = {
   orgFilter?: OrgType | null;
   province?: string | null;
   programCodes?: string[] | null;
+  // Coarse country filter (CA/US/UK/AU). Resolved to programCodes at query time
+  // via countryToProgramCodes(); kept separate so the UI can show the chosen
+  // country without checking every underlying program.
+  country?: CountryCode | null;
   minStartDate?: string | null;
   maxStartDate?: string | null;
   minAmount?: number | null;

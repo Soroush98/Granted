@@ -17,9 +17,9 @@ const plexMono = IBM_Plex_Mono({
 const caveat = Caveat({ subsets: ["latin"], variable: "--font-caveat" });
 
 export const metadata: Metadata = {
-  title: "Granted: Find Canadian companies actually doing funded R&D",
+  title: "Granted: Find companies & labs actually doing funded R&D",
   description:
-    "Search Canadian companies and labs by the federal R&D funding they've received. Granted indexes NSERC, IRAP, SIF, CFI, FRQ, and other public funding sources so you can find serious tech employers in your field.",
+    "Search companies and labs in Canada, the US, the UK, and Australia by the public R&D funding they've received. Granted indexes NSERC, CIHR, NSF, NIH, UKRI, ARC, and other funding sources so you can find serious tech employers and research labs in your field.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

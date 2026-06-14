@@ -4,6 +4,7 @@
 
 import type { OrgType } from "@/lib/db/types";
 import type { SearchFilters, BrowseSort } from "@/lib/db/types";
+import { isCountryCode } from "@/lib/countries";
 
 const ORG_TYPES: ReadonlySet<OrgType> = new Set([
   "company", "university", "research_institute", "nonprofit", "government", "other",
@@ -30,6 +31,8 @@ function all(v: string | string[] | undefined): string[] {
 // the RPC sees a real NULL and skips the predicate.
 export function readFilters(params: Params): SearchFilters {
   const province = first(params.province)?.trim() || null;
+  const countryRaw = first(params.country)?.trim();
+  const country = isCountryCode(countryRaw) ? countryRaw : null;
   // Accept both ?programs=A&programs=B (multi-value form post) and
   // ?programs=A,B (CSV from link composition).
   const programArr = all(params.programs);
@@ -44,6 +47,7 @@ export function readFilters(params: Params): SearchFilters {
     orgFilter,
     province,
     programCodes,
+    country,
     minStartDate,
     maxStartDate,
     minAmount,
@@ -68,6 +72,7 @@ export function hasAnyFilter(f: SearchFilters): boolean {
   return Boolean(
     f.orgFilter ||
     f.province ||
+    f.country ||
     (f.programCodes && f.programCodes.length > 0) ||
     f.minStartDate ||
     f.maxStartDate ||
@@ -84,6 +89,7 @@ export function buildFilterParams(
 ): URLSearchParams {
   const sp = new URLSearchParams();
   if (filters.orgFilter)               sp.set("org", filters.orgFilter);
+  if (filters.country)                 sp.set("country", filters.country);
   if (filters.province)                sp.set("province", filters.province);
   if (filters.programCodes?.length)    sp.set("programs", filters.programCodes.join(","));
   if (filters.minStartDate)            sp.set("min_date", filters.minStartDate);

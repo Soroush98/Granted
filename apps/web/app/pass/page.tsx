@@ -17,7 +17,7 @@ const PASS_PERKS = [
 
 const FREE_PERKS = [
   `10 searches across all finders`,
-  `Browse all 48,952 grants`,
+  `Browse the full grant database`,
   `Funding stats and sources`,
 ];
 

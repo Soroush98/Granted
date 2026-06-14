@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { SpikeResult, WebResults } from "@/lib/njf/find";
+import { countryName } from "@/lib/countries";
 import { TurnstileWidget } from "@/app/_components/turnstile-widget";
 import { PaywallModal } from "@/app/_components/paywall-modal";
 
@@ -57,19 +58,9 @@ function displayName(name: string): string {
   return i === -1 ? name : `${name.slice(i + 1).trim()} ${name.slice(0, i).trim()}`.trim();
 }
 
-// The corpus has no country column, so infer it from the funder: each foreign
-// funder maps to its country, everything else (NSERC/CIHR/FRQS/…) is Canadian.
-const FUNDER_COUNTRY: Record<string, string> = {
-  ARC: "Australia",
-  NHMRC: "Australia",
-  GRANTCONNECT: "Australia",
-  NSF: "United States",
-  NIH: "United States",
-  UKRI: "United Kingdom",
-};
-function countryOf(source?: string | null): string {
-  return (source && FUNDER_COUNTRY[source]) || "Canada";
-}
+// The corpus has no country column, so infer it from the funder. Single source
+// of truth lives in lib/countries (also used by the browse/search filter).
+const countryOf = (source?: string | null): string => countryName(source);
 
 export function SpikeFinder({
   kind,

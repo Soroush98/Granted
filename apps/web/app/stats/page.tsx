@@ -57,9 +57,14 @@ async function StatsContent({ searchParams }: Props) {
           }))}
           valueFormatter={formatCad}
         />
+        <p className="mt-3 text-[11px] text-[var(--color-muted)]">
+          Amounts are each program&rsquo;s native currency (CAD for Canadian sources, USD for NSF/NIH,
+          GBP for UKRI, AUD for ARC/NHMRC/GrantConnect) and are not currency-converted, so cross-program
+          totals are indicative only.
+        </p>
       </Card>
 
-      <Card title="Top 12 provinces by grant count">
+      <Card title="Top 12 regions by grant count">
         <BarChart
           rows={byProvince.slice(0, 12).map((r) => ({
             label: r.province,
@@ -68,6 +73,10 @@ async function StatsContent({ searchParams }: Props) {
           }))}
           valueFormatter={(n) => n.toLocaleString()}
         />
+        <p className="mt-3 text-[11px] text-[var(--color-muted)]">
+          Province (Canada) or state (US) codes; UK and Australian sources don&rsquo;t report a
+          sub-national region, so they appear under &ldquo;(unknown)&rdquo;.
+        </p>
       </Card>
 
       <Card title="Grants per year">

@@ -23,6 +23,31 @@ import type {
 
 const PAGE_SIZE = 25;
 
+/**
+ * Live corpus totals for the marketing/ledger copy (homepage, about, search,
+ * pass). Cached for hours and busted by the `search` tag on each ingest, so the
+ * numbers self-maintain instead of being hardcoded and drifting (they sat at
+ * "48,952 grants" long after the corpus tripled). service_role for the same
+ * reason as the other reads here — the counts are over public data.
+ */
+export async function corpusTotals(): Promise<{
+  grants: number;
+  organizations: number;
+  chunks: number;
+}> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("search");
+
+  const supabase = supabaseService();
+  const [g, o, c] = await Promise.all([
+    supabase.from("grants").select("*", { count: "exact", head: true }),
+    supabase.from("companies").select("*", { count: "exact", head: true }),
+    supabase.from("grant_chunks").select("*", { count: "exact", head: true }),
+  ]);
+  return { grants: g.count ?? 0, organizations: o.count ?? 0, chunks: c.count ?? 0 };
+}
+
 export async function browseGrants(
   filters: SearchFilters,
   sort: BrowseSort,

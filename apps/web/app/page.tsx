@@ -2,11 +2,13 @@ import Form from "next/form";
 import Link from "next/link";
 import { searchWithResume } from "./actions";
 import { ResumeInput } from "./_components/resume-input";
+import { corpusTotals } from "@/lib/rag/browse";
 
 // Landing page, FIELD NOTES style: a researcher's notebook spread that routes
 // to the three finders (taped index cards), with the free-form PDF search as
 // the "or search everything" sheet below.
-export default function Home() {
+export default async function Home() {
+  const totals = await corpusTotals();
   return (
     <section className="mx-auto max-w-3xl py-6 sm:py-8">
       {/* Hero */}
@@ -93,8 +95,9 @@ export default function Home() {
 
       {/* The ledger line */}
       <p className="mt-10 text-center font-[family-name:var(--font-mono)] text-[13px] text-[var(--color-muted)]">
-        48,952 grants&nbsp;&nbsp;·&nbsp;&nbsp;14,759 organizations&nbsp;&nbsp;·&nbsp;&nbsp;93,002
-        indexed chunks&nbsp;&nbsp;·&nbsp;&nbsp;
+        {totals.grants.toLocaleString()} grants&nbsp;&nbsp;·&nbsp;&nbsp;
+        {totals.organizations.toLocaleString()} organizations&nbsp;&nbsp;·&nbsp;&nbsp;
+        {totals.chunks.toLocaleString()} indexed chunks&nbsp;&nbsp;·&nbsp;&nbsp;
         <Link href="/stats" className="underline hover:text-[var(--color-ink)]">
           see the numbers
         </Link>
