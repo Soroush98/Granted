@@ -1,24 +1,27 @@
 @import "tailwindcss";
 
 /* ───────────────────────────────────────────────────────────────────────────
-   FIELD NOTES design system.
-   A researcher's notebook: graph-paper page, paper cards held by tape,
-   highlighter marks, red-pen annotations (Caveat), typewriter labels (mono),
-   and "FUNDED" rubber stamps. Fonts are loaded in app/layout.tsx via
-   next/font and exposed as --font-karla / --font-plex-mono / --font-caveat.
+   Clean, modern design system.
+   Neutral surfaces, a single indigo accent, flat cards, generous whitespace.
+   Class names are kept from the previous "field notes" theme so every page
+   re-skins for free; the decorative bits (tape, handwriting, stamps, graph
+   paper) are neutralized here into calm, tidy equivalents.
+   Fonts are loaded in app/layout.tsx via next/font and exposed as
+   --font-inter / --font-plex-mono.
    ─────────────────────────────────────────────────────────────────────────── */
 
 @theme {
-  --font-sans: var(--font-karla), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
 
-  --color-ink: #23271d;          /* warm black-green pen ink */
-  --color-muted: #6b7163;        /* pencil gray-green */
-  --color-accent: #c2402a;       /* red pen */
-  --color-accent-soft: #f8e3de;
-  --color-paper: #fffdf7;        /* card paper */
-  --color-warm-bg: #faf7ee;      /* page paper */
-  --color-highlight: #ffee94;    /* highlighter yellow */
+  --color-ink: #18181b;          /* zinc-900 — primary text */
+  --color-muted: #71717a;        /* zinc-500 — secondary text */
+  --color-accent: #4f46e5;       /* indigo-600 — single brand accent */
+  --color-accent-soft: #eef2ff;  /* indigo-50 */
+  --color-paper: #ffffff;        /* card surface */
+  --color-warm-bg: #fafafa;      /* page background */
+  --color-highlight: #eef2ff;    /* soft accent highlight */
+  --color-border: #e4e4e7;       /* zinc-200 — hairline borders */
 }
 
 html,
@@ -27,189 +30,152 @@ body {
   color: var(--color-ink);
 }
 
-/* Graph-paper page: fine grid, with a heavier line every 4 cells. */
 body {
   font-family: var(--font-sans);
   min-height: 100vh;
-  background-color: var(--color-warm-bg);
-  background-image:
-    linear-gradient(rgba(96, 116, 146, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(96, 116, 146, 0.05) 1px, transparent 1px),
-    linear-gradient(rgba(96, 116, 146, 0.09) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(96, 116, 146, 0.09) 1px, transparent 1px);
-  background-size:
-    24px 24px,
-    24px 24px,
-    96px 96px,
-    96px 96px;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Highlighter text selection */
 ::selection {
-  background: var(--color-highlight);
-  color: var(--color-ink);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
 }
 
 /* ── Typography helpers ──────────────────────────────────────────────────── */
 
-/* Handwriting (Caveat) for margin annotations */
+/* Was handwriting (Caveat); now just a calm normal-weight subhead. Pages still
+   pass big text sizes, which read fine as light hero/subhead copy. */
 .hand {
-  font-family: var(--font-caveat), cursive;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
-/* Typewriter kicker labels: FIELD NOTES · 48,952 GRANTS */
+/* Small uppercase label */
 .kicker {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-muted);
 }
 
-/* Red-pen emphasis with a hand-drawn squiggle underline.
-   (Class name kept from the old theme so existing pages re-skin for free.) */
+/* Accent emphasis (was a hand-drawn squiggle). Now flat accent color. */
 .text-gradient {
-  background: none;
-  -webkit-background-clip: initial;
-  background-clip: initial;
   color: var(--color-accent);
-  padding-bottom: 0.12em;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='6' viewBox='0 0 44 6'%3E%3Cpath d='M1 4 Q 6 1, 12 4 T 23 4 T 34 4 T 44 3' fill='none' stroke='%23c2402a' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: repeat-x;
-  background-position: 0 100%;
-  background-size: auto 6px;
 }
 
-/* Highlighter mark behind a word */
+/* Soft accent highlight behind a word (was a highlighter swipe). */
 .highlight {
-  background: linear-gradient(
-    104deg,
-    transparent 0.5%,
-    var(--color-highlight) 3%,
-    var(--color-highlight) 96%,
-    transparent 99%
-  );
-  padding: 0 0.18em;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  padding: 0.05em 0.28em;
+  border-radius: 5px;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
 
-/* ── Paper & notebook objects ────────────────────────────────────────────── */
+/* ── Surfaces ────────────────────────────────────────────────────────────── */
 
-/* A sheet of paper laid on the desk */
+/* Flat card */
 .paper {
   background: var(--color-paper);
-  border: 1px solid rgba(35, 39, 29, 0.14);
-  border-radius: 6px;
-  box-shadow:
-    0 1px 2px rgba(35, 39, 29, 0.06),
-    0 12px 28px -18px rgba(35, 39, 29, 0.28);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(24, 24, 27, 0.04);
 }
 
-/* Translucent tape strip holding a card down */
+/* Tape strip — neutralized to nothing (cards sit flat now). */
 .tape-card {
   position: relative;
 }
 .tape-card::before {
-  content: "";
-  position: absolute;
-  top: -11px;
-  left: 50%;
-  width: 92px;
-  height: 24px;
-  transform: translateX(-50%) rotate(-2deg);
-  background: rgba(255, 240, 178, 0.55);
-  border-left: 1px dashed rgba(35, 39, 29, 0.12);
-  border-right: 1px dashed rgba(35, 39, 29, 0.12);
-  box-shadow: 0 1px 2px rgba(35, 39, 29, 0.1);
-  pointer-events: none;
-}
-.tape-card.tape-left::before {
-  left: 18%;
-  transform: translateX(-50%) rotate(-5deg);
-}
-.tape-card.tape-right::before {
-  left: 82%;
-  transform: translateX(-50%) rotate(4deg);
+  content: none;
 }
 
-/* Ruled writing area (notebook lines that scroll with the text) */
+/* Ruled writing area — neutralized to a plain surface. */
 .ruled {
-  line-height: 28px;
-  background-image: repeating-linear-gradient(
-    transparent,
-    transparent 27px,
-    rgba(96, 116, 146, 0.22) 27px,
-    rgba(96, 116, 146, 0.22) 28px
-  );
-  background-attachment: local;
+  line-height: 1.6;
+  background-image: none;
 }
 
-/* Sticky note */
+/* Callout (was a tilted sticky note). Now a clean accent-tinted panel. */
 .sticky-note {
-  background: #fff3a6;
-  border: 1px solid rgba(35, 39, 29, 0.08);
-  box-shadow:
-    0 1px 2px rgba(35, 39, 29, 0.08),
-    0 14px 24px -16px rgba(35, 39, 29, 0.35);
-  transform: rotate(-1deg);
+  background: var(--color-accent-soft);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 18%, white);
+  border-radius: 14px;
+  box-shadow: none;
+  transform: none;
 }
 
-/* Rubber stamp: FUNDED / RECOMMENDED */
+/* Small status badge (was a rubber stamp). */
 .stamp {
-  display: inline-block;
-  font-family: var(--font-mono);
-  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--color-accent);
-  border: 2px solid currentColor;
-  border-radius: 3px;
-  padding: 1px 7px;
-  transform: rotate(-3deg);
-  opacity: 0.85;
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='24'%3E%3Crect width='80' height='24' fill='white'/%3E%3Ccircle cx='12' cy='5' r='1.4' fill='black'/%3E%3Ccircle cx='47' cy='18' r='1.7' fill='black'/%3E%3Ccircle cx='70' cy='8' r='1.2' fill='black'/%3E%3Ccircle cx='30' cy='12' r='1' fill='black'/%3E%3C/svg%3E");
-  -webkit-mask-size: 80px 24px;
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='24'%3E%3Crect width='80' height='24' fill='white'/%3E%3Ccircle cx='12' cy='5' r='1.4' fill='black'/%3E%3Ccircle cx='47' cy='18' r='1.7' fill='black'/%3E%3Ccircle cx='70' cy='8' r='1.2' fill='black'/%3E%3Ccircle cx='30' cy='12' r='1' fill='black'/%3E%3C/svg%3E");
-  mask-size: 80px 24px;
+  background: var(--color-accent-soft);
+  border: none;
+  border-radius: 999px;
+  padding: 2px 9px;
+  transform: none;
+  opacity: 1;
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 
 /* ── Interaction ─────────────────────────────────────────────────────────── */
 
-/* Cards tilt slightly when picked up */
+/* Subtle lift on hover */
 .card-lift {
-  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
 }
 .card-lift:hover {
-  transform: translateY(-2px) rotate(-0.4deg);
-  box-shadow:
-    0 2px 3px rgba(35, 39, 29, 0.08),
-    0 18px 34px -16px rgba(35, 39, 29, 0.3);
-  border-color: rgba(35, 39, 29, 0.3);
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  box-shadow: 0 4px 16px -6px rgba(24, 24, 27, 0.16);
 }
 
-/* Primary button: an ink sticker with a hard offset shadow */
+/* Primary button: solid accent, flat */
 .btn-primary {
-  background: var(--color-ink);
-  color: #fffdf5;
-  border: 1px solid var(--color-ink);
-  border-radius: 8px;
-  box-shadow: 3px 3px 0 rgba(35, 39, 29, 0.22);
-  transition: transform 100ms ease, box-shadow 100ms ease;
+  background: var(--color-accent);
+  color: #ffffff;
+  border: 1px solid var(--color-accent);
+  border-radius: 9px;
+  box-shadow: 0 1px 2px rgba(79, 70, 229, 0.25);
+  transition: background-color 120ms ease, box-shadow 120ms ease;
 }
 .btn-primary:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 rgba(35, 39, 29, 0.26);
+  background: color-mix(in srgb, var(--color-accent) 88%, black);
+  box-shadow: 0 2px 8px -2px rgba(79, 70, 229, 0.45);
 }
 .btn-primary:active {
-  transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0 rgba(35, 39, 29, 0.2);
+  background: color-mix(in srgb, var(--color-accent) 80%, black);
+}
+.btn-primary:disabled {
+  opacity: 0.55;
+}
+
+/* Secondary / ghost button */
+.btn-ghost {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+.btn-ghost:hover {
+  background: var(--color-warm-bg);
+  border-color: color-mix(in srgb, var(--color-ink) 25%, var(--color-border));
 }
 
 /* Focus rings */
 .focus-ring:focus,
 .focus-ring:focus-visible {
-  outline: 2px solid rgba(194, 64, 42, 0.5);
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 55%, transparent);
   outline-offset: 2px;
 }

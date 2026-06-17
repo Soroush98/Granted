@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Log in — Granted" };
 export default function LoginPage() {
   return (
     <section className="mx-auto max-w-sm py-6">
-      <div className="paper tape-card p-6 sm:p-7">
+      <div className="paper p-6 sm:p-7">
         <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
         <p className="mt-1 mb-6 text-sm text-[var(--color-muted)]">
           Log in to keep searching and to use your Job Hunt Pass.

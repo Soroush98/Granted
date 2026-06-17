@@ -146,7 +146,7 @@ async function SearchPageContent({ searchParams }: SearchPageProps) {
         </details>
       )}
 
-      <Form action="/search" className="paper tape-card mb-8 grid gap-3 p-5 sm:p-6">
+      <Form action="/search" className="paper mb-8 grid gap-3 p-5 sm:p-6">
         {/* Textarea is intentionally EMPTY on every render. We previously
             pre-filled with the URL's goal, but that made "search A → refine
             → accidentally submit AB" trivial (cursor at the end, type new
@@ -164,7 +164,7 @@ async function SearchPageContent({ searchParams }: SearchPageProps) {
               ? `Type a new query. (Previous: ${goal.length > 80 ? goal.slice(0, 77) + "…" : goal})`
               : "e.g. companies doing computer-vision quality inspection in Ontario, or labs researching battery recycling…"
           }
-          className="ruled focus-ring w-full resize-y rounded-md border border-[var(--color-ink)]/15 bg-white px-4 py-1 text-base outline-none transition-colors focus:border-[var(--color-accent)]/50"
+          className="focus-ring w-full resize-y rounded-lg border border-[var(--color-border)] bg-white px-4 py-3 text-base leading-relaxed outline-none transition-colors focus:border-[var(--color-accent)]"
         />
 
         {goal && (

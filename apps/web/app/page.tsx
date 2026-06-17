@@ -4,72 +4,63 @@ import { searchWithResume } from "./actions";
 import { ResumeInput } from "./_components/resume-input";
 import { corpusTotals } from "@/lib/rag/browse";
 
-// Landing page, FIELD NOTES style: a researcher's notebook spread that routes
-// to the three finders (taped index cards), with the free-form PDF search as
-// the "or search everything" sheet below.
+// Landing page: a clean hero that routes to the three finders, with the
+// free-form PDF search as the "or search everything" panel below.
 export default async function Home() {
   const totals = await corpusTotals();
   return (
-    <section className="mx-auto max-w-3xl py-6 sm:py-8">
+    <section className="mx-auto max-w-3xl py-6 sm:py-10">
       {/* Hero */}
       <p className="kicker text-center">
-        field notes · grant-funded orgs · canada · us · uk · australia
+        Grant-funded orgs · Canada · US · UK · Australia
       </p>
 
-      <h1 className="mt-5 text-center text-balance text-4xl font-bold tracking-tight sm:text-5xl">
-        Who&rsquo;s <span className="highlight">funded</span> to do{" "}
-        <span className="text-gradient">your exact work</span>?
+      <h1 className="mt-5 text-center text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
+        Who&rsquo;s <span className="text-gradient">funded</span> to do your exact work?
       </h1>
 
-      <p className="hand mx-auto mt-4 max-w-xl text-center text-2xl leading-snug text-[var(--color-muted)]">
-        every match cites a real grant — your concrete reason to reach out ↓
+      <p className="mx-auto mt-5 max-w-xl text-center text-lg leading-relaxed text-[var(--color-muted)]">
+        Every match cites a real grant — your concrete reason to reach out.
       </p>
 
-      {/* The three finders: index cards taped to the page */}
-      <div className="mt-12 grid gap-5 sm:grid-cols-3">
+      {/* The three finders */}
+      <div className="mt-12 grid gap-4 sm:grid-cols-3">
         <FinderCard
           href="/jobs"
-          tape="tape-left"
-          no="01"
           title="Find a Job"
-          note="companies funded to do your work — even ones not posting jobs"
-          cta="find companies"
+          note="Companies funded to do your work — even ones not posting jobs."
+          cta="Find companies"
         />
         <FinderCard
           href="/supervisors"
-          tape=""
-          no="02"
           title="Find a Supervisor"
-          note="university labs funded in your research area"
-          cta="find labs"
+          note="University labs funded in your research area."
+          cta="Find labs"
         />
         <FinderCard
           href="/research-pi"
-          tape="tape-right"
-          no="03"
           title="Find a PI"
-          note="funded investigators in Canada, the US, the UK & Australia who can host you"
-          cta="find PIs"
+          note="Funded investigators in Canada, the US, the UK & Australia who can host you."
+          cta="Find PIs"
         />
       </div>
 
       {/* Divider */}
-      <div className="mt-14 mb-4 flex items-center gap-3">
-        <div className="h-px flex-1 border-t border-dashed border-[var(--color-ink)]/30" />
-        <p className="hand text-2xl text-[var(--color-muted)]">or search everything…</p>
-        <div className="h-px flex-1 border-t border-dashed border-[var(--color-ink)]/30" />
+      <div className="mt-14 mb-5 flex items-center gap-4">
+        <div className="h-px flex-1 bg-[var(--color-border)]" />
+        <p className="text-sm text-[var(--color-muted)]">or search everything</p>
+        <div className="h-px flex-1 bg-[var(--color-border)]" />
       </div>
 
-      {/* Free-form search: a paper sheet with ruled lines (PDF upload is unique
-          to this page). */}
-      <Form action={searchWithResume} className="paper tape-card grid gap-4 p-5 sm:p-6">
+      {/* Free-form search (PDF upload is unique to this page). */}
+      <Form action={searchWithResume} className="paper grid gap-4 p-5 sm:p-6">
         <label className="grid gap-1.5">
-          <span className="kicker">resume, research paper, or project pdf (optional)</span>
+          <span className="kicker">Resume, research paper, or project PDF (optional)</span>
           <ResumeInput />
         </label>
 
         <label className="grid gap-1.5">
-          <span className="kicker">what are you looking for?</span>
+          <span className="kicker">What are you looking for?</span>
           <textarea
             name="q"
             required
@@ -81,15 +72,15 @@ export default async function Home() {
               "e.g. ML systems engineer focused on LLM inference efficiency — companies hiring in this area.\n" +
               "Mention 'companies only' or 'university labs' to narrow."
             }
-            className="ruled focus-ring w-full resize-y rounded-md border border-[var(--color-ink)]/15 bg-white px-4 py-1 text-base outline-none transition-colors focus:border-[var(--color-accent)]/50"
+            className="focus-ring w-full resize-y rounded-lg border border-[var(--color-border)] bg-white px-4 py-3 text-base leading-relaxed outline-none transition-colors focus:border-[var(--color-accent)]"
           />
         </label>
 
         <button
           type="submit"
-          className="btn-primary focus-ring mx-auto mt-1 px-7 py-3 text-sm font-semibold"
+          className="btn-primary focus-ring mt-1 w-full px-7 py-3 text-sm font-semibold sm:mx-auto sm:w-auto"
         >
-          Find my matches&nbsp;&nbsp;→
+          Find my matches
         </button>
       </Form>
 
@@ -98,21 +89,23 @@ export default async function Home() {
         {totals.grants.toLocaleString()} grants&nbsp;&nbsp;·&nbsp;&nbsp;
         {totals.organizations.toLocaleString()} organizations&nbsp;&nbsp;·&nbsp;&nbsp;
         {totals.chunks.toLocaleString()} indexed chunks&nbsp;&nbsp;·&nbsp;&nbsp;
-        <Link href="/stats" className="underline hover:text-[var(--color-ink)]">
+        <Link href="/stats" className="underline underline-offset-2 hover:text-[var(--color-ink)]">
           see the numbers
         </Link>
       </p>
 
-      {/* Pass teaser: a sticky note */}
-      <div className="sticky-note mx-auto mt-12 max-w-md rounded-sm p-5 text-center">
-        <p className="hand text-3xl leading-none">hunting seriously?</p>
-        <p className="mt-2 text-sm leading-relaxed text-[var(--color-ink)]/80">
-          The 30-Day Job Hunt Pass — 500 searches + live web search for freshly-funded companies.
-          One-time. No auto-renew.
-        </p>
+      {/* Pass teaser */}
+      <div className="sticky-note mx-auto mt-12 flex max-w-lg flex-col items-center gap-3 p-6 text-center sm:flex-row sm:text-left">
+        <div className="flex-1">
+          <p className="font-semibold text-[var(--color-ink)]">Hunting seriously?</p>
+          <p className="mt-1 text-sm leading-relaxed text-[var(--color-muted)]">
+            The 30-Day Job Hunt Pass — 500 searches + live web search for freshly-funded
+            companies. One-time. No auto-renew.
+          </p>
+        </div>
         <Link
           href="/pass"
-          className="btn-primary focus-ring mt-3 inline-block px-5 py-2 text-sm font-semibold"
+          className="btn-primary focus-ring shrink-0 px-5 py-2.5 text-sm font-semibold"
         >
           See pricing
         </Link>
@@ -126,18 +119,15 @@ export default async function Home() {
 }
 
 function FinderCard({
-  href, tape, no, title, note, cta,
-}: { href: string; tape: string; no: string; title: string; note: string; cta: string }) {
+  href, title, note, cta,
+}: { href: string; title: string; note: string; cta: string }) {
   return (
-    <Link href={href} className={`paper tape-card ${tape} card-lift group flex flex-col p-5`}>
-      <span className="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.14em] text-[var(--color-muted)]">
-        № {no}
-      </span>
-      <h2 className="mt-2 text-lg font-bold tracking-tight">{title}</h2>
-      <p className="hand mt-1.5 flex-1 text-[22px] leading-tight text-[var(--color-muted)]">
+    <Link href={href} className="paper card-lift group flex flex-col p-5">
+      <h2 className="text-base font-semibold tracking-tight">{title}</h2>
+      <p className="mt-1.5 flex-1 text-sm leading-relaxed text-[var(--color-muted)]">
         {note}
       </p>
-      <span className="mt-4 font-[family-name:var(--font-mono)] text-[13px] font-medium text-[var(--color-accent)] transition-transform group-hover:translate-x-0.5">
+      <span className="mt-4 text-[13px] font-medium text-[var(--color-accent)] transition-transform group-hover:translate-x-0.5">
         {cta} →
       </span>
     </Link>

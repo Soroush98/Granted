@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Sign up — Granted" };
 export default function SignupPage() {
   return (
     <section className="mx-auto max-w-sm py-6">
-      <div className="paper tape-card p-6 sm:p-7">
+      <div className="paper p-6 sm:p-7">
         <h1 className="text-2xl font-semibold tracking-tight">Create your free account</h1>
         <p className="mt-1 mb-6 text-sm text-[var(--color-muted)]">
           Get 10 free searches. Upgrade any time to the 30-Day Job Hunt Pass for 500 searches and

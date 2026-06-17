@@ -19,10 +19,10 @@ export default function NotesPage() {
     <section className="mx-auto max-w-3xl">
       <header className="mb-8 text-center">
         <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-          My <span className="text-gradient">field notes</span>
+          My <span className="text-gradient">searches</span>
         </h1>
-        <p className="hand mx-auto mt-3 text-2xl leading-snug text-[var(--color-muted)]">
-          every search you&rsquo;ve run — re-run one, or branch it into a new angle
+        <p className="mx-auto mt-3 text-base leading-relaxed text-[var(--color-muted)]">
+          Every search you&rsquo;ve run — re-run one, or branch it into a new angle.
         </p>
       </header>
 
@@ -41,7 +41,7 @@ async function NotesList() {
 
   if (!user) {
     return (
-      <div className="paper tape-card p-6 text-center">
+      <div className="paper p-6 text-center">
         <p className="font-semibold">Your notebook lives on your account.</p>
         <p className="mt-1 text-sm text-[var(--color-muted)]">
           Sign in and every search you run is kept here — ready to re-run when new grants land.
@@ -67,7 +67,7 @@ async function NotesList() {
 
   if (!rows || rows.length === 0) {
     return (
-      <div className="paper tape-card p-6 text-center">
+      <div className="paper p-6 text-center">
         <p className="font-semibold">No entries yet.</p>
         <p className="mt-1 text-sm text-[var(--color-muted)]">
           Run your first search and it&rsquo;ll be pinned here.
@@ -106,7 +106,7 @@ function NotesSkeleton() {
   return (
     <div className="grid gap-3">
       {[0, 1, 2, 3].map((i) => (
-        <div key={i} className="h-20 animate-pulse rounded-md bg-black/5" />
+        <div key={i} className="h-20 animate-pulse rounded-xl bg-[var(--color-border)]/50" />
       ))}
     </div>
   );

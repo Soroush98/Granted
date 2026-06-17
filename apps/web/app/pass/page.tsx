@@ -42,38 +42,38 @@ export default function PassPage({
           No subscription, no auto-renew, nothing to cancel. Buy a pass when you&rsquo;re hunting;
           stop paying when you&rsquo;re hired.
         </p>
-        <p className="hand mx-auto mt-3 text-2xl text-[var(--color-muted)]">
-          a thorough hunt runs 30–50 searches — one per strength, per angle, per region
+        <p className="mx-auto mt-3 text-base text-[var(--color-muted)]">
+          A thorough hunt runs 30–50 searches — one per strength, per angle, per region.
         </p>
       </header>
 
       <div className="grid items-start gap-5 sm:grid-cols-2">
         {/* Free tier */}
-        <div className="paper tape-card tape-left p-6">
-          <h2 className="font-bold tracking-tight">Free</h2>
+        <div className="paper p-6">
+          <h2 className="font-semibold tracking-tight">Free</h2>
           <p className="mt-2 font-mono text-3xl font-semibold">$0</p>
           <p className="mt-1 text-xs text-[var(--color-muted)]">to try it out</p>
           <ul className="mt-5 grid gap-2 text-sm">
             {FREE_PERKS.map((p) => (
               <li key={p} className="flex items-start gap-2">
-                <span className="mt-0.5 text-emerald-600">✓</span> {p}
+                <span className="mt-0.5 text-[var(--color-accent)]">✓</span> {p}
               </li>
             ))}
           </ul>
           <Link
             href="/signup"
-            className="focus-ring mt-6 block rounded-lg border border-dashed border-[var(--color-ink)]/40 bg-white px-5 py-2.5 text-center text-sm font-semibold transition hover:border-[var(--color-ink)]"
+            className="btn-ghost focus-ring mt-6 block px-5 py-2.5 text-center text-sm font-semibold"
           >
             Sign up free
           </Link>
         </div>
 
         {/* Pass — highlighted */}
-        <div className="paper tape-card tape-right relative border-2 border-[var(--color-ink)]/70 p-6">
-          <span className="stamp absolute -top-3.5 right-6 bg-[var(--color-paper)] text-[11px]">
-            recommended
+        <div className="paper relative border-[1.5px] border-[var(--color-accent)] p-6 shadow-[0_8px_30px_-12px_rgba(79,70,229,0.35)]">
+          <span className="stamp absolute -top-3 right-6">
+            Recommended
           </span>
-          <h2 className="font-bold tracking-tight">30-Day Job Hunt Pass</h2>
+          <h2 className="font-semibold tracking-tight">30-Day Job Hunt Pass</h2>
           <p className="mt-2 font-mono text-3xl font-semibold">
             {env.NEXT_PUBLIC_PASS_PRICE ?? "One-time"}
           </p>
@@ -81,12 +81,12 @@ export default function PassPage({
           <ul className="mt-5 grid gap-2 text-sm">
             {PASS_PERKS.map((p) => (
               <li key={p} className="flex items-start gap-2">
-                <span className="mt-0.5 text-emerald-600">✓</span> {p}
+                <span className="mt-0.5 text-[var(--color-accent)]">✓</span> {p}
               </li>
             ))}
           </ul>
           <div className="mt-6">
-            <Suspense fallback={<div className="h-10 animate-pulse rounded-full bg-black/5" />}>
+            <Suspense fallback={<div className="h-10 animate-pulse rounded-full bg-[var(--color-border)]/50" />}>
               <PassCta />
             </Suspense>
           </div>

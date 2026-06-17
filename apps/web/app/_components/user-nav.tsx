@@ -46,9 +46,9 @@ export async function UserNav() {
     <div className="flex items-center gap-3 text-sm">
       <Link
         href="/notes"
-        className="font-[family-name:var(--font-mono)] text-[13px] text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:underline"
+        className="hidden text-[13px] text-[var(--color-muted)] hover:text-[var(--color-ink)] sm:inline"
       >
-        my notes
+        Notes
       </Link>
       {active ? (
         <Link

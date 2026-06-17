@@ -199,7 +199,7 @@ export function SpikeFinder({
 
   return (
     <div className="grid gap-8">
-      <form ref={formRef} onSubmit={onSubmit} className="paper tape-card grid gap-3 p-5 sm:p-6">
+      <form ref={formRef} onSubmit={onSubmit} className="paper grid gap-3 p-5 sm:p-6">
         <textarea
           name="bg"
           required
@@ -210,17 +210,17 @@ export function SpikeFinder({
           value={bgText}
           onChange={(e) => setBgText(e.target.value)}
           placeholder={copy.placeholder}
-          className="ruled focus-ring w-full resize-y rounded-md border border-[var(--color-ink)]/15 bg-white px-4 py-1 text-base outline-none transition-colors focus:border-[var(--color-accent)]/50"
+          className="focus-ring w-full resize-y rounded-lg border border-[var(--color-border)] bg-white px-4 py-3 text-base leading-relaxed outline-none transition-colors focus:border-[var(--color-accent)]"
         />
         {copy.examples && copy.examples.length > 0 && !bgText && (
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-            <span className="hand text-xl text-[var(--color-muted)]">try one of these →</span>
+            <span className="text-sm text-[var(--color-muted)]">Try one of these:</span>
             {copy.examples.map((ex) => (
               <button
                 key={ex}
                 type="button"
                 onClick={() => setBgText(ex)}
-                className="rounded border border-dashed border-[var(--color-ink)]/30 bg-white px-2.5 py-1 text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)]/60 hover:text-[var(--color-ink)]"
+                className="rounded-full border border-[var(--color-border)] bg-white px-3 py-1 text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-ink)]"
               >
                 {ex.length > 64 ? ex.slice(0, 61) + "…" : ex}
               </button>
@@ -240,8 +240,8 @@ export function SpikeFinder({
                   key={value}
                   className={`cursor-pointer rounded-full border px-3 py-1 transition-colors ${
                     country === value
-                      ? "border-black/30 bg-black/5 font-medium text-[var(--color-ink)]"
-                      : "border-black/10 text-[var(--color-muted)] hover:bg-black/5"
+                      ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)] font-medium text-[var(--color-accent)]"
+                      : "border-[var(--color-border)] text-[var(--color-muted)] hover:bg-[var(--color-warm-bg)]"
                   }`}
                 >
                   <input
@@ -351,7 +351,7 @@ function StreamProgress({ phases }: { phases: Phase[] }) {
               </span>
             </div>
             {active && p.detail && (
-              <p className="hand ml-6 mt-0.5 text-lg leading-tight text-[var(--color-muted)]">{p.detail}</p>
+              <p className="ml-6 mt-0.5 text-xs leading-snug text-[var(--color-muted)]">{p.detail}</p>
             )}
           </li>
         );
@@ -365,7 +365,7 @@ function WebCompanies({ web }: { web: Extract<WebResults, { kind: "companies" }>
     <section>
       <div className="mb-1 flex items-baseline gap-2.5">
         <h2 className="text-lg font-bold tracking-tight">From around the web</h2>
-        <span className="hand text-xl text-[var(--color-muted)]">← live web search</span>
+        <span className="stamp">live web search</span>
       </div>
       <p className="mb-4 text-xs text-[var(--color-muted)]">
         Companies found via live web search, prioritizing a recent funding or traction signal in your
@@ -426,7 +426,7 @@ function WebLabs({ web }: { web: Extract<WebResults, { kind: "labs" }> }) {
     <section>
       <div className="mb-1 flex items-baseline gap-2.5">
         <h2 className="text-lg font-bold tracking-tight">From around the web</h2>
-        <span className="hand text-xl text-[var(--color-muted)]">← live web search</span>
+        <span className="stamp">live web search</span>
       </div>
       <p className="mb-4 text-xs text-[var(--color-muted)]">
         Labs and principal investigators found via live web search, prioritizing ones that look like
@@ -502,15 +502,13 @@ function SpikeResults({
 
       {spikes.map((s, si) => (
         <section key={s.label}>
-          <div className="flex items-baseline gap-2.5">
-            <span className="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.14em] text-[var(--color-muted)]">
-              № {String(si + 1).padStart(2, "0")}
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-soft)] font-[family-name:var(--font-mono)] text-[12px] font-medium text-[var(--color-accent)]">
+              {si + 1}
             </span>
-            <h2 className="text-lg font-bold tracking-tight">
-              <span className="highlight">{s.label}</span>
-            </h2>
+            <h2 className="text-lg font-semibold tracking-tight">{s.label}</h2>
           </div>
-          <p className="mb-4 mt-1 font-[family-name:var(--font-mono)] text-xs text-[var(--color-muted)]">
+          <p className="mb-4 mt-1.5 font-[family-name:var(--font-mono)] text-xs text-[var(--color-muted)]">
             matched on: {s.query}
           </p>
 
@@ -613,22 +611,25 @@ function DigDeeper({
   const misses = spikes.filter((s) => !s.failed && s.matches.length === 0);
 
   return (
-    <aside className="paper tape-card tape-left p-5">
-      <p className="hand text-2xl leading-none text-[var(--color-ink)]">
-        keep digging — one search is never the whole picture
+    <aside className="paper p-5">
+      <p className="text-base font-semibold text-[var(--color-ink)]">
+        Keep digging
+      </p>
+      <p className="mt-0.5 text-sm text-[var(--color-muted)]">
+        One search is never the whole picture.
       </p>
 
       {hits.length > 0 && (
         <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1.5">
-          <span className="kicker">narrow in on one strength</span>
+          <span className="kicker mr-1">Narrow in on one strength</span>
           {hits.map((s) => (
             <button
               key={s.label}
               type="button"
               onClick={() => onFill(s.query)}
-              className="rounded border border-dashed border-[var(--color-ink)]/30 bg-white px-2.5 py-1 text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)]/60 hover:text-[var(--color-ink)]"
+              className="rounded-full border border-[var(--color-border)] bg-white px-3 py-1 text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-ink)]"
             >
-              dig into: {s.label}
+              {s.label}
             </button>
           ))}
         </div>
@@ -636,30 +637,30 @@ function DigDeeper({
 
       {misses.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1.5">
-          <span className="kicker">no matches? go broader</span>
+          <span className="kicker mr-1">No matches? Go broader</span>
           {misses.map((s) => (
             <button
               key={s.label}
               type="button"
               onClick={() => onFill(s.label)}
-              className="rounded border border-dashed border-[var(--color-accent)]/40 bg-white px-2.5 py-1 text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-ink)]"
+              className="rounded-full border border-[var(--color-accent)]/40 bg-white px-3 py-1 text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-ink)]"
             >
-              broaden: {s.label}
+              {s.label}
             </button>
           ))}
         </div>
       )}
 
       <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1.5">
-        <span className="kicker">same background, different doors</span>
+        <span className="kicker mr-1">Same background, different doors</span>
         {CROSS_FINDERS[kind].map((cf) => (
           <Link
             key={cf.href}
             href={cf.href}
             onClick={() => sessionStorage.setItem(PREFILL_KEY, background)}
-            className="rounded border border-dashed border-[var(--color-ink)]/30 bg-white px-2.5 py-1 text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)]/60 hover:text-[var(--color-ink)]"
+            className="rounded-full border border-[var(--color-border)] bg-white px-3 py-1 text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-ink)]"
           >
-            try it on {cf.label} →
+            {cf.label} →
           </Link>
         ))}
       </div>

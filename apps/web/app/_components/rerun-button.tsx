@@ -19,9 +19,9 @@ export function RerunButton({ path, query }: { path: string; query: string }) {
           router.push(path);
         }
       }}
-      className="shrink-0 rounded border border-dashed border-[var(--color-ink)]/30 bg-white px-2.5 py-1 font-[family-name:var(--font-mono)] text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)]/60 hover:text-[var(--color-ink)]"
+      className="shrink-0 rounded-full border border-[var(--color-border)] bg-white px-3 py-1 text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-ink)]"
     >
-      re-run →
+      Re-run →
     </button>
   );
 }
