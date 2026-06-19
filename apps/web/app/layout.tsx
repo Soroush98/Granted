@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { Inter, IBM_Plex_Mono } from "next/font/google";
+import Script from "next/script";
 import { Logo } from "@/app/_components/logo";
 import { UserNav } from "@/app/_components/user-nav";
 import { MobileNav } from "@/app/_components/mobile-nav";
@@ -26,6 +27,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${plexMono.variable}`}>
       <body className="min-h-screen antialiased">
+        {/* Google Analytics (gtag.js) — loaded after the page is interactive
+            so it never blocks first paint. GA4 measurement IDs are public. */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-KGNMQYM9L1"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-KGNMQYM9L1');
+          `}
+        </Script>
         <header className="sticky top-0 z-20 border-b border-[var(--color-border)] bg-[var(--color-paper)]/80 backdrop-blur-md relative">
           <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-3.5">
             <Link href="/" className="group flex shrink-0 items-center gap-2">
