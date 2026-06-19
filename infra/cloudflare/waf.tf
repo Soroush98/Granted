@@ -34,7 +34,10 @@ resource "cloudflare_ruleset" "waf_challenge_vpn" {
     description = "Challenge datacenter/VPN traffic on AI search pages"
     expression  = local.challenge_expression
     action      = "managed_challenge"
-    enabled     = true
+    # Disabled: the threat_score clause was challenging flagged/VPN residential
+    # visitors on the AI paths (false positives). Re-enable after softening
+    # (action = "log" first, or drop the threat_score clause → ASN-only).
+    enabled     = false
   }
 }
 
