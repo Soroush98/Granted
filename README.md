@@ -1,5 +1,7 @@
 # Granted
 
+**Live site: [www.grantedjobs.com](https://www.grantedjobs.com)**
+
 Find organizations actually doing the work you care about — across **Canada, the
 United States, the United Kingdom, and Australia**. It indexes their public R&D
 funding history and matches it against your query, resume, or research paper.
@@ -131,9 +133,10 @@ Time per search: about 4 to 6 seconds end-to-end (Voyage embed ≈ 200ms, RPC �
 - **`/companies/[id]`**: full grant list for one organization, 25 per page,
   sortable, with in-page text search across that org's titles and
   descriptions.
-- **Rate limit**: 10 searches per IP, lifetime. Checked before the expensive
-  embed and rerank step, so over-quota requests cost nothing on the Claude
-  side.
+- **Abuse controls**: AI searches are rate-limited per client and capped
+  globally, and gated behind a bot challenge at the edge — all enforced before
+  the expensive embed and rerank step, so blocked requests cost nothing on the
+  Claude side.
 
 ## Setup (local dev)
 
@@ -198,9 +201,9 @@ gitignored, so you bring your own.
 
 ### Schema bootstrap
 
-The repo no longer ships migrations (we squashed the history before going
-public). You can rebuild the schema from the code, but if you want a clean
-init script for a fresh Supabase project, the tables and RPCs you need are:
+The repo doesn't ship database migrations. You can rebuild the schema from the
+code, but if you want a clean init script for a fresh Supabase project, the
+tables and RPCs you need are:
 
 - Extensions: `vector`, `pg_trgm`, `unaccent`, `pg_stat_statements`
 - Tables: `funding_programs`, `companies`, `grants`, `grant_partners`,
