@@ -9,6 +9,13 @@ variable "cloudflare_zone_id" {
   type        = string
 }
 
+variable "origin_verify_secret" {
+  description = "Shared secret Cloudflare stamps as the `x-origin-verify` request header so the app can reject direct-to-origin (WAF-bypassing) traffic. Must match ORIGIN_VERIFY_SECRET in the web app env. Generate with `openssl rand -hex 32`. Leave \"\" to disable the origin-lock rule (opt-in)."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 variable "protected_paths" {
   description = "Exact URL paths of the AI search surfaces to guard. These are GET page navigations; the cf_clearance cookie earned here carries through the subsequent server-action POST."
   type        = list(string)

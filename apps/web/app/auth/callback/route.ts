@@ -12,7 +12,14 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/";
+  // `next` is attacker-controlled. Only allow same-origin relative paths —
+  // reject protocol-relative ("//evil.com") and backslash variants that
+  // browsers resolve to an external host (open-redirect / phishing vector).
+  const rawNext = searchParams.get("next") ?? "/";
+  const next =
+    rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.startsWith("/\\")
+      ? rawNext
+      : "/";
   // Provider errors (e.g. the user cancelled Google consent) come back here too.
   const providerError = searchParams.get("error_description") ?? searchParams.get("error");
 

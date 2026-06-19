@@ -3,16 +3,9 @@
 Version-controlled definition of the WAF custom rule that issues a **Managed
 Challenge** to datacenter/VPN traffic hitting the AI search pages
 (`/search`, `/jobs`, `/supervisors`, `/research-pi`). It's defense-in-depth on
-top of the app-level limits (per-IP 10/day + 3/10min) and the global daily
-spend breaker in `lib/njf/usage.ts`.
-
-## Why this exists
-
-Per-IP rate limiting is defeated by VPN/IP rotation. This rule attacks the
-problem at the edge instead: it makes datacenter/VPN-originated requests solve a
-challenge **before they reach the origin**, so bots and scrapers cost zero
-Voyage/Claude credits. See the conversation in the repo history for the full
-threat model.
+top of the app-level rate limits and the global daily spend cap in
+`lib/njf/usage.ts`, so automated traffic is filtered at the edge before it can
+reach the (paid) embed + rerank path.
 
 ## How the challenge works
 
@@ -24,16 +17,15 @@ Action = **Managed Challenge** (Cloudflare's adaptive type):
 - On success Cloudflare sets a **`cf_clearance` cookie**; subsequent requests
   skip the challenge for its lifetime (~30 min, managed). Real users are
   challenged at most once.
-- Headless bots that can't run the JS fail and never reach the origin.
+- Automated clients that can't run the JS fail and never reach the origin.
 
-## ⚠️ Why the rule targets GET only
+## Why the rule targets GET only
 
 The finder forms submit via **server actions** (fetch-based POST). A Managed
 Challenge returns an HTML interstitial, which a `fetch()` can't render — so
 challenging the POST would break real submissions. The rule challenges the
 **GET page navigation**; the `cf_clearance` cookie earned there carries through
-the subsequent action POST to the same route. A bot POSTing directly with no
-solved challenge has no cookie and is blocked.
+the subsequent action POST to the same route.
 
 ## Apply with Terraform (recommended)
 
@@ -45,8 +37,9 @@ terraform plan      # review; the `challenge_expression` output shows the compil
 terraform apply
 ```
 
-The API token needs **Zone → Zone WAF → Edit** on the zone. `terraform.tfvars`
-and state are gitignored.
+The API token needs **Zone → Zone WAF → Edit** (and **Zone → Transform Rules →
+Edit** if you enable the origin lock below). `terraform.tfvars` and state are
+gitignored.
 
 ## Apply without Terraform
 
@@ -54,8 +47,31 @@ and state are gitignored.
 CF_API_TOKEN=... CF_ZONE_ID=... ./apply-via-api.sh
 ```
 
-(Appends the rule via the Cloudflare API. Re-running adds a duplicate — delete
-the old one in the dashboard first.)
+(Appends the challenge rule via the Cloudflare API. Re-running adds a duplicate —
+delete the old one in the dashboard first.)
+
+## Origin lock (optional)
+
+So that the edge rules can't be skipped, `origin-lock.tf` has Cloudflare stamp a
+secret `x-origin-verify` header on every proxied request; the app
+(`apps/web/middleware.ts`) only serves the AI paths when that header is present.
+Requests that don't arrive via Cloudflare are refused. It's **opt-in**: with
+`origin_verify_secret` unset, no rule is created and the app doesn't enforce.
+
+Roll out in this order so a misconfig can't lock you out:
+
+1. Generate a secret: `openssl rand -hex 32`.
+2. Set it as `origin_verify_secret` in `terraform.tfvars` and `terraform apply`.
+   (The token now also needs **Zone → Transform Rules → Edit**.) Cloudflare adds
+   the header; the app still ignores it.
+3. Confirm the header arrives on requests through your Cloudflare domain.
+4. Set `ORIGIN_VERIFY_SECRET` to the **same value** in the Vercel project env and
+   redeploy. Enforcement is now active.
+
+Requirements: the custom domain must be **proxied** (orange cloud); the scraper's
+`/api/revalidate` call must target the Cloudflare domain so it carries the
+header. The Stripe webhook is exempt (excluded from middleware; authenticated by
+signature).
 
 ## Plan caveats / tuning
 
@@ -66,8 +82,8 @@ the old one in the dashboard first.)
   add-on. If you have it, you can replace the reputation clause in `waf.tf` with
   `(cf.bot_management.score lt 30)`.
 - **ASN list** catches datacenter-hosted VPNs and cloud scrapers, **not**
-  residential proxies. Grow `datacenter_asns` in `variables.tf` as abusive ASNs
-  appear in Cloudflare request analytics.
+  residential proxies. Grow `datacenter_asns` in `variables.tf` as needed from
+  Cloudflare request analytics.
 - Start in **Log** mode if you want to observe before enforcing: temporarily set
   the rule `action = "log"` (requires a plan that supports the Log action) or
   watch Security Events after deploying with Managed Challenge.

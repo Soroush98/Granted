@@ -43,7 +43,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Suspense fallback={<div className="h-7 w-24" />}>
                 <UserNav />
               </Suspense>
-              <MobileNav />
+              {/* Suspense-wrapped: MobileNav reads usePathname(), which is
+                  dynamic on param routes (e.g. /companies/[id]). Without a
+                  boundary, cacheComponents fails the prerender there. */}
+              <Suspense fallback={<div className="h-7 w-7 sm:hidden" />}>
+                <MobileNav />
+              </Suspense>
             </div>
           </div>
         </header>

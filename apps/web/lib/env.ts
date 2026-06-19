@@ -16,7 +16,16 @@ const ServerEnv = z.object({
   ANTHROPIC_API_KEY: z.string().min(20),
   ANTHROPIC_MODEL: z.string().default("claude-opus-4-7"),
 
-  REVALIDATE_SECRET: z.string().min(8).default("changeme"),
+  // No default: an unset secret must DISABLE the revalidate webhook (the route
+  // fails closed), never fall back to a guessable shared value.
+  REVALIDATE_SECRET: z.string().min(8).optional(),
+
+  // Origin lock for the AI-cost paths (see middleware.ts). When set, Cloudflare
+  // stamps this as the x-origin-verify header and the app rejects AI requests
+  // that lack it (i.e. that bypassed the WAF by hitting the origin directly).
+  // OPT-IN: leave unset until the Cloudflare header rule is live. Read directly
+  // from process.env in middleware (edge runtime), declared here for docs/parity.
+  ORIGIN_VERIFY_SECRET: z.string().min(16).optional(),
 
   // Cloudflare Turnstile (bot defense on the finder forms). BOTH optional:
   // when the secret is absent, verifyTurnstile() fails OPEN so local dev and
@@ -54,6 +63,7 @@ export const env = ServerEnv.parse({
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
   ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL,
   REVALIDATE_SECRET: process.env.REVALIDATE_SECRET,
+  ORIGIN_VERIFY_SECRET: process.env.ORIGIN_VERIFY_SECRET,
   TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY,
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,

@@ -37,6 +37,15 @@ export async function POST(req: Request) {
     }
 
     const session = event.data.object as Stripe.Checkout.Session;
+
+    // Only grant on a session that was ACTUALLY paid. `checkout.session.completed`
+    // also fires for unpaid/no_payment_required/async-pending sessions; granting
+    // on those hands out a free pass. (Price/quantity are already fixed server-side
+    // in the checkout route, so payment_status is the gap that matters here.)
+    if (session.payment_status !== "paid") {
+      return NextResponse.json({ received: true, skipped: "unpaid" });
+    }
+
     const userId = session.metadata?.userId ?? session.client_reference_id ?? null;
     if (userId) {
       const expiresAt = new Date(Date.now() + PASS_DAYS * 86_400_000).toISOString();

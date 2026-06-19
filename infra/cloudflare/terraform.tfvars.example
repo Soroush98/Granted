@@ -1,7 +1,16 @@
 # Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored — never
 # commit real credentials.
+#
+# Token permissions: Zone > Zone WAF > Edit (for waf.tf). To also apply the
+# origin-lock header rule (origin-lock.tf) the token additionally needs
+# Zone > Transform Rules > Edit.
 cloudflare_api_token = "your-token-with-zone-waf-edit"
 cloudflare_zone_id   = "your-zone-id"
+
+# Origin lock (opt-in). Set this to the SAME value as ORIGIN_VERIFY_SECRET in the
+# Vercel app env to make Cloudflare the only path to the origin. Leave commented
+# out (defaults to "") to skip the rule. Generate with: openssl rand -hex 32
+# origin_verify_secret = "paste-openssl-rand-hex-32-here"
 
 # Optional overrides:
 # threat_score_threshold = 10
