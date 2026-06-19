@@ -20,11 +20,11 @@ const ServerEnv = z.object({
   // fails closed), never fall back to a guessable shared value.
   REVALIDATE_SECRET: z.string().min(8).optional(),
 
-  // Origin lock for the AI-cost paths (see middleware.ts). When set, Cloudflare
+  // Origin lock for the AI-cost paths (see proxy.ts). When set, Cloudflare
   // stamps this as the x-origin-verify header and the app rejects AI requests
   // that lack it (i.e. that bypassed the WAF by hitting the origin directly).
   // OPT-IN: leave unset until the Cloudflare header rule is live. Read directly
-  // from process.env in middleware (edge runtime), declared here for docs/parity.
+  // from process.env in proxy (edge runtime), declared here for docs/parity.
   ORIGIN_VERIFY_SECRET: z.string().min(16).optional(),
 
   // Cloudflare Turnstile (bot defense on the finder forms). BOTH optional:

@@ -22,7 +22,7 @@ export function supabaseService() {
 
 // Cookie-aware client bound to the request's auth session. Use in Server
 // Components / route handlers / actions to read the logged-in user
-// (`supabase.auth.getUser()`). Session cookie refresh is handled by middleware.
+// (`supabase.auth.getUser()`). Session cookie refresh is handled by proxy.
 export async function supabaseServer() {
   const cookieStore = await cookies();
   return createServerClient<Database>(
@@ -40,7 +40,7 @@ export async function supabaseServer() {
             );
           } catch {
             // Called from a Server Component (read-only cookies) — safe to
-            // ignore; middleware writes the refreshed session cookie.
+            // ignore; proxy writes the refreshed session cookie.
           }
         },
       },

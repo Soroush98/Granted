@@ -26,8 +26,8 @@ function safeEqual(a: string, b: string): boolean {
 
 // Refreshes the Supabase auth session cookie on each request so Server
 // Components and route handlers see a current session. Reads NEXT_PUBLIC_* env
-// directly (middleware must stay lean — no server-only imports).
-export async function middleware(request: NextRequest) {
+// directly (proxy must stay lean — no server-only imports).
+export async function proxy(request: NextRequest) {
   // Origin lock. OPT-IN: only enforced once ORIGIN_VERIFY_SECRET is set (after
   // the Cloudflare header rule is live and verified). Until then this is a
   // no-op, so it can't lock you out during rollout.

@@ -8,7 +8,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // return. Using next/headers cookies() + a separate NextResponse.redirect()
 // drops the Set-Cookie headers on the new redirect response, so the user lands
 // back signed-out. Here we build the redirect first and have the Supabase
-// client set cookies directly on it (same pattern as middleware.ts).
+// client set cookies directly on it (same pattern as proxy.ts).
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");

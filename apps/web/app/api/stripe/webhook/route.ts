@@ -7,7 +7,7 @@ import { PASS_CREDITS, PASS_DAYS } from "@/lib/njf/access";
 import { sendPassReceipt } from "@/lib/email";
 
 // Stripe webhook: on a completed checkout, grant/refresh the buyer's pass.
-// Reads the RAW body for signature verification — middleware excludes this path
+// Reads the RAW body for signature verification — proxy excludes this path
 // so the body is untouched.
 export async function POST(req: Request) {
   if (!env.STRIPE_WEBHOOK_SECRET) {
