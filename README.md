@@ -145,7 +145,10 @@ Time per search: about 4 to 6 seconds end-to-end (Voyage embed ≈ 200ms, RPC �
 - **Abuse controls**: AI searches are rate-limited per client and capped
   globally, and gated behind a bot challenge at the edge — all enforced before
   the expensive embed and rerank step, so blocked requests cost nothing on the
-  Claude side.
+  Claude side. A zero-cost heuristic (`lib/rag/spam.ts`) also bounces
+  promo-spam pasted into the /search box (bots pitching SEO/Instagram services
+  mention the site's own domain and cold-outreach phrasing) before the quota
+  gate, the embed, the rerank, and the analytics log.
 
 ## Setup (local dev)
 

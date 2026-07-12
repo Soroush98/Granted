@@ -3,10 +3,27 @@ import { searchCompanies } from "@/lib/rag/search";
 import type { SearchFilters } from "@/lib/db/types";
 import { logSearch } from "@/lib/njf/usage";
 import { gateSearch } from "@/lib/njf/access";
+import { looksLikePromoSpam } from "@/lib/rag/spam";
 
 type Props = { query: string; filters: SearchFilters };
 
 export async function Results({ query, filters }: Props) {
+  // Bots paste cold-outreach pitches into the search box (no Turnstile on this
+  // GET form). Bounce them before the quota gate and the embed/rerank spend —
+  // and skip the analytics log so they don't pollute search_log either.
+  if (looksLikePromoSpam(query)) {
+    return (
+      <p className="rounded-xl border border-black/10 bg-white p-6 text-sm text-[var(--color-muted)]">
+        That looks like a promotional message rather than a search. Describe a
+        research topic, technology, or role instead — e.g.{" "}
+        <Link href="/search?q=computer%20vision%20for%20industrial%20inspection" className="underline">
+          computer vision for industrial inspection
+        </Link>
+        . Or <Link href="/search" className="underline">browse grants</Link>.
+      </p>
+    );
+  }
+
   // Per-identity gate (anon taste → free account → pass), consumed before any
   // expensive work. /search never uses web, so wantWeb is false. No Turnstile
   // here — /search is a GET form producing shareable URLs.
