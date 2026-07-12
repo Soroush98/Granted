@@ -28,8 +28,11 @@ funding history and matches it against your query, resume, or research paper.
                   ┌──────────┴───────────────┐
                   │   services/scraper       │
                   │                          │
-                  │  CA: NSERC·CIHR·FRQ·CFI  │
-                  │      IRAP·SIF·Proactive  │
+                  │  CA: Federal Proactive   │
+                  │  (NSERC·SSHRC·IRAP·SIF)  │
+                  │      CIHR·FRQ·CFI        │
+                  │  Clusters: NGen·DIGITAL  │
+                  │   PIC·Ocean·Genome·Mitacs│
                   │  US: NSF · NIH           │
                   │  UK: UKRI                │
                   │  AU: ARC · GrantConnect  │
@@ -49,20 +52,26 @@ Here's what's in the index after the latest data refresh:
 
 | Country | Source | Program codes | Grants | Date coverage |
 |---|---|---|---:|---|
-| 🇨🇦 | NSERC awards (Discovery, Alliance, CRD, Other) | `NSERC_*` | 22,510 | FY2024 (FY2025 not yet published) |
-| 🇨🇦 | Federal Proactive Disclosure (ACOA, FedDev, CED, IRAP, SIF, …) | `FEDERAL_OTHER`, `IRAP`, `SIF` | 17,226 | 2024-05-24 → 2026-04-28 |
+| 🇨🇦 | Federal Proactive Disclosure (ACOA, FedDev, CED, IRAP, SIF, SSHRC, ESDC, …) | `FEDERAL_OTHER`, `IRAP`, `SIF` | 103,653 | 2024-05-24 → 2026 (FY2025-26 Q4) |
+| 🇨🇦 | NSERC (FY2024 awards snapshot + quarterly proactive researcher rows) | `NSERC_*` | 34,283 | FY2024 snapshot; proactive → FY2025-26 Q4 |
+| 🇨🇦 | Mitacs (industry-partnered research projects; recipient = partner company) | `MITACS` | 4,000 | No per-project dates |
 | 🇨🇦 | CIHR Grants & Awards (with abstracts) | `CIHR` | 7,398 | FY2025-26 |
 | 🇨🇦 | Quebec FRQ (Santé / Nature et technologies / Société et culture) | `FRQS`, `FRQNT`, `FRQSC` | 6,947 | FY2023-24 (latest FRQ publishes) |
 | 🇨🇦 | Alberta Innovates + Emissions Reduction Alberta | `PROVINCIAL_OTHER` | 879 | 2024 to 2025 (dates sparse) |
 | 🇨🇦 | Canada Foundation for Innovation funded-projects | `CFI` | 817 | Calendar 2024 to 2025 |
+| 🇨🇦 | Genome Canada funded research (PIs + institutions, with abstracts) | `GENOME_CANADA` | 585 | No per-project dates |
 | 🇨🇦 | Scale AI funded projects | `SCALE_AI` | 167 | No per-project dates |
+| 🇨🇦 | Ocean Supercluster funded projects | `OCEAN_SC` | 109 | Dates sparse |
+| 🇨🇦 | Protein Industries Canada funded projects | `PIC` | 101 | 2020 → 2026 |
+| 🇨🇦 | NGen (advanced-manufacturing) funded projects | `NGEN` | 84 | Dates sparse |
+| 🇨🇦 | DIGITAL Technology Supercluster funded projects | `DIGITAL` | 74 | Dates sparse |
 | 🇺🇸 | NIH RePORTER (medical research, with abstracts) | `NIH` | 72,941 | ~2 years (award notice 2024-06 →) |
 | 🇺🇸 | NSF Awards (science & engineering, incl. SBIR/STTR) | `NSF` | 17,422 | ~2 years (2024-06 →) |
 | 🇬🇧 | UKRI Gateway to Research (7 councils + Innovate UK) | `UKRI` | 8,881 | ~2 years (fund start 2024-06 →) |
 | 🇦🇺 | ARC National Competitive Grants (non-medical research) | `ARC` | 12,510 | Commencing 2016 → |
 | 🇦🇺 | GrantConnect (federal grants, R&D/industry-filtered) | `GRANTCONNECT` | 10,844 | ~2 years (publish 2024-06 →) |
 
-**Totals**: 178,542 grants, 26,372 organizations, 336,740 indexed text chunks.
+**Totals**: 281,695 grants, 78,329 organizations, 517,613 indexed text chunks.
 Each chunk has a 1024-dim Voyage embedding and a tsvector for full-text search.
 (The homepage/stats pages now render these totals live, so they don't go stale.)
 
@@ -172,7 +181,6 @@ cp .env.example .env
 # VOYAGE_API_KEY, REVALIDATE_SECRET
 
 # Each ingester pulls from a public source. CA (CSV/scrape):
-granted-scraper ingest-nserc        ./nserc_data/NSERC_FY2024_Expenditures.csv
 granted-scraper ingest-federal-recent ./proactive_data/grants.csv
 granted-scraper ingest-cihr         ./cihr_data/cihr_2025_2026.xlsx
 granted-scraper ingest-frq          ./frq_data/frqs_2023_2024.csv  --program FRQS
@@ -180,6 +188,16 @@ granted-scraper ingest-cfi          --year 2024 --year 2025
 granted-scraper ingest-abinnovates
 granted-scraper ingest-era
 granted-scraper ingest-scaleai      ./scaleai_urls.json
+
+# Re-granting bodies (Global Innovation Clusters, Genome Canada, Mitacs) — the
+# federal feed only discloses the lump payment to these orgs, not who they
+# re-fund, so we scrape each one's public funded-project directory:
+granted-scraper ingest-ngen         # NGen (advanced manufacturing)
+granted-scraper ingest-digital      # DIGITAL Technology Supercluster
+granted-scraper ingest-pic          # Protein Industries Canada
+granted-scraper ingest-ocean        # Canada's Ocean Supercluster
+granted-scraper ingest-genome       # Genome Canada (research PIs + abstracts)
+granted-scraper ingest-mitacs       # Mitacs (~4k industry-partnered projects)
 
 # US / UK / AU (live public APIs — no file needed; default to a ~2-year window):
 granted-scraper ingest-nsf          # NSF Awards API
@@ -247,14 +265,20 @@ a history of 14 fix-up migrations.
 ├── services/scraper/                  Python ingestion
 │   └── scraper/
 │       ├── sources/
-│       │   ├── nserc.py               🇨🇦 NSERC awards CSV
 │       │   ├── proactive.py           🇨🇦 Federal proactive disclosure CSV
+│       │   │                             (incl. NSERC/SSHRC researcher rows)
 │       │   ├── cihr.py                🇨🇦 CIHR Grants & Awards XLSX (abstracts)
 │       │   ├── frq.py                 🇨🇦 Quebec FRQ CSV (S / NT / SC)
 │       │   ├── cfi.py                 🇨🇦 CFI funded-projects HTML scraper
 │       │   ├── abinnovates.py         🇨🇦 Alberta Innovates sitemap scraper
 │       │   ├── era.py                 🇨🇦 ERA Alberta sitemap scraper
 │       │   ├── scaleai.py             🇨🇦 Scale AI press-release scraper
+│       │   ├── ngen.py                🇨🇦 NGen manufacturing directory scraper
+│       │   ├── digital.py             🇨🇦 DIGITAL Supercluster scraper
+│       │   ├── pic.py                 🇨🇦 Protein Industries Canada scraper
+│       │   ├── ocean.py               🇨🇦 Ocean Supercluster scraper
+│       │   ├── genome.py              🇨🇦 Genome Canada scraper (PIs+abstracts)
+│       │   ├── mitacs.py              🇨🇦 Mitacs project scraper
 │       │   ├── nsf.py                 🇺🇸 NSF Awards API
 │       │   ├── nih.py                 🇺🇸 NIH RePORTER API
 │       │   ├── ukri.py                🇬🇧 UKRI Gateway to Research API
@@ -270,8 +294,8 @@ a history of 14 fix-up migrations.
 
 ## Known limitations
 
-- **Coverage depth is uneven across countries.** Canada is deep but lagging
-  (NSERC a year behind, FRQ pre-window); the US, UK, and Australia (GrantConnect)
+- **Coverage depth is uneven across countries.** Canada is deep but partly
+  lagging (FRQ pre-window); the US, UK, and Australia (GrantConnect)
   are the **last ~2 years** by design; ARC goes back to 2016. So "covered" means
   different time depths per country.
 - **Amounts mix currencies.** Every grant's value sits in `amount_cad`
@@ -291,10 +315,25 @@ a history of 14 fix-up migrations.
 - **SR&ED tax credits are confidential.** The biggest federal R&D channel in
   Canada (>$4B/year) is legally not disclosable per recipient. Treat the
   totals here as a *lower bound*.
-- **NSERC is one year behind.** Only FY2024 (April 2024 to March 2025) is
-  available. FY2025 lands around late 2026. NSERC rows also have no
-  `start_date` (only `fiscal_year`), so date-range filters don't narrow
-  NSERC.
+- **Re-granting bodies are scraped, not complete.** Federal proactive disclosure
+  only itemizes the lump payment to a Global Innovation Cluster / Genome Canada /
+  Mitacs, not who they re-fund — so those sub-grants come from scraping each
+  org's public project directory. Covered: NGen, DIGITAL, Protein Industries,
+  Ocean Supercluster, Genome Canada, Mitacs (and Scale AI). Caveats: **DIGITAL
+  only yields ~74 of 178 listed projects** (the rest are feasibility studies with
+  no named funded partner); **Mitacs and Genome publish no per-project dollar
+  amount** (so they don't narrow amount filters); the clusters mostly lack clean
+  per-project dates. Still missing: the other clusters have no separate feed
+  beyond this, and re-granters like the remaining Global Innovation Clusters'
+  ecosystem streams aren't itemized anywhere public.
+- **Fresh NSERC/SSHRC rows carry no project text.** NSERC's own awards
+  dataset (real project titles + summaries) stops at FY2024, and its
+  ingester has been retired — that FY2024 snapshot stays in the index as-is
+  (those rows have no `start_date`, only `fiscal_year`). Newer NSERC and
+  SSHRC coverage comes from the quarterly proactive disclosure feed, which
+  names the researcher, program, university, amount, and dates — but no
+  project title or abstract, so semantic matching on those rows leans on
+  researcher + program + institution only.
 - **Quebec FRQ is pre-window.** The latest FRQ data on donneesquebec.ca is
   FY2023-24, which is before the 2-year recency window. Still included
   because it's the only Quebec research-funding signal available.
@@ -302,9 +341,11 @@ a history of 14 fix-up migrations.
   ERA). Ontario, BC, and Atlantic provinces are covered only through
   whatever federal funds flowed to them. There are no provincial agency
   feeds yet for OCI, FedDev, Innovate BC, or ACOA-only programs.
-- **No researcher search.** NSERC and FRQ contain ~26k investigator names,
-  but they live in `grants.raw` JSONB and aren't indexed. Searching
-  "<professor name>" won't find their grants today.
+- **Researcher search is partial.** NSERC/SSHRC proactive rows (2024-05 →)
+  put the researcher's name in the indexed grant title, so searching a
+  professor's name finds their recent grants. But the ~26k investigator
+  names in the FY2024 NSERC snapshot and in FRQ live only in `grants.raw`
+  JSONB and aren't indexed.
 - **CFI lacks project descriptions.** Only fund-type, field of research,
   institution, year, and team members. Semantic match is rougher there.
 - **Entity resolution is good, not perfect.** About 649 obvious duplicates

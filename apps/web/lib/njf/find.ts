@@ -363,6 +363,7 @@ function fundingSourceOf(raw: Record<string, unknown>): string | null {
   if (/natural sciences|\bnserc\b|\bcrsng\b/i.test(hay)) return "NSERC";
   if (/social sciences|\bsshrc\b|\bcrsh\b/i.test(hay)) return "SSHRC";
   if (/national research council|conseil national de recherches/i.test(hay)) return "NRC";
+  if (/\bgenome canada\b/i.test(hay)) return "Genome Canada";
   return null;
 }
 
@@ -426,6 +427,21 @@ function buildHolder(raw: Record<string, unknown>): GrantHolder | null {
     }
   }
 
+  // Genome Canada projects (scraped). Recipient is the lead institution; the
+  // Project Leader is the PI. Genome Canada's project DB is all PI-led research
+  // (no trainee scholarships), so isPI is always true. Markers written at ingest.
+  if (marked === "GENOME_CANADA") {
+    const name = str(raw["_pi"]);
+    if (name) {
+      return {
+        name,
+        program: str(raw["_program"]) || "Genome Canada",
+        isPI: true,
+        source: "Genome Canada",
+      };
+    }
+  }
+
   // ARC (Australian Research Council) schema, ingested from the Data Portal API.
   // The lead investigator is the PI; every ARC scheme is a PI-led research
   // grant (no trainee scholarships — those are NHMRC's), so isPI is always true.
@@ -449,8 +465,13 @@ function buildHolder(raw: Record<string, unknown>): GrantHolder | null {
 
   const recipient = str(raw["recipient_legal_name"]);
   if (recipient && str(raw["recipient_type"]) === "P") {
-    const program = str(raw["prog_name_en"]);
-    return { name: recipient, program, isPI: !TRAINEE_PROGRAM.test(program), source };
+    // agreement_title_en carries the specific program ("Postgraduate
+    // Scholarships D"); prog_name_en is a coarse envelope ("Research Training
+    // and Talent Development") that TRAINEE_PROGRAM can't classify — so test
+    // both when deciding PI vs trainee.
+    const program = str(raw["agreement_title_en"]) || str(raw["prog_name_en"]);
+    const isPI = !TRAINEE_PROGRAM.test(`${program} ${str(raw["prog_name_en"])}`);
+    return { name: recipient, program, isPI, source };
   }
 
   return null;

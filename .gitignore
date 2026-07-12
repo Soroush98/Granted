@@ -42,7 +42,6 @@ supabase/.temp/
 services/scraper/data/
 services/scraper/.cache/
 services/scraper/proactive_data/
-services/scraper/nserc_data/
 services/scraper/frq_data/
 services/scraper/ontario_data/
 *.log

@@ -11,21 +11,30 @@ from rich.console import Console
 
 from . import db, voyage
 from .config import settings
-from .sources import abinnovates, arc, cfi, cihr, era, frq, grantconnect, nhmrc, nih, nserc, nsf, proactive, scaleai, ukri
+from .sources import (
+    abinnovates,
+    arc,
+    cfi,
+    cihr,
+    digital,
+    era,
+    frq,
+    genome,
+    grantconnect,
+    mitacs,
+    ngen,
+    nhmrc,
+    nih,
+    nsf,
+    ocean,
+    pic,
+    proactive,
+    scaleai,
+    ukri,
+)
 
 app = typer.Typer(add_completion=False)
 console = Console()
-
-
-@app.command("ingest-nserc")
-def ingest_nserc(
-    csv_path: Path = typer.Argument(..., exists=True, dir_okay=False, readable=True),
-    limit: int | None = typer.Option(None, help="Cap rows ingested (useful for smoke tests)."),
-) -> None:
-    """Ingest a single NSERC awards CSV file. Download yours from
-    https://open.canada.ca/data/en/dataset/c1b0f627-8c29-427c-ab73-33968ad9176e first."""
-    companies, grants = nserc.ingest_csv(csv_path, limit=limit)
-    console.log(f"[bold green]NSERC:[/] {grants} grants, {companies} unique recipients")
 
 
 @app.command("ingest-scaleai")
@@ -37,6 +46,69 @@ def ingest_scaleai(
     console.log(f"[bold green]Scale AI:[/] {n} projects ingested")
 
 
+# Re-granting bodies — Global Innovation Clusters, Genome Canada, Mitacs. These
+# award money the federal Proactive Disclosure feed doesn't itemize per
+# sub-recipient (the feds disclose the lump payment to the cluster/org, not who
+# it re-funds). Each scrapes the org's public funded-project directory.
+
+
+@app.command("ingest-ngen")
+def ingest_ngen(
+    limit: int | None = typer.Option(None, help="Cap projects ingested (smoke tests)."),
+) -> None:
+    """Ingest Next Generation Manufacturing Canada (NGen) funded projects from
+    the public project directory (advanced-manufacturing companies)."""
+    companies, grants = ngen.ingest_all(limit=limit)
+    console.log(f"[bold green]NGen:[/] {grants} grants, {companies} unique recipients")
+
+
+@app.command("ingest-digital")
+def ingest_digital(
+    limit: int | None = typer.Option(None, help="Cap projects ingested (smoke tests)."),
+) -> None:
+    """Ingest DIGITAL Technology Supercluster funded projects (tech companies)."""
+    companies, grants = digital.ingest_all(limit=limit)
+    console.log(f"[bold green]DIGITAL:[/] {grants} grants, {companies} unique recipients")
+
+
+@app.command("ingest-pic")
+def ingest_pic(
+    limit: int | None = typer.Option(None, help="Cap projects ingested (smoke tests)."),
+) -> None:
+    """Ingest Protein Industries Canada funded projects (agri-food companies)."""
+    companies, grants = pic.ingest_all(limit=limit)
+    console.log(f"[bold green]PIC:[/] {grants} grants, {companies} unique recipients")
+
+
+@app.command("ingest-ocean")
+def ingest_ocean(
+    limit: int | None = typer.Option(None, help="Cap projects ingested (smoke tests)."),
+) -> None:
+    """Ingest Canada's Ocean Supercluster funded projects (ocean-tech companies)."""
+    companies, grants = ocean.ingest_all(limit=limit)
+    console.log(f"[bold green]Ocean SC:[/] {grants} grants, {companies} unique recipients")
+
+
+@app.command("ingest-genome")
+def ingest_genome(
+    limit: int | None = typer.Option(None, help="Cap projects ingested (smoke tests)."),
+) -> None:
+    """Ingest Genome Canada funded research projects (genomics PIs + institutions,
+    with abstracts). Surfaces on /supervisors and /research-pi."""
+    companies, grants = genome.ingest_all(limit=limit)
+    console.log(f"[bold green]Genome Canada:[/] {grants} grants, {companies} unique recipients")
+
+
+@app.command("ingest-mitacs")
+def ingest_mitacs(
+    limit: int | None = typer.Option(None, help="Cap projects ingested (smoke tests)."),
+) -> None:
+    """Ingest Mitacs funded projects (~4,000 industry-partnered research
+    projects; recipient = the partner company, faculty/university in the text)."""
+    companies, grants = mitacs.ingest_all(limit=limit)
+    console.log(f"[bold green]Mitacs:[/] {grants} grants, {companies} unique recipients")
+
+
 # Treasury Board's federal-wide Proactive Disclosure of G&C dataset.
 # https://open.canada.ca/data/en/dataset/432527ab-7aac-45b5-81d6-7597107a7013
 _PROACTIVE_HELP = (
@@ -45,26 +117,42 @@ _PROACTIVE_HELP = (
 )
 
 
-def _sif_matcher(prog: str) -> str | None:
+def _sif_matcher(row: dict[str, str]) -> str | None:
     """Match any ISED program name that's a SIF variant — the dataset has
     >20 spellings: 'SIF Stream 1- R&D', 'SIF - Steel and Aluminum Program',
     'Strategic Innovation Fund', etc."""
-    p = prog.strip()
+    p = (row.get("prog_name_en") or "").strip()
     if p.startswith("SIF") or "Strategic Innovation Fund" in p:
         return "SIF"
     return None
 
 
-def _irap_matcher(prog: str) -> str | None:
+def _irap_matcher(row: dict[str, str]) -> str | None:
     """Match NRC IRAP variants. The base program name is consistent:
     'Industrial Research Assistance Program – <sub-stream>'. We exclude the
     Youth Employment sub-streams since they're internships, not R&D grants."""
-    p = prog.strip()
+    p = (row.get("prog_name_en") or "").strip()
     if "Industrial Research Assistance Program" not in p:
         return None
     if "Youth Employment" in p:
         return None
     return "IRAP"
+
+
+def _nserc_matcher(row: dict[str, str]) -> str:
+    """Map an NSERC proactive-disclosure row to the same NSERC_* codes the
+    retired awards-CSV ingester used. The program label lives in
+    `agreement_title_en` ('Alliance Grants', 'Discovery Grants Program -
+    Individual', …); `prog_name_en` is a coarser envelope ('Discovery
+    Research'). Scholarships/fellowships and the rest land in NSERC_OTHER."""
+    t = (row.get("agreement_title_en") or "").strip()
+    if "Discovery" in t:
+        return "NSERC_DG"
+    if "Alliance" in t:
+        return "NSERC_ALLIANCE"
+    if "Applied Research and Development" in t or "Collaborative Research and Development" in t:
+        return "NSERC_CRD"
+    return "NSERC_OTHER"
 
 
 @app.command("ingest-sif")
@@ -99,21 +187,15 @@ def ingest_irap(
     console.log(f"[bold green]IRAP:[/] {grants} grants, {companies} unique recipients")
 
 
-def _federal_matcher(prog: str) -> str | None:
-    """Map federal program names → our existing program codes, preserving the
-    specific buckets we already have. Anything we don't recognize gets bucketed
-    into FEDERAL_OTHER by the ingester's default."""
-    p = prog.strip()
-    code = _sif_matcher(p)
+def _federal_matcher(row: dict[str, str]) -> str | None:
+    """Map federal rows → our existing program codes, preserving the specific
+    buckets we already have. Anything we don't recognize gets bucketed into
+    FEDERAL_OTHER by the ingester's default."""
+    if (row.get("owner_org") or "").strip() == "nserc-crsng":
+        return _nserc_matcher(row)
+    code = _sif_matcher(row) or _irap_matcher(row)
     if code:
         return code
-    code = _irap_matcher(p)
-    if code:
-        return code
-    if "CanExport" in p:
-        return "FEDERAL_OTHER"  # NRC export-support program, keep but no dedicated bucket
-    if p == "Industrial Research Assistance Program – Youth Employment Program":
-        return None  # internships, not R&D
     return None  # falls through to FEDERAL_OTHER
 
 
@@ -143,10 +225,11 @@ def ingest_federal_recent(
     limit: int | None = typer.Option(None, help="Cap rows scanned (smoke testing)."),
     start_row: int = typer.Option(0, help="Skip the first N CSV rows. Useful for resuming after a crash without re-processing already-ingested rows."),
 ) -> None:
-    f"""Ingest all recent federal G&C grants going to companies (F) or academic (A)
-    recipients, from any department. Programs we already track (SIF, IRAP) get
-    their specific codes; everything else lands under FEDERAL_OTHER.
-    {_PROACTIVE_HELP}"""
+    f"""Ingest all recent federal G&C grants from any department. Programs we
+    already track (SIF, IRAP, NSERC_*) get their specific codes; everything
+    else lands under FEDERAL_OTHER. Tri-council researcher rows (NSERC/SSHRC)
+    are credited to their university, with the PI/trainee folded into the
+    grant title. {_PROACTIVE_HELP}"""
     companies, grants = proactive.ingest_csv(
         csv_path,
         owner_org=None,  # all federal departments
@@ -156,6 +239,9 @@ def ingest_federal_recent(
         # in operating_name or legal_name. Skip I (international / individuals
         # with no Canadian-org context) and G (federal-to-federal transfers).
         recipient_types={"F", "A", "N", "S", "P", "O"},
+        # CIHR's own XLSX ingester has these same awards with scientific
+        # abstracts; the proactive rows would only add boilerplate duplicates.
+        skip_owner_orgs={"cihr-irsc"},
         limit=limit,
         start_row=start_row,
     )
