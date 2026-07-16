@@ -1,0 +1,66 @@
+name: CI
+
+# Quality gate for main. Runs the hermetic suites only — no secrets, no
+# network, fully deterministic (see QA-STRATEGY.md "Entry/exit criteria").
+# The smoke script (needs a running prod build + Supabase) and the k6 load
+# test (needs a staging DB) are deliberately NOT run here; they are manual /
+# scheduled jobs.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A newer push to the same ref cancels the in-flight run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: web — typecheck + unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm --filter web typecheck
+
+      - name: Unit tests (vitest)
+        run: pnpm --filter web test
+
+  scraper:
+    name: scraper — unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install scraper (editable) + pytest
+        working-directory: services/scraper
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest
+
+      - name: Unit tests (pytest)
+        working-directory: services/scraper
+        run: pytest -q
